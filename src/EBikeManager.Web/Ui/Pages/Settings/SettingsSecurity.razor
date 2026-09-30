@@ -1,0 +1,72 @@
+@inject SignInService SignIn
+@inject AuthSettingsService Auth
+@inject SignInTicketService Tickets
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<div class="d-flex flex-column gap-4">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Lock" Title="@WebStrings.SecurityPasswordTitle" FullHeight="false"
+                 Description="@WebStrings.SecurityPasswordDescription">
+        @if (Auth.DisabledByEnvironment)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mb-4">@WebStrings.SecurityDisabledByEnvironment</MudAlert>
+        }
+
+        @if (Auth.IsActive)
+        {
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-4">@WebStrings.SecurityPasswordOn</MudAlert>
+        }
+
+        <div class="d-flex flex-column gap-3 em-narrow-form">
+            <MudTextField @bind-Value="_password" Label="@(Auth.IsActive ? WebStrings.SecurityNewPassword : WebStrings.Password)" InputType="InputType.Password"
+                          Variant="Variant.Outlined" Immediate="true"
+                          HelperText="@WebStrings.Format(WebStrings.SecurityPasswordHelp, PasswordHash.MinimumLength)" />
+            <MudTextField @bind-Value="_confirm" Label="@WebStrings.SecurityConfirmPassword" InputType="InputType.Password"
+                          Variant="Variant.Outlined" Immediate="true"
+                          Error="@Mismatch" ErrorText="@WebStrings.SecurityPasswordsDiffer" />
+        </div>
+
+        <div class="d-flex flex-wrap gap-2 mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!CanSave || _busy)" OnClick="TurnOnAsync">
+                @(Auth.IsActive ? WebStrings.SecurityChangePassword : WebStrings.SecurityTurnOn)
+            </MudButton>
+            @if (Auth.IsActive)
+            {
+                <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_busy" OnClick="TurnOffAsync">@WebStrings.SecurityTurnOff</MudButton>
+            }
+        </div>
+    </SurfaceCard>
+</div>
+
+@code {
+    private string _password = "";
+    private string _confirm = "";
+    private bool _busy;
+
+    private bool Mismatch => _confirm.Length > 0 && _confirm != _password;
+
+    private bool CanSave => _password.Length >= PasswordHash.MinimumLength && _confirm == _password;
+
+    private async Task TurnOnAsync()
+    {
+        _busy = true;
+        var result = await SignIn.TurnOnAsync(_password);
+        _busy = false;
+        if (!result.Succeeded)
+        {
+            Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+            return;
+        }
+
+        Navigation.NavigateTo($"auth/complete?ticket={Tickets.Issue()}&returnUrl={Uri.EscapeDataString("/settings/security")}", forceLoad: true);
+    }
+
+    private async Task TurnOffAsync()
+    {
+        _busy = true;
+        var result = await SignIn.TurnOffAsync();
+        _busy = false;
+        if (result.Succeeded) Snackbar.Add(WebStrings.SecurityTurnedOff, Severity.Success);
+        else Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+    }
+}

@@ -1,0 +1,35 @@
+@inject SyncRunService SyncRun
+@inject SyncStatusStateService SyncStatus
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<MudTooltip Text="@(Running ? SyncStatus.Status.Progress : WebStrings.SyncNowTooltip)">
+    <MudButton Variant="Variant.Text" Color="Color.Inherit" Size="Size.Small" Disabled="Running" OnClick="SyncAsync" Class="em-sync-button" aria-label="@WebStrings.SyncNow"
+               StartIcon="@(Running ? null : Icons.Material.Rounded.Sync)">
+        @if (Running)
+        {
+            <MudProgressCircular Size="Size.Small" Indeterminate="true" />
+            <span class="em-wide-only ml-2">@WebStrings.Syncing</span>
+        }
+        else
+        {
+            <span class="em-wide-only">@WebStrings.SyncNow</span>
+        }
+    </MudButton>
+</MudTooltip>
+
+@code {
+    private bool Running => SyncStatus.Status.IsRunning;
+
+    protected override void OnInitialized() => SyncStatus.OnChange += OnChanged;
+
+    private async Task SyncAsync()
+    {
+        var result = await SyncRun.StartManualSyncAsync();
+        if (!result.Succeeded) Snackbar.Add(result.Message ?? WebStrings.SyncStartFailed, Severity.Warning);
+    }
+
+    private void OnChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => SyncStatus.OnChange -= OnChanged;
+}

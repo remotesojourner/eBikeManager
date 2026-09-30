@@ -1,0 +1,25 @@
+window.ebikeManagerInterop = {
+    getLocalStorage: function (key) {
+        return localStorage.getItem(key);
+    },
+
+    setLocalStorage: function (key, value) {
+        localStorage.setItem(key, value);
+    },
+
+    getTimeZone: function () {
+        return Intl.DateTimeFormat().resolvedOptions().timeZone;
+    },
+
+    downloadFileFromStream: async function (filename, streamReference) {
+        const buffer = await streamReference.arrayBuffer();
+        const url = URL.createObjectURL(new Blob([buffer]));
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+    }
+};

@@ -1,0 +1,27 @@
+<div class="d-flex flex-column gap-4">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Info" Title="@ProjectInfo.Name" FullHeight="false" Description="@WebStrings.AboutDescription">
+        <DataRow Label="@WebStrings.AboutVersion" Value="@ProjectInfo.Version" />
+    </SurfaceCard>
+
+    <SurfaceCard Icon="@Icons.Material.Rounded.Favorite" Title="@WebStrings.AboutCreditsTitle" FullHeight="false">
+        <div class="em-option-list">
+            @foreach (var credit in Credits)
+            {
+                <MudLink Href="@credit.Url" Target="_blank" Class="em-option" Underline="Underline.None">
+                    <MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" Class="em-option-icon" />
+                    <span class="em-option-text">@credit.Title</span>
+                </MudLink>
+            }
+        </div>
+    </SurfaceCard>
+</div>
+
+@code {
+    private static (string Title, string Url)[] Credits =>
+    [
+        (WebStrings.AboutCreditHomeAssistant, "https://github.com/marq24/ha-bosch-ebike-flow"),
+        (WebStrings.AboutCreditModernity, "https://github.com/russkyc/modernity-css-experiment"),
+        (WebStrings.AboutCreditMudBlazor, "https://mudblazor.com"),
+        (WebStrings.AboutCreditFit, "https://developer.garmin.com/fit/")
+    ];
+}

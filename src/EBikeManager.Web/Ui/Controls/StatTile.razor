@@ -1,0 +1,25 @@
+<SurfaceCard Icon="@Icon" Title="@Title">
+    <div class="em-stat-value">
+        <MudText Typo="Typo.h4" Class="em-hero-value font-weight-bold" Color="@Color">@Value</MudText>
+        @if (!string.IsNullOrEmpty(Unit))
+        {
+            <MudText Typo="Typo.body1" Class="em-muted">@Unit</MudText>
+        }
+    </div>
+    <MudText Typo="Typo.caption" Class="em-muted d-block">@Label</MudText>
+    @if (ChildContent != null)
+    {
+        <MudDivider Class="my-3" />
+        @ChildContent
+    }
+</SurfaceCard>
+
+@code {
+    [Parameter] public string? Icon { get; set; }
+    [Parameter] public string Title { get; set; } = "";
+    [Parameter] public string Value { get; set; } = "";
+    [Parameter] public string? Unit { get; set; }
+    [Parameter] public string Label { get; set; } = "";
+    [Parameter] public Color Color { get; set; } = Color.Default;
+    [Parameter] public RenderFragment? ChildContent { get; set; }
+}

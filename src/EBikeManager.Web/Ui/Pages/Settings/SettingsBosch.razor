@@ -1,0 +1,33 @@
+@inject BikeService Bikes
+@inject ISnackbar Snackbar
+
+<div class="d-flex flex-column gap-4">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Link" Title="@WebStrings.SettingsBoschAccountTitle" FullHeight="false"
+                 Description="@WebStrings.SettingsBoschAccountDescription">
+        <BoschSignIn />
+    </SurfaceCard>
+
+    <SurfaceCard Icon="@Icons.Material.Rounded.DirectionsBike" Title="@WebStrings.SettingsBoschBikesTitle" FullHeight="false"
+                 Description="@WebStrings.SettingsBoschBikesDescription">
+        <BikeChooser @bind-Selected="_bikes" />
+        <div class="mt-3">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_bikes.Count == 0 || _saving)" OnClick="SaveAsync">
+                @WebStrings.SettingsBoschSaveBikes
+            </MudButton>
+        </div>
+    </SurfaceCard>
+</div>
+
+@code {
+    private IReadOnlyList<BoschBikeInfo> _bikes = [];
+    private bool _saving;
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        var result = await Bikes.SaveSelectionAsync(_bikes);
+        _saving = false;
+        if (result.Succeeded) Snackbar.Add(WebStrings.SettingsBoschBikesSaved, Severity.Success);
+        else Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+    }
+}

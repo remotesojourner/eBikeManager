@@ -1,0 +1,53 @@
+@inject BoschAccountService Bosch
+@inject BikeService Bikes
+
+<StateView Loading="_loading" ErrorMessage="@_error" OnRetry="LoadAsync" Compact="true"
+           Empty="@(_available.Count == 0)" EmptyMessage="@WebStrings.BikesNoneOnAccount">
+    <div class="d-flex flex-column">
+        @foreach (var bike in _available)
+        {
+            <MudCheckBox T="bool" Value="@IsSelected(bike)" ValueChanged="@(selected => ToggleAsync(bike, selected))"
+                         Label="@bike.Name" Color="Color.Primary" />
+        }
+    </div>
+</StateView>
+
+@code {
+    [Parameter] public IReadOnlyList<BoschBikeInfo> Selected { get; set; } = [];
+    [Parameter] public EventCallback<IReadOnlyList<BoschBikeInfo>> SelectedChanged { get; set; }
+
+    private bool _loading = true;
+    private string? _error;
+    private IReadOnlyList<BoschBikeInfo> _available = [];
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        var result = await Bosch.GetBikesAsync();
+        _loading = false;
+        if (!result.Succeeded)
+        {
+            _error = result.Message ?? WebStrings.BikesLoadFailed;
+            return;
+        }
+
+        _available = result.Value ?? [];
+        if (Selected.Count > 0) return;
+
+        var saved = (await Bikes.GetBikesAsync()).Select(bike => bike.Id).ToHashSet();
+        var initial = _available.Where(bike => saved.Count == 0 || saved.Contains(bike.Id)).ToList();
+        await SelectedChanged.InvokeAsync(initial);
+    }
+
+    private bool IsSelected(BoschBikeInfo bike) => Selected.Any(chosen => chosen.Id == bike.Id);
+
+    private Task ToggleAsync(BoschBikeInfo bike, bool selected)
+    {
+        var chosen = Selected.Where(existing => existing.Id != bike.Id).ToList();
+        if (selected) chosen.Add(bike);
+        return SelectedChanged.InvokeAsync(_available.Where(available => chosen.Any(item => item.Id == available.Id)).ToList());
+    }
+}

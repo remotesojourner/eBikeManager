@@ -1,0 +1,42 @@
+@inject SignInService SignIn
+@inject SignInTicketService Tickets
+@inject NavigationManager Navigation
+
+<div class="d-flex justify-center mt-12">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Lock" Title="@WebStrings.SignInTitle" FullHeight="false" Class="em-narrow-card"
+                 Description="@WebStrings.Format(WebStrings.SignInDescription, ProjectInfo.Name)">
+        <MudTextField @bind-Value="_password" Label="@WebStrings.Password" InputType="InputType.Password" Variant="Variant.Outlined"
+                      Immediate="true" AutoFocus="true" OnKeyDown="OnKeyDownAsync" Error="@(_error != null)" ErrorText="@_error" Class="mb-4" />
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" FullWidth="true" Disabled="_busy"
+                   StartIcon="@Icons.Material.Rounded.Login" OnClick="SignInAsync">
+            @WebStrings.SignIn
+        </MudButton>
+    </SurfaceCard>
+</div>
+
+@code {
+    private string? _password;
+    private string? _error;
+    private bool _busy;
+
+    private async Task OnKeyDownAsync(KeyboardEventArgs args)
+    {
+        if (args.Key == "Enter") await SignInAsync();
+    }
+
+    private async Task SignInAsync()
+    {
+        _busy = true;
+        _error = null;
+        var result = await SignIn.CheckPasswordAsync(_password ?? "");
+        if (!result.Succeeded)
+        {
+            _error = result.Message ?? WebStrings.SignInFailed;
+            _busy = false;
+            return;
+        }
+
+        var returnUrl = "/" + Navigation.ToBaseRelativePath(Navigation.Uri);
+        Navigation.NavigateTo($"auth/complete?ticket={Tickets.Issue()}&returnUrl={Uri.EscapeDataString(returnUrl)}", forceLoad: true);
+    }
+}

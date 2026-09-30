@@ -1,0 +1,115 @@
+@page "/rides"
+@using System.Data.Common
+@inject RideService RideService
+@inject SyncStatusStateService SyncStatus
+@inject BrowserInteropService Browser
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>@ProjectInfo.Name - @WebStrings.RidesTitle</PageTitle>
+
+<PageHeader Title="@WebStrings.RidesTitle" Subtitle="@WebStrings.RidesSubtitle" />
+
+@if (SyncStatus.Status.IsRunning)
+{
+    <MudAlert Severity="Severity.Normal" Variant="Variant.Outlined" Icon="@Icons.Material.Rounded.Sync" Class="mb-4">
+        @(SyncStatus.Status.Progress ?? WebStrings.Syncing)
+    </MudAlert>
+}
+else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
+{
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Class="mb-4">
+        @WebStrings.Format(WebStrings.RidesProblems, result.Problems.Count)
+    </MudAlert>
+}
+
+<StateView Loading="_loading" ErrorMessage="@_error" OnRetry="LoadAsync" Empty="@(_rides.Count == 0)" EmptyMessage="@WebStrings.RidesNone">
+    <MudTable Items="_rides" T="RideDto" Hover="true" Dense="true" Elevation="0" Class="em-card" Breakpoint="Breakpoint.Sm" RowsPerPage="25">
+        <HeaderContent>
+            <MudTh>@WebStrings.RidesDate</MudTh>
+            <MudTh Style="min-width:9rem">@WebStrings.RidesRide</MudTh>
+            <MudTh Style="text-align:right">@WebStrings.Distance</MudTh>
+            <MudTh Style="text-align:right">@WebStrings.MovingTime</MudTh>
+            <MudTh Style="text-align:right">@WebStrings.Calories</MudTh>
+            <MudTh Style="text-align:right">@WebStrings.RidesYourShare</MudTh>
+            <MudTh>@WebStrings.RidesBackup</MudTh>
+            <MudTh />
+        </HeaderContent>
+        <RowTemplate>
+            <MudTd DataLabel="@WebStrings.RidesDate" Style="white-space:nowrap">@DisplayFormat.DateTime(context.LocalStartTime)</MudTd>
+            <MudTd DataLabel="@WebStrings.RidesRide">@(context.Title ?? WebStrings.RideUntitled)</MudTd>
+            <MudTd DataLabel="@WebStrings.Distance" Style="text-align:right">@DisplayFormat.Distance(context.DistanceMeters)</MudTd>
+            <MudTd DataLabel="@WebStrings.MovingTime" Style="text-align:right">@DisplayFormat.Duration(context.MovingSeconds)</MudTd>
+            <MudTd DataLabel="@WebStrings.Calories" Style="text-align:right">@DisplayFormat.Calories(context.CaloriesKcal)</MudTd>
+            <MudTd DataLabel="@WebStrings.RidesYourShare" Style="text-align:right">@DisplayFormat.Percent(context.RiderEnergySharePercent)</MudTd>
+            <MudTd DataLabel="@WebStrings.RidesBackup"><FitStatusChip Ride="context" /></MudTd>
+            <MudTd>
+                @if (context.FitStatus == FitBackupStatus.Saved)
+                {
+                    <MudTooltip Text="@WebStrings.RidesDownloadFit">
+                        <MudIconButton Icon="@Icons.Material.Rounded.Download" Size="Size.Small" aria-label="@WebStrings.RidesDownloadFit"
+                                       OnClick="@(() => DownloadAsync(context))" />
+                    </MudTooltip>
+                }
+            </MudTd>
+        </RowTemplate>
+        <PagerContent>
+            <MudTablePager PageSizeOptions="[25, 50, 100]" />
+        </PagerContent>
+    </MudTable>
+</StateView>
+
+@code {
+    private bool _loading = true;
+    private string? _error;
+    private IReadOnlyList<RideDto> _rides = [];
+
+    protected override async Task OnInitializedAsync()
+    {
+        SyncStatus.OnChange += OnSyncChanged;
+        SyncStatus.Finished += OnSyncFinished;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            _rides = await RideService.GetRidesAsync();
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        {
+            _error = WebStrings.RidesLoadFailed;
+        }
+
+        _loading = false;
+    }
+
+    private async Task DownloadAsync(RideDto ride)
+    {
+        var file = await RideService.GetFitFileAsync(ride.Id);
+        if (!file.Succeeded || file.Value is not { } fit)
+        {
+            Snackbar.Add(file.Message ?? WebStrings.RidesDownloadFailed, Severity.Error);
+            return;
+        }
+
+        if (!await Browser.DownloadAsync(fit.FileName, fit.Content)) Snackbar.Add(WebStrings.RidesDownloadFailed, Severity.Error);
+    }
+
+    private void OnSyncChanged() => InvokeAsync(StateHasChanged);
+
+    private void OnSyncFinished(SyncStatus status) => InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        SyncStatus.OnChange -= OnSyncChanged;
+        SyncStatus.Finished -= OnSyncFinished;
+    }
+}
