@@ -16,6 +16,14 @@ public static class BikeText
         _ => kind.ToString()
     };
 
+    public static string DocumentName(BikeDocumentKind kind) => kind switch
+    {
+        BikeDocumentKind.BikePhoto => WebStrings.BikeDocumentBikePhoto,
+        BikeDocumentKind.BikeInvoice => WebStrings.BikeDocumentBikeInvoice,
+        BikeDocumentKind.LockInvoice => WebStrings.BikeDocumentLockInvoice,
+        _ => WebStrings.BikeDocumentOther
+    };
+
     public static string YesNo(bool? value) => value switch
     {
         true => WebStrings.Yes,
@@ -29,6 +37,11 @@ public static class BikeText
         false => WebStrings.Off,
         _ => DisplayFormat.Missing
     };
+
+    public static string ModeBackground(string? colour, bool isOff = false) =>
+        isOff ? "background-color:var(--mud-palette-text-disabled)"
+        : colour != null ? $"background-color:{colour}"
+        : "background-color:var(--mud-palette-primary)";
 
     public static string MapUrl(double latitude, double longitude) =>
         string.Create(CultureInfo.InvariantCulture, $"https://www.openstreetmap.org/?mlat={latitude:0.######}&mlon={longitude:0.######}#map=17/{latitude:0.######}/{longitude:0.######}");

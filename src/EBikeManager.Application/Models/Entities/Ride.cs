@@ -51,4 +51,10 @@ public class Ride
     public int? FitAveragePowerWatts { get; set; }
 
     public bool? FitHasGps { get; set; }
+
+    public string? GpxPath { get; set; }
+
+    public DateTime? GpxDownloadedAt { get; set; }
+
+    public bool GpxUnavailable { get; set; }
 }

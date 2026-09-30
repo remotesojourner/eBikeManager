@@ -4,6 +4,7 @@ using EBikeManager.Application.Services.Interfaces;
 using EBikeManager.TestSupport;
 using EBikeManager.Web.Configuration;
 using EBikeManager.Web.Services;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -20,9 +21,17 @@ public abstract class TestApp : WebApplicationFactory<Program>, IAsyncLifetime
 
     internal FakeBoschApi Bosch { get; } = new();
 
+    internal FakeGoogleHealthApi Google { get; } = new();
+
+    internal FakeGoogleHealthAuth GoogleAuth { get; } = new();
+
+    public FakeOidcProvider Oidc { get; } = new();
+
     public string DataDirectory => Path.Combine(_root, "data");
 
-    public async ValueTask InitializeAsync()
+    protected virtual bool SignInSwitchedOffByEnvironment => false;
+
+    public virtual async ValueTask InitializeAsync()
     {
         var cancellationToken = TestContext.Current.CancellationToken;
         using (var scope = Services.CreateScope())
@@ -36,6 +45,7 @@ public abstract class TestApp : WebApplicationFactory<Program>, IAsyncLifetime
     public override async ValueTask DisposeAsync()
     {
         await base.DisposeAsync();
+        Oidc.Dispose();
         SqliteConnection.ClearAllPools();
         if (Directory.Exists(_root)) Directory.Delete(_root, recursive: true);
         GC.SuppressFinalize(this);
@@ -46,7 +56,7 @@ public abstract class TestApp : WebApplicationFactory<Program>, IAsyncLifetime
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseSetting(EBikeManagerOptionsSetup.DataDirectoryVariable, DataDirectory);
-        builder.UseSetting(EBikeManagerOptionsSetup.DisableAuthVariable, "false");
+        builder.UseSetting(EBikeManagerOptionsSetup.DisableAuthVariable, SignInSwitchedOffByEnvironment ? "true" : "false");
         builder.UseDefaultServiceProvider(options =>
         {
             options.ValidateOnBuild = true;
@@ -60,6 +70,14 @@ public abstract class TestApp : WebApplicationFactory<Program>, IAsyncLifetime
             services.AddSingleton<IBoschApiService>(Bosch);
             services.RemoveAll<IBoschAuthService>();
             services.AddSingleton<IBoschAuthService, FakeBoschAuth>();
+            services.RemoveAll<IGoogleHealthApiService>();
+            services.AddSingleton<IGoogleHealthApiService>(Google);
+            services.RemoveAll<IGoogleHealthAuthService>();
+            services.AddSingleton<IGoogleHealthAuthService>(GoogleAuth);
+            services.RemoveAll<IOidcDiscoveryService>();
+            services.AddSingleton<IOidcDiscoveryService>(Oidc);
+            services.AddSingleton<IStartupFilter>(new FakeOidcSignInPage(Oidc));
+            services.Configure<OpenIdConnectOptions>(AuthSettingsService.OidcScheme, options => options.BackchannelHttpHandler = Oidc);
             services.ConfigureHttpClientDefaults(client => client.ConfigurePrimaryHttpMessageHandler(() => new NoNetworkHandler()));
         });
     }

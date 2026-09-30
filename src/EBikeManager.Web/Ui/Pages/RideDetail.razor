@@ -1,0 +1,311 @@
+@page "/rides/{Id}"
+@using System.Data.Common
+@inject RideService RideService
+@inject SettingsStateService Settings
+@inject MapViewService MapView
+@inject BrowserInteropService Browser
+@inject ISnackbar Snackbar
+@inject PreferencesService Preferences
+@inject GoogleHealthAccountService Google
+@implements IAsyncDisposable
+
+<PageTitle>@ProjectInfo.Name - @PageTitleText</PageTitle>
+
+<PageHeader Title="@PageTitleText" Subtitle="@Subtitle">
+    <Actions>
+        <MudButton Href="rides" Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.ArrowBack">@WebStrings.RideBackToRides</MudButton>
+        @if (_ride is { } uploadable && _googleConnected)
+        {
+            <GoogleHealthUploadButton RideId="@uploadable.Id" RideTitle="@uploadable.Title" Upload="@GoogleUpload" Finished="@(uploadable.ElapsedSeconds != null)"
+                                      OnUploaded="ReloadExportsAsync" />
+        }
+        @if (_ride?.HasFit == true)
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Download" OnClick="DownloadAsync">@WebStrings.RidesDownloadFit</MudButton>
+        }
+        @if (_ride?.HasGpx == true)
+        {
+            <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Download" OnClick="DownloadGpxAsync">@WebStrings.RidesDownloadGpx</MudButton>
+        }
+    </Actions>
+</PageHeader>
+
+<StateView Loading="_loading" ErrorMessage="@_error" OnRetry="LoadAsync">
+    @if (_ride is { } ride)
+    {
+        <div class="d-flex flex-column gap-4">
+            <MudGrid Spacing="4">
+                <MudItem xs="12" sm="6" lg="3">
+                    <StatTile Icon="@Icons.Material.Rounded.Route" Title="@WebStrings.Distance" Value="@DisplayFormat.Number(ride.DistanceMeters / 1000, "0.0#")" Unit="km"
+                              Label="@ClimbText(ride)" />
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="3">
+                    <StatTile Icon="@Icons.Material.Rounded.Timer" Title="@WebStrings.MovingTime" Value="@DisplayFormat.Duration(ride.MovingSeconds)"
+                              Label="@WebStrings.Format(WebStrings.RideTotalTime, DisplayFormat.Duration(ride.ElapsedSeconds))" />
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="3">
+                    <StatTile Icon="@Icons.Material.Rounded.Speed" Title="@WebStrings.RideAverageSpeed" Value="@DisplayFormat.Number(ride.AverageSpeedKmh, "0.0")" Unit="km/h"
+                              Label="@WebStrings.Format(WebStrings.RideTopSpeed, DisplayFormat.Speed(ride.MaximumSpeedKmh))" />
+                </MudItem>
+                <MudItem xs="12" sm="6" lg="3">
+                    <StatTile Icon="@Icons.Material.Rounded.LocalFireDepartment" Title="@WebStrings.Calories" Value="@DisplayFormat.Number(ride.CaloriesKcal)" Unit="kcal"
+                              Label="@WebStrings.Format(WebStrings.RideYourShareOfWork, DisplayFormat.Percent(ride.RiderEnergySharePercent))" />
+                </MudItem>
+
+                <MudItem xs="12" md="8">
+                    @if (ride.Track is { HasRoute: true })
+                    {
+                        <MudCard Elevation="0" Class="em-card em-fill em-map-card">
+                            <div class="em-map" @ref="_map" role="region" aria-label="@WebStrings.RideMap"></div>
+                        </MudCard>
+                    }
+                    else
+                    {
+                        <SurfaceCard Icon="@Icons.Material.Rounded.Map" Title="@WebStrings.RideMap">
+                            <MudText Typo="Typo.body2" Class="em-muted">@(ride.TrackProblem ?? WebStrings.RideNoRoute)</MudText>
+                        </SurfaceCard>
+                    }
+                </MudItem>
+                <MudItem xs="12" md="4">
+                    <SurfaceCard Icon="@Icons.Material.Rounded.Insights" Title="@WebStrings.RideDetails">
+                        <DataRow Label="@WebStrings.RideClimbed" Value="@Metres(ride.ElevationGainMeters)" />
+                        <DataRow Label="@WebStrings.RideDescended" Value="@Metres(ride.ElevationLossMeters)" />
+                        <DataRow Label="@WebStrings.RideCadence" Value="@AverageAndTop(ride.AverageCadence, ride.MaximumCadence, "rpm")" />
+                        <DataRow Label="@WebStrings.RideYourPower" Value="@AverageAndTop(ride.AverageRiderPowerWatts, ride.MaximumRiderPowerWatts, "W")" />
+                        @if (ride.AverageHeartRate != null)
+                        {
+                            <DataRow Label="@WebStrings.RideHeartRate" Value="@AverageAndTop(ride.AverageHeartRate, ride.MaximumHeartRate, "bpm")" />
+                        }
+                        <DataRow Label="@WebStrings.RidesYourShare" Value="@DisplayFormat.Percent(ride.RiderEnergySharePercent)" />
+                        @if (ride.Co2Grams is { } co2)
+                        {
+                            <DataRow Label="@WebStrings.RideCo2" Value="@WebStrings.Format(WebStrings.RideCo2Value, DisplayFormat.Number(co2, "#,0.#"), DisplayFormat.Number(ride.Co2CarGrams, "#,0"))" />
+                        }
+
+                        @foreach (var export in ride.Exports ?? [])
+                        {
+                            <DataRow Label="@IntegrationName(export.Integration)">
+                                <UploadStatusChip Export="export" />
+                            </DataRow>
+                            @if ((export.Problem ?? export.Note ?? UploadedText(export)) is { } detail)
+                            {
+                                <MudText Typo="Typo.caption" Class="em-muted d-block text-right">@detail</MudText>
+                            }
+                        }
+
+                        @if (ride.AssistModes.Count > 0)
+                        {
+                            <MudDivider Class="my-3" />
+                            <MudText Typo="Typo.body2" Class="font-weight-bold mb-2">@WebStrings.RideAssistModes</MudText>
+                            <div class="em-mode-bar mb-2" role="img" aria-label="@AssistModesText(ride)">
+                                @foreach (var mode in ride.AssistModes)
+                                {
+                                    <span class="em-mode-segment" style="@SegmentStyle(mode)"></span>
+                                }
+                            </div>
+                            @foreach (var mode in ride.AssistModes)
+                            {
+                                <div class="d-flex justify-space-between align-center gap-4 py-1">
+                                    <div class="d-flex align-center gap-2">
+                                        <span class="em-mode-dot" style="@DotStyle(mode)"></span>
+                                        <MudText Typo="Typo.body2">@mode.Name</MudText>
+                                    </div>
+                                    <MudText Typo="Typo.body2" Class="text-right">@ModeShareText(mode)</MudText>
+                                </div>
+                            }
+                        }
+                    </SurfaceCard>
+                </MudItem>
+            </MudGrid>
+
+            @if (ride.Track is { HasCharts: true } chartTrack)
+            {
+                <SurfaceCard Icon="@Icons.Material.Rounded.ShowChart" Title="@WebStrings.RideAlongTheRide" Description="@WebStrings.RideAlongTheRideDescription" FullHeight="false">
+                    <div class="em-readout mb-3" @ref="_readout" aria-live="polite"></div>
+                    <div class="d-flex flex-column gap-4" @ref="_charts">
+                        @foreach (var chart in Charts(chartTrack.Series))
+                        {
+                            <div>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold mb-1">@chart.Title</MudText>
+                                <div class="em-ride-chart" data-series="@chart.Key" role="img" aria-label="@chart.Title"></div>
+                            </div>
+                        }
+                    </div>
+                </SurfaceCard>
+            }
+
+            @if (ride.Track is { Splits.Count: > 0 } splitTrack)
+            {
+                <SurfaceCard Icon="@Icons.Material.Rounded.TableRows" Title="@WebStrings.RideSplits" Description="@WebStrings.RideSplitsDescription" FullHeight="false">
+                    <MudTable Items="splitTrack.Splits" T="RideSplitDto" Dense="true" Hover="true" Elevation="0" Breakpoint="Breakpoint.None" HorizontalScrollbar="true">
+                        <HeaderContent>
+                            <MudTh>@WebStrings.RideSplitNumber</MudTh>
+                            <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.Distance</MudTh>
+                            <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.RideSplitTime</MudTh>
+                            <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.RideSpeed</MudTh>
+                            <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.RideClimbed</MudTh>
+                            <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.RideCadence</MudTh>
+                            <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.RidePower</MudTh>
+                        </HeaderContent>
+                        <RowTemplate>
+                            <MudTd DataLabel="@WebStrings.RideSplitNumber">@context.Number</MudTd>
+                            <MudTd DataLabel="@WebStrings.Distance" Style="text-align:right;white-space:nowrap">@WebStrings.Format(WebStrings.UnitKilometres, DisplayFormat.Number(context.DistanceKm, "0.00"))</MudTd>
+                            <MudTd DataLabel="@WebStrings.RideSplitTime" Style="text-align:right;white-space:nowrap">@SplitTime(context.MovingSeconds)</MudTd>
+                            <MudTd DataLabel="@WebStrings.RideSpeed" Style="text-align:right;white-space:nowrap">@DisplayFormat.Speed(context.AverageSpeedKmh)</MudTd>
+                            <MudTd DataLabel="@WebStrings.RideClimbed" Style="text-align:right;white-space:nowrap">@Metres(context.ElevationGainMeters)</MudTd>
+                            <MudTd DataLabel="@WebStrings.RideCadence" Style="text-align:right;white-space:nowrap">@WithUnit(context.AverageCadence, "rpm")</MudTd>
+                            <MudTd DataLabel="@WebStrings.RidePower" Style="text-align:right;white-space:nowrap">@WithUnit(context.AveragePowerWatts, "W")</MudTd>
+                        </RowTemplate>
+                    </MudTable>
+                </SurfaceCard>
+            }
+        </div>
+    }
+</StateView>
+
+@code {
+    private readonly string _viewId = Guid.NewGuid().ToString("N");
+
+    private ElementReference _map;
+    private ElementReference _charts;
+    private ElementReference _readout;
+    private RideDetailDto? _ride;
+    private bool _googleConnected;
+    private bool _loading = true;
+    private string? _error;
+    private bool _shown;
+    private MapSource? _shownSource;
+
+    [Parameter] public string Id { get; set; } = "";
+
+    [CascadingParameter(Name = AppTheme.DarkModeCascade)] public bool DarkMode { get; set; }
+
+    private RideExportDto? GoogleUpload => _ride?.Exports?.FirstOrDefault(export => export.Integration == GoogleHealthIntegration.IntegrationKey);
+
+    private string PageTitleText => _ride is { } ride ? ride.Title ?? WebStrings.RideUntitled : WebStrings.RideTitle;
+
+    private string? Subtitle => _ride is not { } ride ? null
+        : ride.BikeName is { } bike ? WebStrings.Format(WebStrings.RideSubtitle, DisplayFormat.DateTime(ride.LocalStartTime), bike)
+        : DisplayFormat.DateTime(ride.LocalStartTime);
+
+    protected override async Task OnParametersSetAsync()
+    {
+        if (_ride?.Id == Id) return;
+
+        if (_shown) await MapView.DisposeViewAsync(_viewId);
+        await LoadAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_loading || _ride?.Track is not { } track) return;
+
+        var source = MapSources.For(Settings.Current.Map, DarkMode);
+        if (!_shown)
+        {
+            _shown = true;
+            _shownSource = source;
+            await MapView.ShowRideAsync(
+                _viewId,
+                track.HasRoute ? _map : null,
+                track.HasCharts ? _charts : null,
+                track.HasCharts ? _readout : null,
+                track,
+                source);
+        }
+        else if (source != _shownSource)
+        {
+            _shownSource = source;
+            await MapView.SetSourceAsync(_viewId, source);
+        }
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        _shown = false;
+        try
+        {
+            var result = await RideService.GetDetailAsync(Id);
+            _ride = result.Value;
+            _googleConnected = await Google.IsConnectedAsync();
+            if (!result.Succeeded) _error = result.Message ?? WebStrings.RideLoadFailed;
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException or IOException)
+        {
+            _ride = null;
+            _error = WebStrings.RideLoadFailed;
+        }
+
+        _loading = false;
+    }
+
+    private async Task ReloadExportsAsync()
+    {
+        if (_ride is { } ride) _ride = ride with { Exports = await RideService.GetExportsAsync(ride.Id) };
+    }
+
+    private Task DownloadAsync() => SaveAsync(RideService.GetFitFileAsync(Id));
+
+    private Task DownloadGpxAsync() => SaveAsync(RideService.GetGpxFileAsync(Id));
+
+    private async Task SaveAsync(Task<OperationResult<ExportFile>> download)
+    {
+        var file = await download;
+        if (!file.Succeeded || file.Value is not { } fit)
+        {
+            Snackbar.Add(file.Message ?? WebStrings.RidesDownloadFailed, Severity.Error);
+            return;
+        }
+
+        if (!await Browser.DownloadAsync(fit.FileName, fit.Content)) Snackbar.Add(WebStrings.RidesDownloadFailed, Severity.Error);
+    }
+
+    private static IEnumerable<(string Key, string Title)> Charts(RideSeriesDto series)
+    {
+        if (series.HasElevation) yield return ("elevation", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideElevation, "m"));
+        if (series.HasSpeed) yield return ("speed", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideSpeed, "km/h"));
+        if (series.HasCadence) yield return ("cadence", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideCadence, "rpm"));
+        if (series.HasPower) yield return ("power", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RidePower, "W"));
+        if (series.HasHeartRate) yield return ("heartRate", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideHeartRate, "bpm"));
+    }
+
+    private static string IntegrationName(string key) => key == GoogleHealthIntegration.IntegrationKey ? GoogleHealthIntegration.Name : key;
+
+    private string? UploadedText(RideExportDto export) => export.ExportedAt is { } at
+        ? WebStrings.Format(WebStrings.UploadStatusUploadedAt, DisplayFormat.DateTime(Preferences.ToLocal(at)))
+        : null;
+
+    private static string ClimbText(RideDetailDto ride) =>
+        WebStrings.Format(WebStrings.RideClimbSummary, Metres(ride.ElevationGainMeters), Metres(ride.ElevationLossMeters));
+
+    private static string Metres(double? metres) => WithUnit(metres, "m");
+
+    private static string WithUnit(double? value, string unit) =>
+        value is { } number ? $"{DisplayFormat.Number(number, "#,0")} {unit}" : DisplayFormat.Missing;
+
+    private static string AverageAndTop(double? average, double? top, string unit) =>
+        average == null ? DisplayFormat.Missing : WebStrings.Format(WebStrings.RideAverageAndTop, WithUnit(average, unit), WithUnit(top, unit));
+
+    private static string SplitTime(int seconds) => TimeSpan.FromSeconds(seconds).ToString(seconds >= 3600 ? @"h\:mm\:ss" : @"m\:ss", System.Globalization.CultureInfo.InvariantCulture);
+
+    private static string ModeShareText(AssistModeShareDto mode) =>
+        WebStrings.Format(WebStrings.RideAssistModeShare, DisplayFormat.Distance(mode.Meters), DisplayFormat.Percent(mode.Percent));
+
+    private static string AssistModesText(RideDetailDto ride) =>
+        string.Join(", ", ride.AssistModes.Select(mode => $"{mode.Name} {DisplayFormat.Percent(mode.Percent)}"));
+
+    private static string SegmentStyle(AssistModeShareDto mode) =>
+        FormattableString.Invariant($"flex-grow:{mode.Percent};{Background(mode)}");
+
+    private static string DotStyle(AssistModeShareDto mode) => Background(mode);
+
+    private static string Background(AssistModeShareDto mode) =>
+        mode.Color is { } colour ? $"background-color:{colour}" : "background-color:var(--mud-palette-primary)";
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_shown) await MapView.DisposeViewAsync(_viewId);
+    }
+}

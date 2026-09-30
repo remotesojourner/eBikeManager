@@ -17,10 +17,14 @@ public sealed record RideDto(
     double? AverageSpeedKmh,
     int? RiderEnergySharePercent,
     double? AverageRiderPowerWatts,
-    FitBackupStatus FitStatus,
+    BackupStatus FitStatus,
     string? FitProblem,
-    string? FitPath)
+    string? FitPath,
+    BackupStatus GpxStatus,
+    string? GpxPath)
 {
+    public bool Finished => FitStatus != BackupStatus.Processing;
+
     public static RideDto From(Ride ride) => new(
         ride.Id,
         ride.BikeId,
@@ -34,16 +38,26 @@ public sealed record RideDto(
         ride.AverageSpeedKmh,
         ride.RiderEnergySharePercent,
         ride.AverageRiderPowerWatts,
-        StatusOf(ride),
+        FitStatusOf(ride),
         ride.FitError,
-        ride.FitPath);
+        ride.FitPath,
+        GpxStatusOf(ride),
+        ride.GpxPath);
 
-    private static FitBackupStatus StatusOf(Ride ride) => ride switch
+    private static BackupStatus FitStatusOf(Ride ride) => ride switch
     {
-        { FitPath: not null } => FitBackupStatus.Saved,
-        { FitUnavailable: true } => FitBackupStatus.Unavailable,
-        { FitError: not null } => FitBackupStatus.Failed,
-        { EndTime: null } => FitBackupStatus.Processing,
-        _ => FitBackupStatus.Pending
+        { FitPath: not null } => BackupStatus.Saved,
+        { FitUnavailable: true } => BackupStatus.Unavailable,
+        { FitError: not null } => BackupStatus.Failed,
+        { EndTime: null } => BackupStatus.Processing,
+        _ => BackupStatus.Pending
+    };
+
+    private static BackupStatus GpxStatusOf(Ride ride) => ride switch
+    {
+        { GpxPath: not null } => BackupStatus.Saved,
+        { GpxUnavailable: true } => BackupStatus.Unavailable,
+        { EndTime: null } => BackupStatus.Processing,
+        _ => BackupStatus.Pending
     };
 }

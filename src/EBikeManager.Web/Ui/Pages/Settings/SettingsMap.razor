@@ -1,0 +1,105 @@
+@inject SettingsStateService Settings
+@inject RideService RideService
+@inject MapViewService MapView
+@inject ISnackbar Snackbar
+@implements IAsyncDisposable
+
+<div class="d-flex flex-column gap-4">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Map" Title="@WebStrings.MapTitle" FullHeight="false" Description="@WebStrings.MapDescription">
+        <div class="em-option-list mb-3">
+            <OptionCard Title="@WebStrings.MapOpenStreetMap" Description="@WebStrings.MapOpenStreetMapDescription" Icon="@Icons.Material.Rounded.Public"
+                        Active="@(_provider == MapProvider.OpenStreetMap)" OnClick="@(() => Choose(MapProvider.OpenStreetMap))" />
+            <OptionCard Title="@WebStrings.MapOpenFreeMap" Description="@WebStrings.MapOpenFreeMapDescription" Icon="@Icons.Material.Rounded.Layers"
+                        Active="@(_provider == MapProvider.OpenFreeMap)" OnClick="@(() => Choose(MapProvider.OpenFreeMap))" />
+            <OptionCard Title="@WebStrings.MapCustom" Description="@WebStrings.MapCustomDescription" Icon="@Icons.Material.Rounded.Dns"
+                        Active="@(_provider == MapProvider.Custom)" OnClick="@(() => Choose(MapProvider.Custom))" />
+        </div>
+
+        @if (_provider == MapProvider.Custom)
+        {
+            <MudTextField T="string" @bind-Value="_styleUrl" Label="@WebStrings.MapStyleUrl" HelperText="@WebStrings.MapStyleUrlHelp"
+                          Placeholder="https://maps.example.lan/styles/liberty" Variant="Variant.Outlined" Margin="Margin.Dense"
+                          DebounceInterval="600" Error="@(!string.IsNullOrWhiteSpace(_styleUrl) && !MapSettings.IsValidStyleUrl(_styleUrl))"
+                          ErrorText="@WebStrings.MapStyleUrlInvalid" Class="mb-3" />
+            <MudTextField T="string" @bind-Value="_darkStyleUrl" Label="@WebStrings.MapDarkStyleUrl" HelperText="@WebStrings.MapDarkStyleUrlHelp"
+                          Placeholder="https://maps.example.lan/styles/dark" Variant="Variant.Outlined" Margin="Margin.Dense"
+                          DebounceInterval="600" Error="@(!DarkStyleUrlValid)" ErrorText="@WebStrings.MapStyleUrlInvalid" Class="mb-3" />
+        }
+
+        <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!Dirty || !Valid)" OnClick="SaveAsync">
+            @WebStrings.MapSave
+        </MudButton>
+    </SurfaceCard>
+
+    <SurfaceCard Icon="@Icons.Material.Rounded.Preview" Title="@WebStrings.MapPreviewTitle" FullHeight="false" Description="@WebStrings.MapPreviewDescription">
+        <div class="em-map em-map-preview" @ref="_map" role="region" aria-label="@WebStrings.MapPreviewTitle"></div>
+    </SurfaceCard>
+</div>
+
+@code {
+    private readonly string _viewId = Guid.NewGuid().ToString("N");
+
+    private ElementReference _map;
+    private MapProvider _provider;
+    private string? _styleUrl;
+    private string? _darkStyleUrl;
+    private IReadOnlyList<double[]>? _route;
+    private bool _shown;
+    private MapSource? _shownSource;
+
+    [CascadingParameter(Name = AppTheme.DarkModeCascade)] public bool DarkMode { get; set; }
+
+    private bool DarkStyleUrlValid => string.IsNullOrWhiteSpace(_darkStyleUrl) || MapSettings.IsValidStyleUrl(_darkStyleUrl);
+
+    private bool Valid => _provider != MapProvider.Custom || (MapSettings.IsValidStyleUrl(_styleUrl) && DarkStyleUrlValid);
+
+    private MapSettings Chosen => MapSettings.From(MapSettings.KeyFor(_provider), _styleUrl, _darkStyleUrl);
+
+    private bool Dirty => Chosen != Settings.Current.Map;
+
+    protected override async Task OnInitializedAsync()
+    {
+        var saved = Settings.Current.Map;
+        _provider = saved.Provider;
+        _styleUrl = saved.StyleUrl;
+        _darkStyleUrl = saved.DarkStyleUrl;
+        _route = await RideService.GetLatestRouteAsync();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_route == null) return;
+
+        var source = MapSources.For(Chosen, DarkMode);
+        if (!_shown)
+        {
+            _shown = true;
+            _shownSource = source;
+            await MapView.ShowMapAsync(_viewId, _map, _route, source);
+        }
+        else if (source != _shownSource)
+        {
+            _shownSource = source;
+            await MapView.SetSourceAsync(_viewId, source);
+        }
+    }
+
+    private void Choose(MapProvider provider) => _provider = provider;
+
+    private async Task SaveAsync()
+    {
+        var result = await Settings.SaveAsync(
+            (SettingDefinitions.MapProvider, MapSettings.KeyFor(_provider)),
+            (SettingDefinitions.MapStyleUrl, Stored(_styleUrl)),
+            (SettingDefinitions.MapDarkStyleUrl, Stored(_darkStyleUrl)));
+        if (result.Succeeded) Snackbar.Add(WebStrings.MapSaved, Severity.Success);
+        else Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+    }
+
+    private static string Stored(string? url) => MapSettings.IsValidStyleUrl(url) ? url!.Trim() : SettingDefinitions.Unset;
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_shown) await MapView.DisposeViewAsync(_viewId);
+    }
+}

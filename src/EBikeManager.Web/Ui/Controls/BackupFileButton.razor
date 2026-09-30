@@ -1,0 +1,57 @@
+@if (Status == BackupStatus.Saved)
+{
+    <MudTooltip Text="@DownloadLabel">
+        <button type="button" class="em-file em-file-saved" aria-label="@DownloadLabel" @onclick="OnDownload">
+            <MudIcon Icon="@Icons.Material.Rounded.Download" Size="Size.Small" />
+            @Format
+        </button>
+    </MudTooltip>
+}
+else
+{
+    <MudTooltip Text="@Tooltip">
+        <span class="em-file @StatusClass" role="img" aria-label="@WebStrings.Format(WebStrings.BackupStatusLabel, Format, Label)">
+            <MudIcon Icon="@StatusIcon" Size="Size.Small" />
+            @Format
+        </span>
+    </MudTooltip>
+}
+
+@code {
+    [Parameter, EditorRequired] public string Format { get; set; } = "";
+    [Parameter, EditorRequired] public BackupStatus Status { get; set; }
+    [Parameter] public string? Problem { get; set; }
+    [Parameter, EditorRequired] public string DownloadLabel { get; set; } = "";
+    [Parameter] public EventCallback OnDownload { get; set; }
+
+    private string Label => Status switch
+    {
+        BackupStatus.Unavailable => WebStrings.BackupStatusUnavailable,
+        BackupStatus.Failed => WebStrings.BackupStatusFailed,
+        BackupStatus.Processing => WebStrings.BackupStatusProcessing,
+        _ => WebStrings.BackupStatusPending
+    };
+
+    private string StatusClass => Status switch
+    {
+        BackupStatus.Failed => "em-file-failed",
+        BackupStatus.Unavailable => "em-file-unavailable",
+        _ => "em-file-waiting"
+    };
+
+    private string StatusIcon => Status switch
+    {
+        BackupStatus.Unavailable => Icons.Material.Rounded.Block,
+        BackupStatus.Failed => Icons.Material.Rounded.ErrorOutline,
+        BackupStatus.Processing => Icons.Material.Rounded.HourglassEmpty,
+        _ => Icons.Material.Rounded.Schedule
+    };
+
+    private string Tooltip => Status switch
+    {
+        BackupStatus.Unavailable => WebStrings.Format(WebStrings.BackupUnavailableTooltip, Format),
+        BackupStatus.Failed => Problem ?? WebStrings.BackupStatusFailed,
+        BackupStatus.Processing => WebStrings.BackupProcessingTooltip,
+        _ => WebStrings.Format(WebStrings.BackupPendingTooltip, Format)
+    };
+}

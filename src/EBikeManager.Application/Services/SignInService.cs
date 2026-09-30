@@ -3,64 +3,64 @@ using EBikeManager.Application.Models;
 using EBikeManager.Application.Repositories.Interfaces;
 using EBikeManager.Application.Resources;
 using EBikeManager.Application.Services.Interfaces;
-using EBikeManager.Application.Utils;
 
 namespace EBikeManager.Application.Services;
 
 public sealed class SignInService
 {
     private readonly ISettingsRepository _settings;
+    private readonly SecretStoreService _secrets;
+    private readonly IOidcDiscoveryService _discovery;
     private readonly ISignInStateService _signInState;
     private readonly ICurrentAccessService _access;
 
-    public SignInService(ISettingsRepository settings, ISignInStateService signInState, ICurrentAccessService access)
+    public SignInService(ISettingsRepository settings, SecretStoreService secrets, IOidcDiscoveryService discovery, ISignInStateService signInState, ICurrentAccessService access)
     {
         _settings = settings;
+        _secrets = secrets;
+        _discovery = discovery;
         _signInState = signInState;
         _access = access;
     }
 
-    public async Task<OperationResult> TurnOnAsync(string password, CancellationToken cancellationToken = default)
-    {
-        if (!_access.HasFullAccess) return OperationResult.Denied();
-        if (password.Length < PasswordHash.MinimumLength) return OperationResult.Invalid(ApplicationStrings.Format(ApplicationStrings.PasswordTooShort, PasswordHash.MinimumLength));
+    public async Task<bool> HasClientSecretAsync(CancellationToken cancellationToken = default) =>
+        _access.HasFullAccess && await _secrets.GetAsync(SecretStoreService.OidcClientSecret, cancellationToken) != null;
 
-        var hash = await Task.Run(() => PasswordHash.Create(password), cancellationToken);
-        return await SaveAsync(new Dictionary<string, string>
-        {
-            [SettingDefinitions.AuthEnabled] = "true",
-            [SettingDefinitions.AuthPasswordHash] = hash,
-            [SettingDefinitions.AuthStamp] = Guid.NewGuid().ToString("N")
-        }, cancellationToken);
-    }
-
-    public async Task<OperationResult> TurnOffAsync(CancellationToken cancellationToken = default)
+    public async Task<OperationResult<bool>> SaveAsync(SignInRequest request, CancellationToken cancellationToken = default)
     {
         if (!_access.HasFullAccess) return OperationResult.Denied();
 
-        return await SaveAsync(new Dictionary<string, string>
+        var authority = Clean(request.Authority);
+        if (authority != null && !SignInSettings.IsValidAuthority(authority)) return OperationResult.Invalid(ApplicationStrings.SignInProviderUrlInvalid);
+
+        var clientId = Clean(request.ClientId);
+        if (request.Enabled)
         {
-            [SettingDefinitions.AuthEnabled] = "false",
-            [SettingDefinitions.AuthPasswordHash] = SettingDefinitions.Unset,
-            [SettingDefinitions.AuthStamp] = SettingDefinitions.Unset
-        }, cancellationToken);
-    }
+            if (authority == null || clientId == null) return OperationResult.Invalid(ApplicationStrings.SignInIncomplete);
+            if (await _discovery.FindProblemAsync(authority, cancellationToken) is { } problem) return OperationResult.Invalid(problem);
+        }
 
-    public async Task<OperationResult> CheckPasswordAsync(string password, CancellationToken cancellationToken = default)
-    {
-        var signIn = (await _settings.GetAsync(cancellationToken)).SignIn;
-        if (!signIn.IsActive) return OperationResult.Ok();
+        var current = (await _settings.GetAsync(cancellationToken)).SignIn;
+        var changes = new Dictionary<string, string>
+        {
+            [SettingDefinitions.AuthEnabled] = request.Enabled ? "true" : "false",
+            [SettingDefinitions.OidcAuthority] = authority ?? SettingDefinitions.Unset,
+            [SettingDefinitions.OidcClientId] = clientId ?? SettingDefinitions.Unset,
+            [SettingDefinitions.OidcScopes] = string.Join(' ', SignInSettings.ParseScopes(request.Scopes))
+        };
+        if (request.Enabled && (!current.IsActive || authority != current.Authority || clientId != current.ClientId))
+            changes[SettingDefinitions.AuthStamp] = Guid.NewGuid().ToString("N");
 
-        var matches = await Task.Run(() => PasswordHash.Verify(password, signIn.PasswordHash!), cancellationToken);
-        return matches ? OperationResult.Ok() : OperationResult.Invalid(ApplicationStrings.PasswordWrong);
-    }
-
-    private async Task<OperationResult> SaveAsync(Dictionary<string, string> changes, CancellationToken cancellationToken)
-    {
         var saved = await _settings.SaveSignInAsync(changes, cancellationToken);
         if (!saved.Succeeded) return OperationResult.Invalid(saved.Error!);
 
+        if (Clean(request.ClientSecret) is { } secret) await _secrets.SetAsync(SecretStoreService.OidcClientSecret, secret, cancellationToken);
+        else if (request.ClearClientSecret) await _secrets.DeleteAsync(SecretStoreService.OidcClientSecret, cancellationToken);
+
         await _signInState.ReloadAsync(cancellationToken);
-        return OperationResult.Ok();
+        return OperationResult.Ok(_signInState.IsActive);
     }
+
+    private static string? Clean(string? value) =>
+        string.IsNullOrWhiteSpace(value) || value.Trim() == SettingDefinitions.Unset ? null : value.Trim();
 }

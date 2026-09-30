@@ -17,13 +17,13 @@ public sealed class PkceLoginService
         _time = time;
     }
 
-    public PendingLogin Start(string provider)
+    public PendingLogin Start(string provider, string? redirectUri = null)
     {
         var now = _time.GetUtcNow().UtcDateTime;
         foreach (var (state, _) in _logins.Where(login => login.Value.ExpiresAt <= now)) _logins.TryRemove(state, out _);
 
         var verifier = Base64Url(RandomNumberGenerator.GetBytes(32));
-        var login = new PendingLogin(provider, Base64Url(RandomNumberGenerator.GetBytes(16)), verifier, CreateChallenge(verifier), now + Lifetime);
+        var login = new PendingLogin(provider, Base64Url(RandomNumberGenerator.GetBytes(16)), verifier, CreateChallenge(verifier), now + Lifetime, redirectUri);
         _logins[login.State] = login;
         return login;
     }

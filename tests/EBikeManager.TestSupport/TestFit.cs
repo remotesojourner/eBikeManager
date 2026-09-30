@@ -6,6 +6,12 @@ namespace EBikeManager.TestSupport;
 
 internal static class TestFit
 {
+    public const int StartLatitude = 614_436_828;
+    public const int StartLongitude = -1_480_571;
+
+    private const int RecordSeconds = 5;
+    private const int RouteSpan = 596_523;
+
     public static byte[] Create(DateTime start, TimeSpan elapsed, ushort? calories = null, float distanceMeters = 12_500, bool withGps = true)
     {
         var end = start + elapsed;
@@ -24,19 +30,28 @@ internal static class TestFit
         fileId.SetTimeCreated(fitStart);
         encoder.Write(fileId);
 
-        foreach (var offset in new[] { 0, 30, 60 })
+        var seconds = (int)elapsed.TotalSeconds;
+        for (var offset = 0; offset <= seconds; offset += RecordSeconds)
         {
-            var record = new RecordMesg();
-            record.SetTimestamp(new FitDateTime(start.AddSeconds(offset)));
-            record.SetPower(150);
-            record.SetCadence(70);
+            var progress = offset / (double)seconds;
+            var timestamp = new FitDateTime(start.AddSeconds(offset));
             if (withGps)
             {
-                record.SetPositionLat(614_436_828);
-                record.SetPositionLong(-1_480_571);
+                var position = new RecordMesg();
+                position.SetTimestamp(timestamp);
+                position.SetPositionLat(StartLatitude + (int)(progress * RouteSpan));
+                position.SetPositionLong(StartLongitude + (int)(Math.Sin(progress * Math.PI) * RouteSpan / 2));
+                encoder.Write(position);
             }
 
-            encoder.Write(record);
+            var data = new RecordMesg();
+            data.SetTimestamp(timestamp);
+            data.SetDistance((float)(progress * distanceMeters));
+            data.SetEnhancedSpeed((float)(5 + Math.Sin(progress * 12) * 1.5));
+            data.SetEnhancedAltitude((float)(50 + Math.Sin(progress * Math.PI * 2) * 20));
+            data.SetCadence((byte)(offset % 60 < 50 ? 70 : 0));
+            data.SetPower((ushort)(offset % 60 < 50 ? 150 : 0));
+            encoder.Write(data);
         }
 
         var lap = new LapMesg();

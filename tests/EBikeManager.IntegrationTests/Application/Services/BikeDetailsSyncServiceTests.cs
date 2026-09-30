@@ -1,3 +1,4 @@
+using EBikeManager.Application.Models;
 using EBikeManager.Application.Models.Entities;
 using EBikeManager.Application.Repositories;
 using EBikeManager.Application.Services;
@@ -124,6 +125,73 @@ public sealed class BikeDetailsSyncServiceTests : IDisposable
         Assert.Null(await PictureAsync("bike-1"));
     }
 
+    [Fact]
+    public async Task BikePassDocumentsAreDownloadedOnceAndKeptLocally()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        _bosch.AddBike("bike-1", "TENWAYS (Performance Line)");
+        await ChooseAsync("bike-1");
+
+        await RefreshAsync(cancellationToken);
+        await RefreshAsync(cancellationToken);
+
+        var documents = await DocumentsAsync();
+        Assert.Equal(
+            [(BoschSamples.PhotoFileId, "BIKE_IMAGE", "image/png"), (BoschSamples.InvoiceFileId, "BIKE_INVOICE", "application/pdf")],
+            documents.Select(document => (document.FileId, document.FileType, document.ContentType)));
+        Assert.Equal(new DateTime(2026, 8, 13, 20, 31, 20, DateTimeKind.Utc), documents[0].AddedAt);
+        Assert.Equal([BoschSamples.PhotoFileId, BoschSamples.InvoiceFileId], _bosch.DownloadedPassFiles);
+        Assert.Equal(BoschSamples.Pdf, (await DocumentAsync("bike-1", BoschSamples.InvoiceFileId))?.Content);
+    }
+
+    [Fact]
+    public async Task DocumentsFollowChangesInTheFlowApp()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        _bosch.AddBike("bike-1", "TENWAYS (Performance Line)");
+        await ChooseAsync("bike-1");
+        await RefreshAsync(cancellationToken);
+
+        _bosch.Passes["bike-1"] = BoschSamples.BikePass("bike-1")
+            .Replace("2026-08-13T20:31:22Z", "2026-09-01T08:00:00Z", StringComparison.Ordinal)
+            .Replace(BoschSamples.InvoiceFileId, "deleted-in-bosch", StringComparison.Ordinal);
+        _bosch.PassFiles[BoschSamples.PhotoFileId] = _jpeg;
+        await RefreshAsync(cancellationToken);
+
+        var document = Assert.Single(await DocumentsAsync());
+        Assert.Equal((BoschSamples.PhotoFileId, "image/jpeg"), (document.FileId, document.ContentType));
+        Assert.Equal(new DateTime(2026, 9, 1, 8, 0, 0, DateTimeKind.Utc), document.SourceUpdatedAt);
+    }
+
+    [Fact]
+    public async Task DocumentsThatAreNotImagesOrPdfsOrCannotBeDownloadedAreSkipped()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        _bosch.AddBike("bike-1", "TENWAYS (Performance Line)");
+        _bosch.PassFiles[BoschSamples.PhotoFileId] = "<html><script>alert(1)</script></html>"u8.ToArray();
+        _bosch.FailingPassFiles.Add(BoschSamples.InvoiceFileId);
+        await ChooseAsync("bike-1");
+
+        var problems = await RefreshAsync(cancellationToken);
+
+        Assert.Empty(problems);
+        Assert.Empty(await DocumentsAsync());
+        Assert.Equal(_now, Assert.Single(await BikesAsync()).DetailsUpdatedAt);
+    }
+
+    [Fact]
+    public async Task DocumentsAreRemovedWithTheirBike()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        _bosch.AddBike("bike-1", "TENWAYS (Performance Line)");
+        await ChooseAsync("bike-1");
+        await RefreshAsync(cancellationToken);
+
+        await ChooseAsync("bike-2");
+
+        Assert.Empty(await DocumentsAsync());
+    }
+
     private async Task<IReadOnlyList<string>> RefreshAsync(CancellationToken cancellationToken)
     {
         await using var db = _database.NewContext();
@@ -131,9 +199,22 @@ public sealed class BikeDetailsSyncServiceTests : IDisposable
             _bosch,
             new BikeRepository(db),
             new BikePictureRepository(db),
+            new BikeDocumentRepository(db),
             new FakeTimeProvider(new DateTimeOffset(_now)),
             NullLogger<BikeDetailsSyncService>.Instance);
         return await service.RefreshAsync(cancellationToken);
+    }
+
+    private async Task<IReadOnlyList<BikeDocumentInfo>> DocumentsAsync()
+    {
+        await using var db = _database.NewContext();
+        return await new BikeDocumentRepository(db).GetInfoAsync();
+    }
+
+    private async Task<BikeDocument?> DocumentAsync(string bikeId, string fileId)
+    {
+        await using var db = _database.NewContext();
+        return await new BikeDocumentRepository(db).FindAsync(bikeId, fileId);
     }
 
     private async Task<BikePicture?> PictureAsync(string bikeId)

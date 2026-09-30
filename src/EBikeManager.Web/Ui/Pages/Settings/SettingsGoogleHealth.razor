@@ -1,0 +1,263 @@
+@inject GoogleHealthAccountService Google
+@inject NavigationManager Navigation
+@inject BrowserInteropService Browser
+@inject SettingsStateService Settings
+@inject SyncRunService SyncRun
+@inject SyncStatusStateService SyncStatus
+@inject PreferencesService Preferences
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<StateView Loading="_loading">
+    <div class="d-flex flex-column gap-4">
+        <SurfaceCard Icon="@Icons.Material.Rounded.MonitorHeart" Title="@GoogleHealthIntegration.Name" FullHeight="false" Description="@WebStrings.GoogleHealthDescription">
+            <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true" Class="mb-4">
+                <MudText Typo="Typo.body2" Class="font-weight-bold">@WebStrings.GoogleHealthWatchNoteTitle</MudText>
+                <MudText Typo="Typo.body2">@WebStrings.GoogleHealthWatchNote</MudText>
+            </MudAlert>
+            @if (_status == GoogleHealthConnectionStatus.Connected && !_reconnecting)
+            {
+                <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+                    <div class="d-flex flex-wrap align-center justify-space-between gap-2">
+                        <span>@ConnectedText</span>
+                        <div class="d-flex gap-1">
+                            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="StartReconnect">@WebStrings.GoogleHealthSignInAgain</MudButton>
+                            <MudButton Variant="Variant.Text" Size="Size.Small" Color="Color.Error" Disabled="_busy" OnClick="DisconnectAsync">@WebStrings.GoogleHealthDisconnect</MudButton>
+                        </div>
+                    </div>
+                </MudAlert>
+            }
+            else
+            {
+                <div class="d-flex flex-column gap-4">
+                    @if (_problem != null)
+                    {
+                        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true">@_problem</MudAlert>
+                    }
+                    @if (_status == GoogleHealthConnectionStatus.ReauthRequired)
+                    {
+                        <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">@WebStrings.GoogleHealthLoginRejected</MudAlert>
+                    }
+
+                    @if (_redirectUri == null)
+                    {
+                        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">
+                            <MudText Typo="Typo.body2" Class="font-weight-bold">@WebStrings.GoogleHealthNeedsHttpsTitle</MudText>
+                            <MudText Typo="Typo.body2">@WebStrings.Format(WebStrings.GoogleHealthNeedsHttpsDescription, Navigation.BaseUri)</MudText>
+                        </MudAlert>
+                    }
+                    else
+                    {
+                        <div>
+                            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="font-weight-bold mb-2">@WebStrings.GoogleHealthStepClientTitle</MudText>
+                            <ol class="em-instructions mb-3">
+                                <li>@WebStrings.GoogleHealthStepProject <MudLink Href="@GoogleHealthEndpoints.ConsoleUrl" Target="_blank">@WebStrings.GoogleHealthOpenConsole</MudLink></li>
+                                <li>@WebStrings.GoogleHealthStepApi <MudLink Href="@GoogleHealthEndpoints.ApiLibraryUrl" Target="_blank">@WebStrings.GoogleHealthOpenApi</MudLink></li>
+                                <li>@WebStrings.GoogleHealthStepConsent <MudLink Href="@GoogleHealthEndpoints.AuthPlatformUrl" Target="_blank">@WebStrings.GoogleHealthOpenAuthPlatform</MudLink></li>
+                                <li>@WebStrings.GoogleHealthStepWebClient <MudLink Href="@GoogleHealthEndpoints.ClientsUrl" Target="_blank">@WebStrings.GoogleHealthOpenClients</MudLink></li>
+                            </ol>
+                            <MudTextField T="string" Value="@_redirectUri" Label="@WebStrings.GoogleHealthRedirectUri" Variant="Variant.Outlined" Margin="Margin.Dense"
+                                          ReadOnly="true" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Rounded.ContentCopy"
+                                          AdornmentAriaLabel="@WebStrings.GoogleHealthCopy" OnAdornmentClick="CopyRedirectUriAsync" Class="mb-3" />
+                            <MudTextField T="string" @bind-Value="_clientId" Label="@WebStrings.GoogleHealthClientId" Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" Immediate="true" Placeholder="123456789012-abc….apps.googleusercontent.com"
+                                          Error="@(!string.IsNullOrWhiteSpace(_clientId) && !GoogleHealthSettings.IsValidClientId(_clientId))"
+                                          ErrorText="@WebStrings.GoogleHealthClientIdHint" Class="mb-3" />
+                            <MudTextField T="string" @bind-Value="_clientSecret" Label="@WebStrings.GoogleHealthClientSecret" Variant="Variant.Outlined"
+                                          Margin="Margin.Dense" InputType="InputType.Password" Immediate="true"
+                                          HelperText="@(_hasSecret ? WebStrings.GoogleHealthClientSecretKept : null)" />
+                        </div>
+
+                        <div>
+                            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="font-weight-bold mb-2">@WebStrings.GoogleHealthStepRidesTitle</MudText>
+                            <UploadChoicePicker @bind-UploadFrom="_uploadFrom" />
+                        </div>
+
+                        <div>
+                            <MudText Typo="Typo.subtitle2" HtmlTag="h2" Class="font-weight-bold mb-2">@WebStrings.GoogleHealthStepSignInTitle</MudText>
+                            <ol class="em-instructions mb-3">
+                                <li>@WebStrings.GoogleHealthStepSignIn</li>
+                                <li>@WebStrings.GoogleHealthStepUnverified</li>
+                                <li>@WebStrings.GoogleHealthStepAllow</li>
+                                <li>@WebStrings.GoogleHealthStepBack</li>
+                            </ol>
+                            <div class="d-flex gap-2">
+                                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!CanSignIn)" OnClick="SignInAsync"
+                                           StartIcon="@Icons.Material.Rounded.Login">
+                                    @(_busy ? WebStrings.GoogleHealthSigningIn : WebStrings.GoogleHealthSignInButton)
+                                </MudButton>
+                                @if (_reconnecting)
+                                {
+                                    <MudButton Variant="Variant.Text" OnClick="CancelReconnect">@WebStrings.Cancel</MudButton>
+                                }
+                            </div>
+                        </div>
+                    }
+                </div>
+            }
+        </SurfaceCard>
+
+        @if (_status != GoogleHealthConnectionStatus.NotConnected && !_reconnecting)
+        {
+            <SurfaceCard Icon="@Icons.Material.Rounded.Tune" Title="@WebStrings.GoogleHealthOptionsTitle" FullHeight="false" Description="@WebStrings.GoogleHealthOptionsDescription">
+                <UploadChoicePicker @bind-UploadFrom="_uploadFrom" />
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!OptionsDirty || _uploadFrom == null || _busy)" OnClick="SaveOptionsAsync">
+                    @WebStrings.GoogleHealthSaveOptions
+                </MudButton>
+            </SurfaceCard>
+
+            <SurfaceCard Icon="@Icons.Material.Rounded.CloudUpload" Title="@WebStrings.GoogleHealthUploadsTitle" FullHeight="false" Description="@UploadsDescription">
+                <div>
+                    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Sync"
+                               Disabled="SyncStatus.Status.IsRunning" OnClick="UploadNowAsync">
+                        @(SyncStatus.Status.IsRunning ? SyncStatus.Status.Progress ?? WebStrings.Syncing : WebStrings.GoogleHealthUploadNow)
+                    </MudButton>
+                </div>
+            </SurfaceCard>
+        }
+    </div>
+</StateView>
+
+@code {
+    private bool _loading = true;
+    private bool _busy;
+    private bool _reconnecting;
+    private bool _hasSecret;
+    private GoogleHealthConnectionStatus _status;
+    private string? _clientId;
+    private string? _clientSecret;
+    private string? _uploadFrom;
+    private string? _redirectUri;
+    private string? _problem;
+    private RideExportCountsDto _counts = new(0, 0, 0);
+
+    private GoogleHealthSettings Saved => Settings.Current.GoogleHealth;
+
+    private string ConnectedText => Saved.AccountName is { } account
+        ? WebStrings.Format(WebStrings.GoogleHealthConnectedAs, account)
+        : WebStrings.GoogleHealthConnected;
+
+    [SupplyParameterFromQuery(Name = GoogleHealthCallback.ResultParameter)] public string? SignInResult { get; set; }
+
+    private bool CanSignIn =>
+        !_busy
+        && _redirectUri != null
+        && _clientId != null && GoogleHealthSettings.IsValidClientId(_clientId)
+        && (_hasSecret || !string.IsNullOrWhiteSpace(_clientSecret))
+        && _uploadFrom != null;
+
+    private bool OptionsDirty => _uploadFrom != Saved.UploadFrom;
+
+    private string UploadsDescription => WebStrings.Format(WebStrings.GoogleHealthUploadsDescription, _counts.Uploaded, _counts.Failed, _counts.WithNotes);
+
+    protected override async Task OnInitializedAsync()
+    {
+        SyncStatus.OnChange += OnSyncChanged;
+        SyncStatus.Finished += OnSyncFinished;
+        _redirectUri = GoogleHealthCallback.For(Navigation.BaseUri)?.AbsoluteUri;
+        await LoadAsync();
+        ShowSignInResult();
+        _loading = false;
+    }
+
+    private void ShowSignInResult()
+    {
+        if (SignInResult == GoogleHealthCallback.Connected) Snackbar.Add(WebStrings.GoogleHealthConnectedMessage, Severity.Success);
+        else if (SignInResult == GoogleHealthCallback.Failed) _problem = Google.TakeSignInProblem() ?? WebStrings.GoogleHealthConnectFailed;
+        if (SignInResult != null) Navigation.NavigateTo(GoogleHealthCallback.Page, replace: true);
+    }
+
+    private async Task LoadAsync()
+    {
+        _status = await Google.GetStatusAsync();
+        _hasSecret = await Google.HasClientSecretAsync();
+        _clientId = Saved.ClientId;
+        _uploadFrom = Saved.UploadFrom;
+        _counts = await Google.GetCountsAsync();
+    }
+
+    private async Task SignInAsync()
+    {
+        _busy = true;
+        _problem = null;
+        var result = await Google.StartSignInAsync(_clientId, _clientSecret, new GoogleHealthOptions(_uploadFrom!), new Uri(_redirectUri!));
+        if (!result.Succeeded || result.Value is not { } signInUrl)
+        {
+            _busy = false;
+            _problem = result.Message ?? WebStrings.GoogleHealthConnectFailed;
+            return;
+        }
+
+        Navigation.NavigateTo(signInUrl, forceLoad: true);
+    }
+
+    private async Task CopyRedirectUriAsync()
+    {
+        if (_redirectUri != null && await Browser.CopyTextAsync(_redirectUri)) Snackbar.Add(WebStrings.GoogleHealthCopied, Severity.Info);
+    }
+
+    private async Task SaveOptionsAsync()
+    {
+        _busy = true;
+        var result = await Google.SaveOptionsAsync(new GoogleHealthOptions(_uploadFrom!));
+        _busy = false;
+        if (result.Succeeded)
+        {
+            await Settings.LoadAsync();
+            Snackbar.Add(WebStrings.GoogleHealthOptionsSaved, Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+        }
+    }
+
+    private async Task DisconnectAsync()
+    {
+        _busy = true;
+        var result = await Google.DisconnectAsync();
+        _busy = false;
+        if (!result.Succeeded)
+        {
+            Snackbar.Add(result.Message ?? WebStrings.GoogleHealthDisconnectFailed, Severity.Error);
+            return;
+        }
+
+        await Settings.LoadAsync();
+        await LoadAsync();
+        Snackbar.Add(WebStrings.GoogleHealthDisconnected, Severity.Info);
+    }
+
+    private async Task UploadNowAsync()
+    {
+        var result = await SyncRun.StartManualSyncAsync();
+        if (!result.Succeeded) Snackbar.Add(result.Message ?? WebStrings.SyncStartFailed, Severity.Warning);
+    }
+
+    private void StartReconnect()
+    {
+        _reconnecting = true;
+        _problem = null;
+    }
+
+    private void CancelReconnect()
+    {
+        _reconnecting = false;
+        _problem = null;
+    }
+
+    private void OnSyncChanged() => InvokeAsync(StateHasChanged);
+
+    private void OnSyncFinished(SyncStatus status) => InvokeAsync(async () =>
+    {
+        _status = await Google.GetStatusAsync();
+        _counts = await Google.GetCountsAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        SyncStatus.OnChange -= OnSyncChanged;
+        SyncStatus.Finished -= OnSyncFinished;
+    }
+}

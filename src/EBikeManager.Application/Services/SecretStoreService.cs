@@ -6,6 +6,9 @@ namespace EBikeManager.Application.Services;
 public sealed class SecretStoreService
 {
     public const string BoschRefreshToken = "boschRefreshToken";
+    public const string GoogleHealthRefreshToken = "googleHealthRefreshToken";
+    public const string GoogleHealthClientSecret = "googleHealthClientSecret";
+    public const string OidcClientSecret = "oidcClientSecret";
 
     private readonly ISecretRepository _secrets;
     private readonly ISecretProtectionService _protection;

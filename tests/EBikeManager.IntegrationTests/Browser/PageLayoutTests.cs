@@ -9,12 +9,15 @@ public sealed class PageLayoutTests : BrowserTest, IClassFixture<BrowserAppWithR
     private static readonly (string Path, string Name, string Landmark)[] _pages =
     [
         ("/", "dashboard", "Recent rides"),
-        ("/rides", "rides", "FIT backup"),
-        ("/bikes", "bike", "Components"),
+        ("/bikes", "bike", "Distance per assistance mode"),
+        ("/rides", "rides", "FIT and GPX backup"),
+        ("/rides/ride-00", "ride", "Splits"),
         ("/settings/bosch", "bosch", "Bosch eBike Flow account"),
+        ("/settings/google-health", "google-health", "Create your own Google sign-in"),
         ("/settings/schedule", "schedule", "Sync schedule"),
-        ("/settings/security", "security", "Require this password"),
-        ("/settings/about", "about", "Built with"),
+        ("/settings/map", "map", "Your own map server"),
+        ("/settings/security", "security", "Require sign-in"),
+        ("/settings/about", "about", "Report an issue"),
         ("/welcome", "welcome", "Welcome to eBike Manager!")
     ];
 

@@ -72,7 +72,9 @@ public sealed partial class SyncRunService
             var rides = await scope.ServiceProvider.GetRequiredService<RideSyncService>().RunAsync(cancellationToken);
             _state.ReportProgress(ApplicationStrings.SyncProgressBikeDetails);
             var bikeProblems = await scope.ServiceProvider.GetRequiredService<BikeDetailsSyncService>().RefreshAsync(cancellationToken);
-            result = rides with { Problems = [.. rides.Problems, .. bikeProblems] };
+            _state.ReportProgress(ApplicationStrings.SyncProgressIntegrations);
+            var uploads = await scope.ServiceProvider.GetRequiredService<IntegrationSyncService>().RunAsync(cancellationToken);
+            result = rides with { Problems = [.. rides.Problems, .. bikeProblems, .. uploads.Problems], RidesUploaded = uploads.Uploaded };
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

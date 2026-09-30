@@ -1,6 +1,5 @@
 using System.Net;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using EBikeManager.Application.Exceptions;
 using EBikeManager.Application.Models;
@@ -15,8 +14,6 @@ internal sealed class BoschAuthService : IBoschAuthService
     public const string HttpClientName = "bosch-auth";
 
     private const int DefaultLifetimeSeconds = 300;
-
-    private static readonly string[] _accountClaims = ["email", "preferred_username", "name"];
 
     private readonly IHttpClientFactory _httpClientFactory;
     private readonly TimeProvider _time;
@@ -94,25 +91,7 @@ internal sealed class BoschAuthService : IBoschAuthService
             ?? throw new HttpRequestException(ApplicationStrings.BoschTokenUnreadable);
         var lifetime = root.TryGetProperty("expires_in", out var expires) && expires.TryGetInt32(out var seconds) ? seconds : DefaultLifetimeSeconds;
 
-        return new BoschTokens(accessToken, refreshToken, _time.GetUtcNow().UtcDateTime.AddSeconds(lifetime), AccountNameFrom(Text(root, "id_token")));
-    }
-
-    internal static string? AccountNameFrom(string? idToken)
-    {
-        var parts = idToken?.Split('.');
-        if (parts is not { Length: 3 }) return null;
-
-        try
-        {
-            var payload = parts[1].Replace('-', '+').Replace('_', '/');
-            payload = payload.PadRight(payload.Length + ((4 - (payload.Length % 4)) % 4), '=');
-            using var claims = JsonDocument.Parse(Encoding.UTF8.GetString(Convert.FromBase64String(payload)));
-            return _accountClaims.Select(claim => Text(claims.RootElement, claim)).FirstOrDefault(value => value != null);
-        }
-        catch (Exception ex) when (ex is FormatException or JsonException)
-        {
-            return null;
-        }
+        return new BoschTokens(accessToken, refreshToken, _time.GetUtcNow().UtcDateTime.AddSeconds(lifetime), IdTokens.AccountName(Text(root, "id_token")));
     }
 
     private static JsonDocument? ReadObject(string json)

@@ -1,72 +1,138 @@
 @inject SignInService SignIn
 @inject AuthSettingsService Auth
-@inject SignInTicketService Tickets
+@inject CircuitAccessService CircuitAccess
+@inject SettingsStateService Settings
 @inject NavigationManager Navigation
+@inject BrowserInteropService Browser
 @inject ISnackbar Snackbar
 
 <div class="d-flex flex-column gap-4">
-    <SurfaceCard Icon="@Icons.Material.Rounded.Lock" Title="@WebStrings.SecurityPasswordTitle" FullHeight="false"
-                 Description="@WebStrings.SecurityPasswordDescription">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Login" Title="@WebStrings.SecuritySignInTitle" FullHeight="false"
+                 Description="@WebStrings.Format(WebStrings.SecuritySignInDescription, ProjectInfo.Name)">
         @if (Auth.DisabledByEnvironment)
         {
             <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true" Class="mb-4">@WebStrings.SecurityDisabledByEnvironment</MudAlert>
         }
-
-        @if (Auth.IsActive)
+        @if (CircuitAccess.UserName is { } name)
         {
-            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-4">@WebStrings.SecurityPasswordOn</MudAlert>
+            <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true" Class="mb-4">@WebStrings.Format(WebStrings.SecuritySignedInAs, name)</MudAlert>
         }
 
-        <div class="d-flex flex-column gap-3 em-narrow-form">
-            <MudTextField @bind-Value="_password" Label="@(Auth.IsActive ? WebStrings.SecurityNewPassword : WebStrings.Password)" InputType="InputType.Password"
-                          Variant="Variant.Outlined" Immediate="true"
-                          HelperText="@WebStrings.Format(WebStrings.SecurityPasswordHelp, PasswordHash.MinimumLength)" />
-            <MudTextField @bind-Value="_confirm" Label="@WebStrings.SecurityConfirmPassword" InputType="InputType.Password"
-                          Variant="Variant.Outlined" Immediate="true"
-                          Error="@Mismatch" ErrorText="@WebStrings.SecurityPasswordsDiffer" />
+        <div class="d-flex align-center justify-space-between gap-4 mb-4">
+            <div>
+                <MudText Typo="Typo.body2">@WebStrings.SecurityRequireSignIn</MudText>
+                <MudText Typo="Typo.caption" Class="em-muted">@WebStrings.SecurityRequireSignInDescription</MudText>
+            </div>
+            <MudSwitch T="bool" @bind-Value="_enabled" Color="Color.Primary" aria-label="@WebStrings.SecurityRequireSignIn" />
         </div>
 
-        <div class="d-flex flex-wrap gap-2 mt-4">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!CanSave || _busy)" OnClick="TurnOnAsync">
-                @(Auth.IsActive ? WebStrings.SecurityChangePassword : WebStrings.SecurityTurnOn)
-            </MudButton>
-            @if (Auth.IsActive)
+        <div class="d-flex flex-column gap-3">
+            <MudTextField T="string" @bind-Value="_authority" Label="@WebStrings.SecurityProviderUrl" Placeholder="https://auth.example.com/application/o/ebike-manager/"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                          Error="@(!AuthorityValid)" ErrorText="@WebStrings.SecurityProviderUrlInvalid" HelperText="@WebStrings.SecurityProviderUrlHelp" />
+            <MudTextField T="string" @bind-Value="_clientId" Label="@WebStrings.SecurityClientId" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" />
+            <div>
+                <MudTextField T="string" @bind-Value="_clientSecret" Label="@WebStrings.SecurityClientSecret" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                              InputType="@(_showSecret ? InputType.Text : InputType.Password)"
+                              Adornment="Adornment.End" AdornmentIcon="@(_showSecret ? Icons.Material.Rounded.VisibilityOff : Icons.Material.Rounded.Visibility)"
+                              AdornmentAriaLabel="@WebStrings.SecurityShowSecret" OnAdornmentClick="@(() => _showSecret = !_showSecret)"
+                              Placeholder="@(_hasSecret ? WebStrings.SecuritySecretSavedPlaceholder : null)"
+                              HelperText="@(_hasSecret ? WebStrings.SecuritySecretSaved : WebStrings.SecuritySecretEmpty)" />
+                @if (_hasSecret)
+                {
+                    <MudCheckBox T="bool" @bind-Value="_clearSecret" Dense="true" Color="Color.Primary" Label="@WebStrings.SecurityRemoveSecret" />
+                }
+            </div>
+            <MudTextField T="string" @bind-Value="_scopes" Label="@WebStrings.SecurityScopes" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                          HelperText="@WebStrings.SecurityScopesHelp" />
+            <MudTextField T="string" Value="@RedirectUri" Label="@WebStrings.SecurityRedirectUri" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true"
+                          Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Rounded.ContentCopy"
+                          AdornmentAriaLabel="@WebStrings.SecurityCopyRedirectUri" OnAdornmentClick="CopyRedirectUriAsync"
+                          HelperText="@WebStrings.SecurityRedirectUriHelp" />
+            @if (PlainHttp)
             {
-                <MudButton Variant="Variant.Outlined" Color="Color.Error" Disabled="_busy" OnClick="TurnOffAsync">@WebStrings.SecurityTurnOff</MudButton>
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">@WebStrings.SecurityPlainHttp</MudAlert>
             }
+        </div>
+
+        <div class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!CanSave)" OnClick="SaveAsync">
+                @(_saving ? WebStrings.SecurityCheckingProvider : WebStrings.SecuritySave)
+            </MudButton>
         </div>
     </SurfaceCard>
 </div>
 
 @code {
-    private string _password = "";
-    private string _confirm = "";
-    private bool _busy;
+    private bool _enabled;
+    private string _authority = "";
+    private string _clientId = "";
+    private string _clientSecret = "";
+    private string _scopes = SignInSettings.DefaultScopes;
+    private bool _hasSecret;
+    private bool _clearSecret;
+    private bool _showSecret;
+    private bool _saving;
 
-    private bool Mismatch => _confirm.Length > 0 && _confirm != _password;
+    private SignInSettings Saved => Settings.Current.SignIn;
 
-    private bool CanSave => _password.Length >= PasswordHash.MinimumLength && _confirm == _password;
+    private string RedirectUri => $"{Navigation.BaseUri}signin-oidc";
 
-    private async Task TurnOnAsync()
+    private bool PlainHttp => Uri.TryCreate(Navigation.BaseUri, UriKind.Absolute, out var address) && address.Scheme == Uri.UriSchemeHttp && !address.IsLoopback;
+
+    private bool AuthorityValid => string.IsNullOrWhiteSpace(_authority) || SignInSettings.IsValidAuthority(_authority);
+
+    private bool Complete => !string.IsNullOrWhiteSpace(_authority) && !string.IsNullOrWhiteSpace(_clientId);
+
+    private string NormalisedScopes => string.Join(' ', SignInSettings.ParseScopes(_scopes));
+
+    private bool Dirty =>
+        _enabled != Saved.IsActive
+        || _authority.Trim() != (Saved.Authority ?? "")
+        || _clientId.Trim() != (Saved.ClientId ?? "")
+        || NormalisedScopes != Saved.Scopes
+        || !string.IsNullOrWhiteSpace(_clientSecret)
+        || _clearSecret;
+
+    private bool CanSave => !_saving && Dirty && AuthorityValid && (!_enabled || Complete);
+
+    protected override async Task OnInitializedAsync()
     {
-        _busy = true;
-        var result = await SignIn.TurnOnAsync(_password);
-        _busy = false;
+        _enabled = Saved.IsActive;
+        _authority = Saved.Authority ?? "";
+        _clientId = Saved.ClientId ?? "";
+        _scopes = Saved.Scopes;
+        _hasSecret = await SignIn.HasClientSecretAsync();
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        var result = await SignIn.SaveAsync(new SignInRequest(_enabled, _authority, _clientId, _clientSecret, _clearSecret, _scopes));
+        _saving = false;
         if (!result.Succeeded)
         {
             Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
             return;
         }
 
-        Navigation.NavigateTo($"auth/complete?ticket={Tickets.Issue()}&returnUrl={Uri.EscapeDataString("/settings/security")}", forceLoad: true);
+        if (result.Value && CircuitAccess.Level == Access.None)
+        {
+            Snackbar.Add(WebStrings.SecuritySignInOn, Severity.Success);
+            Navigation.NavigateTo(AccessPolicy.SignInPathFor("/settings/security"), forceLoad: true);
+            return;
+        }
+
+        await Settings.LoadAsync();
+        _clientSecret = "";
+        _clearSecret = false;
+        _scopes = NormalisedScopes;
+        _hasSecret = await SignIn.HasClientSecretAsync();
+        Snackbar.Add(WebStrings.SecuritySaved, Severity.Success);
     }
 
-    private async Task TurnOffAsync()
+    private async Task CopyRedirectUriAsync()
     {
-        _busy = true;
-        var result = await SignIn.TurnOffAsync();
-        _busy = false;
-        if (result.Succeeded) Snackbar.Add(WebStrings.SecurityTurnedOff, Severity.Success);
-        else Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+        if (await Browser.CopyTextAsync(RedirectUri)) Snackbar.Add(WebStrings.SecurityCopied, Severity.Info);
     }
 }

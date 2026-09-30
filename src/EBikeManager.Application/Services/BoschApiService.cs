@@ -35,10 +35,16 @@ internal sealed class BoschApiService : IBoschApiService
         return BoschJson.ParseActivityPage(json.RootElement);
     }
 
-    public async Task<byte[]?> DownloadFitAsync(string activityId, CancellationToken cancellationToken = default)
+    public Task<byte[]?> DownloadFitAsync(string activityId, CancellationToken cancellationToken = default) =>
+        DownloadExportAsync(activityId, "fit", "application/octet-stream", cancellationToken);
+
+    public Task<byte[]?> DownloadGpxAsync(string activityId, CancellationToken cancellationToken = default) =>
+        DownloadExportAsync(activityId, "gpx", "application/xml", cancellationToken);
+
+    private async Task<byte[]?> DownloadExportAsync(string activityId, string format, string mediaType, CancellationToken cancellationToken)
     {
-        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(BoschEndpoints.ActivityApi, $"v1/activity/{Uri.EscapeDataString(activityId)}/export/fit"));
-        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/octet-stream"));
+        using var request = new HttpRequestMessage(HttpMethod.Get, new Uri(BoschEndpoints.ActivityApi, $"v1/activity/{Uri.EscapeDataString(activityId)}/export/{format}"));
+        request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue(mediaType));
         using var response = await _http.SendAsync(request, cancellationToken);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
 
@@ -80,6 +86,15 @@ internal sealed class BoschApiService : IBoschApiService
     {
         using var http = _httpClientFactory.CreateClient(MediaHttpClientName);
         using var response = await http.GetAsync(address, cancellationToken);
+        if (response.StatusCode == HttpStatusCode.NotFound) return null;
+
+        await EnsureSuccessAsync(response, cancellationToken);
+        return await response.Content.ReadAsByteArrayAsync(cancellationToken);
+    }
+
+    public async Task<byte[]?> DownloadBikePassFileAsync(string bikeId, string fileId, CancellationToken cancellationToken = default)
+    {
+        using var response = await _http.GetAsync(new Uri(BoschEndpoints.BikePassApi, $"v1/files/{Uri.EscapeDataString(bikeId)}/{Uri.EscapeDataString(fileId)}"), cancellationToken);
         if (response.StatusCode == HttpStatusCode.NotFound) return null;
 
         await EnsureSuccessAsync(response, cancellationToken);

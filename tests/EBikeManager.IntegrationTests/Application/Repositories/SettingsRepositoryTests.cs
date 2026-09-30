@@ -1,4 +1,5 @@
 using EBikeManager.Application.Configuration;
+using EBikeManager.Application.Models.Entities;
 using EBikeManager.Application.Repositories;
 using EBikeManager.IntegrationTests.Fixtures;
 
@@ -22,6 +23,20 @@ public sealed class SettingsRepositoryTests : IDisposable
 
         Assert.Equal(SettingDefinitions.All.Count, db.Configs.Count());
         Assert.Equal(AppSettings.Defaults, await repository.GetAsync(cancellationToken));
+    }
+
+    [Fact]
+    public async Task TheRetiredPasswordIsDeletedAtStartup()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await using var db = _database.NewContext();
+        db.Configs.Add(new ConfigEntry { Key = "authPasswordHash", Value = "v1.600000.salt.hash" });
+        await db.SaveChangesAsync(cancellationToken);
+
+        await new SettingsRepository(db).InsertDefaultsAsync(cancellationToken);
+
+        Assert.DoesNotContain(db.Configs, entry => entry.Key == "authPasswordHash");
+        Assert.Equal(SettingDefinitions.All.Count, db.Configs.Count());
     }
 
     [Fact]

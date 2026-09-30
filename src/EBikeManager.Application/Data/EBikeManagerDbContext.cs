@@ -14,7 +14,9 @@ internal class EBikeManagerDbContext : DbContext
     public DbSet<SecretEntry> Secrets => Set<SecretEntry>();
     public DbSet<Bike> Bikes => Set<Bike>();
     public DbSet<BikePicture> BikePictures => Set<BikePicture>();
+    public DbSet<BikeDocument> BikeDocuments => Set<BikeDocument>();
     public DbSet<Ride> Rides => Set<Ride>();
+    public DbSet<RideExport> RideExports => Set<RideExport>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -70,6 +72,21 @@ internal class EBikeManagerDbContext : DbContext
             entity.HasOne<Bike>().WithOne().HasForeignKey<BikePicture>(e => e.BikeId).OnDelete(DeleteBehavior.Cascade);
         });
 
+        modelBuilder.Entity<BikeDocument>(entity =>
+        {
+            entity.ToTable("bikeDocuments");
+            entity.HasKey(e => new { e.BikeId, e.FileId });
+            entity.Property(e => e.BikeId).HasColumnName("bikeId");
+            entity.Property(e => e.FileId).HasColumnName("fileId");
+            entity.Property(e => e.FileType).HasColumnName("fileType").IsRequired();
+            entity.Property(e => e.ContentType).HasColumnName("contentType").IsRequired();
+            entity.Property(e => e.Content).HasColumnName("content").IsRequired();
+            entity.Property(e => e.AddedAt).HasColumnName("addedAt");
+            entity.Property(e => e.SourceUpdatedAt).HasColumnName("sourceUpdatedAt");
+            entity.Property(e => e.SavedAt).HasColumnName("savedAt");
+            entity.HasOne<Bike>().WithMany().HasForeignKey(e => e.BikeId).OnDelete(DeleteBehavior.Cascade);
+        });
+
         modelBuilder.Entity<Ride>(entity =>
         {
             entity.ToTable("rides");
@@ -99,7 +116,26 @@ internal class EBikeManagerDbContext : DbContext
             entity.Property(e => e.FitDistanceMeters).HasColumnName("fitDistanceMeters");
             entity.Property(e => e.FitAveragePowerWatts).HasColumnName("fitAveragePowerWatts");
             entity.Property(e => e.FitHasGps).HasColumnName("fitHasGps");
+            entity.Property(e => e.GpxPath).HasColumnName("gpxPath");
+            entity.Property(e => e.GpxDownloadedAt).HasColumnName("gpxDownloadedAt");
+            entity.Property(e => e.GpxUnavailable).HasColumnName("gpxUnavailable").HasDefaultValue(false);
             entity.HasIndex(e => e.StartTime);
+        });
+
+        modelBuilder.Entity<RideExport>(entity =>
+        {
+            entity.ToTable("rideExports");
+            entity.HasKey(e => new { e.RideId, e.Integration });
+            entity.Property(e => e.RideId).HasColumnName("rideId");
+            entity.Property(e => e.Integration).HasColumnName("integration");
+            entity.Property(e => e.Status).HasColumnName("status").HasConversion<string>();
+            entity.Property(e => e.RemoteId).HasColumnName("remoteId");
+            entity.Property(e => e.Note).HasColumnName("note");
+            entity.Property(e => e.Problem).HasColumnName("problem");
+            entity.Property(e => e.Attempts).HasColumnName("attempts");
+            entity.Property(e => e.LastAttemptAt).HasColumnName("lastAttemptAt");
+            entity.Property(e => e.ExportedAt).HasColumnName("exportedAt");
+            entity.HasOne<Ride>().WithMany().HasForeignKey(e => e.RideId).OnDelete(DeleteBehavior.Cascade);
         });
     }
 }

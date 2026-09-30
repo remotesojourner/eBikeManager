@@ -1,4 +1,5 @@
 using EBikeManager.Application.Enums;
+using EBikeManager.Application.Models;
 using EBikeManager.Application.Services;
 using EBikeManager.Web.Utils;
 using Microsoft.AspNetCore.Mvc;
@@ -16,14 +17,20 @@ public sealed class BikesController : ControllerBase
     }
 
     [HttpGet("{id}/picture")]
-    public async Task<IActionResult> PictureAsync(string id, CancellationToken cancellationToken)
-    {
-        var picture = await _bikes.GetPictureAsync(id, cancellationToken);
-        if (picture.Outcome == OperationOutcome.Denied) return Unauthorized();
-        if (!picture.Succeeded || picture.Value is not { } image) return NotFound();
+    public async Task<IActionResult> PictureAsync(string id, CancellationToken cancellationToken) =>
+        Serve(await _bikes.GetPictureAsync(id, cancellationToken));
 
-        Response.Headers.CacheControl = BikePictureEndpoint.CacheControl;
+    [HttpGet("{id}/documents/{fileId}")]
+    public async Task<IActionResult> DocumentAsync(string id, string fileId, CancellationToken cancellationToken) =>
+        Serve(await _bikes.GetDocumentAsync(id, fileId, cancellationToken));
+
+    private IActionResult Serve(OperationResult<MediaFile> result)
+    {
+        if (result.Outcome == OperationOutcome.Denied) return Unauthorized();
+        if (!result.Succeeded || result.Value is not { } media) return NotFound();
+
+        Response.Headers.CacheControl = BikeMediaEndpoint.CacheControl;
         Response.Headers.XContentTypeOptions = "nosniff";
-        return File(image.Content, image.ContentType);
+        return File(media.Content, media.ContentType);
     }
 }

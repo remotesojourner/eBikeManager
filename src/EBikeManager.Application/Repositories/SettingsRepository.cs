@@ -34,6 +34,7 @@ internal sealed class SettingsRepository : ISettingsRepository
 
     public async Task InsertDefaultsAsync(CancellationToken cancellationToken = default)
     {
+        await _db.Configs.Where(entry => SettingDefinitions.ObsoleteKeys.Contains(entry.Key)).ExecuteDeleteAsync(cancellationToken);
         var existingKeys = (await _db.Configs.Select(entry => entry.Key).ToListAsync(cancellationToken)).ToHashSet();
 
         foreach (var definition in SettingDefinitions.All.Where(definition => !existingKeys.Contains(definition.Key)))

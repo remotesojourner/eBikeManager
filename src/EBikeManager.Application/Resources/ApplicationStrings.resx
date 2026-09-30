@@ -143,12 +143,6 @@
   <data name="RideFileMissing" xml:space="preserve">
     <value>The FIT backup of this ride is missing from the archive.</value>
   </data>
-  <data name="PasswordTooShort" xml:space="preserve">
-    <value>Use at least {0} characters.</value>
-  </data>
-  <data name="PasswordWrong" xml:space="preserve">
-    <value>That password isn't right.</value>
-  </data>
   <data name="BikeProfileMissing" xml:space="preserve">
     <value>Bosch has no profile for {0}.</value>
   </data>
@@ -160,5 +154,146 @@
   </data>
   <data name="BikePictureMissing" xml:space="preserve">
     <value>There's no picture of this bike yet. It's downloaded on the next sync.</value>
+  </data>
+  <data name="RideTrackNotYet" xml:space="preserve">
+    <value>The FIT file of this ride hasn't been backed up yet, so there's no map or charts. It's downloaded on the next sync.</value>
+  </data>
+  <data name="RideTrackNotFromBosch" xml:space="preserve">
+    <value>Bosch has no FIT file for this ride, so there's no map or charts.</value>
+  </data>
+  <data name="SettingMapProviderInvalid" xml:space="preserve">
+    <value>Choose OpenStreetMap, OpenFreeMap or your own map server.</value>
+  </data>
+  <data name="SettingMapStyleUrlInvalid" xml:space="preserve">
+    <value>Enter the full address of a MapLibre style, starting with https:// or http://.</value>
+  </data>
+  <data name="GoogleHealthRejectedLogin" xml:space="preserve">
+    <value>Google no longer accepts eBike Manager's sign-in ({0}). Sign in to Google again.</value>
+  </data>
+  <data name="GoogleHealthClientRejected" xml:space="preserve">
+    <value>Google didn't accept the OAuth client ({0}). Check its client ID and secret.</value>
+  </data>
+  <data name="GoogleHealthTokenFailed" xml:space="preserve">
+    <value>Google answered {0} while signing in: {1}</value>
+  </data>
+  <data name="GoogleHealthTokenUnreadable" xml:space="preserve">
+    <value>Google's sign-in answer couldn't be read.</value>
+  </data>
+  <data name="GoogleHealthNoRefreshToken" xml:space="preserve">
+    <value>Google didn't hand out a lasting sign-in. Remove eBike Manager's access in your Google account, then connect again.</value>
+  </data>
+  <data name="GoogleHealthNotConnected" xml:space="preserve">
+    <value>Google Health isn't connected.</value>
+  </data>
+  <data name="GoogleHealthSignInAgain" xml:space="preserve">
+    <value>Google no longer accepts eBike Manager's sign-in. Sign in to Google again under Settings, Google Health.</value>
+  </data>
+  <data name="GoogleHealthRequestFailed" xml:space="preserve">
+    <value>Google Health answered {0} {1}: {2}</value>
+  </data>
+  <data name="GoogleHealthOperationFailed" xml:space="preserve">
+    <value>Google Health reported error {0}: {1}</value>
+  </data>
+  <data name="GoogleHealthExerciseNotes" xml:space="preserve">
+    <value>{0} on {1}, recorded with Bosch eBike Flow. The calories are Bosch's, which leave out the motor's work. Uploaded by eBike Manager.</value>
+  </data>
+  <data name="GoogleHealthUntitledRide" xml:space="preserve">
+    <value>E-bike ride</value>
+  </data>
+  <data name="GoogleHealthUnnamedBike" xml:space="preserve">
+    <value>a Bosch eBike</value>
+  </data>
+  <data name="GoogleHealthCannotReadWatchRides" xml:space="preserve">
+    <value>Uploaded. Google didn't let eBike Manager see your other workouts, so it couldn't check for a ride your watch recorded at the same time.</value>
+  </data>
+  <data name="GoogleHealthClientIdInvalid" xml:space="preserve">
+    <value>Enter the client ID of a Google OAuth client. It ends with .apps.googleusercontent.com.</value>
+  </data>
+  <data name="GoogleHealthClientSecretMissing" xml:space="preserve">
+    <value>Enter the client secret of the OAuth client.</value>
+  </data>
+  <data name="GoogleHealthUploadChoiceInvalid" xml:space="preserve">
+    <value>Choose which rides to upload.</value>
+  </data>
+  <data name="GoogleHealthLoginError" xml:space="preserve">
+    <value>Google reported a problem: {0}</value>
+  </data>
+  <data name="GoogleHealthLoginExpired" xml:space="preserve">
+    <value>That sign-in has expired or was already used. Open the Google sign-in again.</value>
+  </data>
+  <data name="GoogleHealthUnreachable" xml:space="preserve">
+    <value>Google couldn't be reached: {0}</value>
+  </data>
+  <data name="IntegrationProblem" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="IntegrationUploadsFailed" xml:space="preserve">
+    <value>{0}: {1} rides couldn't be uploaded. They're tried again on the next sync.</value>
+  </data>
+  <data name="SyncProgressIntegrations" xml:space="preserve">
+    <value>Sending rides to your integrations</value>
+  </data>
+  <data name="SyncProgressUploading" xml:space="preserve">
+    <value>Uploading ride {1} of {2} to {0}</value>
+  </data>
+  <data name="GoogleHealthNeedsHttps" xml:space="preserve">
+    <value>Google Health can only be connected when eBike Manager is opened through HTTPS on your own domain, for example through a reverse proxy.</value>
+  </data>
+  <data name="GoogleHealthCallbackIncomplete" xml:space="preserve">
+    <value>Google didn't send the sign-in back. Try signing in again.</value>
+  </data>
+  <data name="IntegrationUnknown" xml:space="preserve">
+    <value>That integration doesn't exist.</value>
+  </data>
+  <data name="IntegrationUploadWhileSyncing" xml:space="preserve">
+    <value>A sync is running. Try again when it's finished.</value>
+  </data>
+  <data name="IntegrationRideNotFinished" xml:space="preserve">
+    <value>Bosch is still processing this ride. Try again after the next sync.</value>
+  </data>
+  <data name="IntegrationNotConnected" xml:space="preserve">
+    <value>{0} isn't connected.</value>
+  </data>
+  <data name="IntegrationUploadFailed" xml:space="preserve">
+    <value>The ride couldn't be uploaded.</value>
+  </data>
+  <data name="GoogleHealthNotKept" xml:space="preserve">
+    <value>Google Health didn't keep this ride: {0}</value>
+  </data>
+  <data name="GoogleHealthMissingAfterUpload" xml:space="preserve">
+    <value>it accepted the upload, but the ride wasn't there when eBike Manager checked.</value>
+  </data>
+  <data name="GoogleHealthWatchRideBlocked" xml:space="preserve">
+    <value>Your watch also recorded this ride ({0}). Google Health shows the watch's ride instead of eBike Manager's, and keeps part of it even after you delete it, so this ride can't be shown. For future rides, turn off automatic recognition of bike rides on your watch.</value>
+  </data>
+  <data name="IntegrationWatchRecordedRides" xml:space="preserve">
+    <value>{0}: {1} rides weren't uploaded because your watch also recorded them. See Settings, Google Health.</value>
+  </data>
+  <data name="GpxNotGpxFile" xml:space="preserve">
+    <value>Bosch sent something that isn't a GPX file.</value>
+  </data>
+  <data name="GpxProblem" xml:space="preserve">
+    <value>{0} (GPX file): {1}</value>
+  </data>
+  <data name="RideNoGpxBackup" xml:space="preserve">
+    <value>This ride has no GPX backup.</value>
+  </data>
+  <data name="BikeDocumentMissing" xml:space="preserve">
+    <value>This document isn't stored. Documents are downloaded on the next sync.</value>
+  </data>
+  <data name="SignInProviderUrlInvalid" xml:space="preserve">
+    <value>Enter the provider's full address, starting with https:// or http://.</value>
+  </data>
+  <data name="SignInIncomplete" xml:space="preserve">
+    <value>Sign-in needs the provider address and a client ID.</value>
+  </data>
+  <data name="OidcProviderAnswered" xml:space="preserve">
+    <value>The provider answered {0} for {1}. Check the provider address.</value>
+  </data>
+  <data name="OidcNotDiscoveryDocument" xml:space="preserve">
+    <value>{0} isn't an OpenID Connect discovery document. Check the provider address.</value>
+  </data>
+  <data name="OidcUnreadable" xml:space="preserve">
+    <value>{0} couldn't be read: {1}</value>
   </data>
 </root>

@@ -1,0 +1,17 @@
+<MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@UploadAppearance.ColorOf(Export)" Icon="@ChipIcon">@Label</MudChip>
+
+@code {
+    [Parameter, EditorRequired] public RideExportDto Export { get; set; } = null!;
+
+    private bool HasNote => Export.Note != null;
+
+    private bool Failed => Export.Status != RideExportStatus.Uploaded;
+
+    private string Label => Failed ? WebStrings.UploadStatusFailed
+        : HasNote ? WebStrings.UploadStatusUploadedWithNote
+        : WebStrings.UploadStatusUploaded;
+
+    private string ChipIcon => Failed ? Icons.Material.Rounded.ErrorOutline
+        : HasNote ? Icons.Material.Rounded.Info
+        : Icons.Material.Rounded.CheckCircle;
+}

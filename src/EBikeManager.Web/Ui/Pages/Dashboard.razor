@@ -1,6 +1,7 @@
 @page "/"
 @using System.Data.Common
 @inject RideService Rides
+@inject BikeService BikeService
 @inject SyncStatusStateService SyncStatus
 @inject SettingsStateService Settings
 @inject PreferencesService Preferences
@@ -35,14 +36,14 @@
                     <div class="d-flex flex-column">
                         @foreach (var ride in _recent)
                         {
-                            <div class="em-ride-row">
+                            <a class="em-ride-row em-ride-link" href="@RideLinks.For(ride.Id)">
                                 <div class="em-ride-row-title">
                                     <MudText Typo="Typo.body2" Class="font-weight-bold">@(ride.Title ?? WebStrings.RideUntitled)</MudText>
                                     <MudText Typo="Typo.caption" Class="em-muted">@DisplayFormat.DateTime(ride.LocalStartTime)</MudText>
                                 </div>
                                 <MudText Typo="Typo.body2">@DisplayFormat.Distance(ride.DistanceMeters)</MudText>
                                 <MudText Typo="Typo.body2" Class="em-muted">@DisplayFormat.Calories(ride.CaloriesKcal)</MudText>
-                            </div>
+                            </a>
                         }
                     </div>
                 }
@@ -53,15 +54,39 @@
         </MudItem>
 
         <MudItem xs="12" md="4">
-            <SurfaceCard Icon="@Icons.Material.Rounded.Sync" Title="@WebStrings.DashboardSyncTitle">
-                <DataRow Label="@WebStrings.DashboardSyncState" Value="@SyncStateText" />
-                <DataRow Label="@WebStrings.DashboardLastSync" Value="@LastSyncText" />
-                <DataRow Label="@WebStrings.DashboardNextSync" Value="@NextSyncText" />
-                @if (SyncStatus.Status.LastError is { } syncError)
+            <div class="d-flex flex-column gap-4 em-fill">
+                @foreach (var bike in _bikes)
                 {
-                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-3">@syncError</MudAlert>
+                    <SurfaceCard Icon="@Icons.Material.Rounded.ElectricBike" Title="@bike.Name" FullHeight="false">
+                        @if (bike.PictureSavedAt is { } pictureSavedAt)
+                        {
+                            <img src="@BikeMediaEndpoint.PicturePath(bike.Id, pictureSavedAt)" alt="" class="em-bike-thumbnail mb-3" loading="lazy" onerror="this.style.display='none'" />
+                        }
+                        <DataRow Label="@WebStrings.BikeMileage" Value="@DisplayFormat.Number(bike.OdometerMeters / 1000, "#,0 km")" />
+                        <DataRow Label="@WebStrings.BikeMotorHours" Value="@DisplayFormat.Number(bike.MotorHours, "#,0 h")" />
+                        @foreach (var battery in bike.Batteries)
+                        {
+                            <DataRow Label="@(battery.ProductName ?? WebStrings.BikeBattery)" Value="@BatteryText(bike, battery)" />
+                        }
+                        @if (bike.ServiceDue is { } service)
+                        {
+                            <DataRow Label="@WebStrings.BikeServiceDue" Value="@ServiceDueText(service)" />
+                        }
+                        <div class="mt-2">
+                            <MudButton Href="bikes" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Rounded.ArrowForward">@WebStrings.DashboardBikeDetails</MudButton>
+                        </div>
+                    </SurfaceCard>
                 }
-            </SurfaceCard>
+                <SurfaceCard Icon="@Icons.Material.Rounded.Sync" Title="@WebStrings.DashboardSyncTitle">
+                    <DataRow Label="@WebStrings.DashboardSyncState" Value="@SyncStateText" />
+                    <DataRow Label="@WebStrings.DashboardLastSync" Value="@LastSyncText" />
+                    <DataRow Label="@WebStrings.DashboardNextSync" Value="@NextSyncText" />
+                    @if (SyncStatus.Status.LastError is { } syncError)
+                    {
+                        <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-3">@syncError</MudAlert>
+                    }
+                </SurfaceCard>
+            </div>
         </MudItem>
     </MudGrid>
 </StateView>
@@ -69,10 +94,13 @@
 @code {
     private sealed record Period(string Title, string Icon, RideTotalsDto Totals);
 
+    private const int RecentRides = 7;
+
     private bool _loading = true;
     private string? _error;
     private List<Period> _periods = [];
     private IReadOnlyList<RideDto> _recent = [];
+    private IReadOnlyList<BikeDetailsDto> _bikes = [];
 
     private string SyncStateText => SyncStatus.Status.IsRunning ? SyncStatus.Status.Progress ?? WebStrings.Syncing : WebStrings.DashboardSyncIdle;
 
@@ -105,7 +133,8 @@
                 new(WebStrings.DashboardThisYear, Icons.Material.Rounded.CalendarToday, await Rides.GetTotalsAsync(Preferences.ToUtc(yearStart))),
                 new(WebStrings.DashboardAllTime, Icons.Material.Rounded.AllInclusive, await Rides.GetTotalsAsync(null))
             ];
-            _recent = await Rides.GetRidesAsync(5);
+            _recent = await Rides.GetRidesAsync(RecentRides);
+            _bikes = await BikeService.GetDetailsAsync();
         }
         catch (Exception ex) when (ex is DbException or InvalidOperationException)
         {
@@ -114,6 +143,16 @@
 
         _loading = false;
     }
+
+    private string BatteryText(BikeDetailsDto bike, BikeBatteryDto battery) =>
+        (bike.LiveState?.ChargePercent ?? battery.LevelPercent) is { } level
+            ? WebStrings.Format(WebStrings.DashboardBatteryLevelAndCycles, DisplayFormat.Percent(level), DisplayFormat.Number(battery.ChargeCycles, "0.#"))
+            : WebStrings.Format(WebStrings.DashboardBatteryCycles, DisplayFormat.Number(battery.ChargeCycles, "0.#"));
+
+    private string ServiceDueText(ServiceDueDto service) =>
+        service.Date is { } date ? DisplayFormat.Date(Preferences.ToLocal(date))
+        : service.OdometerMeters is { } meters ? WebStrings.Format(WebStrings.BikeServiceDueDistance, DisplayFormat.Number(meters / 1000, "#,0"))
+        : DisplayFormat.Missing;
 
     private static string RidesText(int rides) => rides == 1 ? WebStrings.DashboardOneRide : WebStrings.Format(WebStrings.DashboardRides, rides);
 

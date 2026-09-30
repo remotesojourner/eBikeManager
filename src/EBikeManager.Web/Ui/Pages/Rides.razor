@@ -3,7 +3,9 @@
 @inject RideService RideService
 @inject SyncStatusStateService SyncStatus
 @inject BrowserInteropService Browser
+@inject GoogleHealthAccountService Google
 @inject ISnackbar Snackbar
+@inject NavigationManager Navigation
 @implements IDisposable
 
 <PageTitle>@ProjectInfo.Name - @WebStrings.RidesTitle</PageTitle>
@@ -24,34 +26,48 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
 }
 
 <StateView Loading="_loading" ErrorMessage="@_error" OnRetry="LoadAsync" Empty="@(_rides.Count == 0)" EmptyMessage="@WebStrings.RidesNone">
-    <MudTable Items="_rides" T="RideDto" Hover="true" Dense="true" Elevation="0" Class="em-card" Breakpoint="Breakpoint.Sm" RowsPerPage="25">
+    <MudTable Items="_rides" T="RideDto" Hover="true" Dense="true" Elevation="0" Class="em-card em-rides-table" Breakpoint="Breakpoint.Sm" RowsPerPage="25"
+              RowClass="em-row-link" OnRowClick="OpenRide">
         <HeaderContent>
-            <MudTh>@WebStrings.RidesDate</MudTh>
-            <MudTh Style="min-width:9rem">@WebStrings.RidesRide</MudTh>
+            <MudTh>@WebStrings.RidesRide</MudTh>
             <MudTh Style="text-align:right">@WebStrings.Distance</MudTh>
             <MudTh Style="text-align:right">@WebStrings.MovingTime</MudTh>
             <MudTh Style="text-align:right">@WebStrings.Calories</MudTh>
             <MudTh Style="text-align:right">@WebStrings.RidesYourShare</MudTh>
-            <MudTh>@WebStrings.RidesBackup</MudTh>
-            <MudTh />
+            <MudTh Class="em-fit-column">@WebStrings.RidesDataFiles</MudTh>
+            @if (_googleConnected)
+            {
+                <MudTh Class="em-fit-column" Style="text-align:center">@GoogleHealthIntegration.Name</MudTh>
+            }
         </HeaderContent>
         <RowTemplate>
-            <MudTd DataLabel="@WebStrings.RidesDate" Style="white-space:nowrap">@DisplayFormat.DateTime(context.LocalStartTime)</MudTd>
-            <MudTd DataLabel="@WebStrings.RidesRide">@(context.Title ?? WebStrings.RideUntitled)</MudTd>
+            <MudTd DataLabel="@WebStrings.RidesRide">
+                <div class="em-ride-cell" @onclick:stopPropagation="true">
+                    <MudLink Href="@RideLinks.For(context.Id)" Typo="Typo.body2">@(context.Title ?? WebStrings.RideUntitled)</MudLink>
+                    <MudText Typo="Typo.caption" Class="em-muted">@DisplayFormat.DateTime(context.LocalStartTime)</MudText>
+                </div>
+            </MudTd>
             <MudTd DataLabel="@WebStrings.Distance" Style="text-align:right">@DisplayFormat.Distance(context.DistanceMeters)</MudTd>
             <MudTd DataLabel="@WebStrings.MovingTime" Style="text-align:right">@DisplayFormat.Duration(context.MovingSeconds)</MudTd>
             <MudTd DataLabel="@WebStrings.Calories" Style="text-align:right">@DisplayFormat.Calories(context.CaloriesKcal)</MudTd>
             <MudTd DataLabel="@WebStrings.RidesYourShare" Style="text-align:right">@DisplayFormat.Percent(context.RiderEnergySharePercent)</MudTd>
-            <MudTd DataLabel="@WebStrings.RidesBackup"><FitStatusChip Ride="context" /></MudTd>
-            <MudTd>
-                @if (context.FitStatus == FitBackupStatus.Saved)
-                {
-                    <MudTooltip Text="@WebStrings.RidesDownloadFit">
-                        <MudIconButton Icon="@Icons.Material.Rounded.Download" Size="Size.Small" aria-label="@WebStrings.RidesDownloadFit"
-                                       OnClick="@(() => DownloadAsync(context))" />
-                    </MudTooltip>
-                }
+            <MudTd DataLabel="@WebStrings.RidesDataFiles">
+                <div class="em-files" @onclick:stopPropagation="true">
+                    <BackupFileButton Format="FIT" Status="context.FitStatus" Problem="@context.FitProblem" DownloadLabel="@WebStrings.RidesDownloadFit"
+                                      OnDownload="@(() => DownloadAsync(RideService.GetFitFileAsync(context.Id)))" />
+                    <BackupFileButton Format="GPX" Status="context.GpxStatus" DownloadLabel="@WebStrings.RidesDownloadGpx"
+                                      OnDownload="@(() => DownloadAsync(RideService.GetGpxFileAsync(context.Id)))" />
+                </div>
             </MudTd>
+            @if (_googleConnected)
+            {
+                <MudTd DataLabel="@GoogleHealthIntegration.Name" Style="text-align:center">
+                    <div class="d-inline-flex" @onclick:stopPropagation="true">
+                        <GoogleHealthUploadButton RideId="@context.Id" RideTitle="@context.Title" Upload="@_uploads.GetValueOrDefault(context.Id)"
+                                                  Finished="@context.Finished" Compact="true" OnUploaded="ReloadUploadsAsync" />
+                    </div>
+                </MudTd>
+            }
         </RowTemplate>
         <PagerContent>
             <MudTablePager PageSizeOptions="[25, 50, 100]" />
@@ -63,6 +79,8 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
     private bool _loading = true;
     private string? _error;
     private IReadOnlyList<RideDto> _rides = [];
+    private bool _googleConnected;
+    private IReadOnlyDictionary<string, RideExportDto> _uploads = new Dictionary<string, RideExportDto>();
 
     protected override async Task OnInitializedAsync()
     {
@@ -78,6 +96,8 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
         try
         {
             _rides = await RideService.GetRidesAsync();
+            _googleConnected = await Google.IsConnectedAsync();
+            if (_googleConnected) await ReloadUploadsAsync();
         }
         catch (Exception ex) when (ex is DbException or InvalidOperationException)
         {
@@ -87,16 +107,23 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
         _loading = false;
     }
 
-    private async Task DownloadAsync(RideDto ride)
+    private async Task ReloadUploadsAsync() => _uploads = await Google.GetUploadsByRideAsync();
+
+    private void OpenRide(TableRowClickEventArgs<RideDto> row)
     {
-        var file = await RideService.GetFitFileAsync(ride.Id);
-        if (!file.Succeeded || file.Value is not { } fit)
+        if (row.Item is { } ride) Navigation.NavigateTo(RideLinks.For(ride.Id));
+    }
+
+    private async Task DownloadAsync(Task<OperationResult<ExportFile>> download)
+    {
+        var file = await download;
+        if (!file.Succeeded || file.Value is not { } export)
         {
             Snackbar.Add(file.Message ?? WebStrings.RidesDownloadFailed, Severity.Error);
             return;
         }
 
-        if (!await Browser.DownloadAsync(fit.FileName, fit.Content)) Snackbar.Add(WebStrings.RidesDownloadFailed, Severity.Error);
+        if (!await Browser.DownloadAsync(export.FileName, export.Content)) Snackbar.Add(WebStrings.RidesDownloadFailed, Severity.Error);
     }
 
     private void OnSyncChanged() => InvokeAsync(StateHasChanged);

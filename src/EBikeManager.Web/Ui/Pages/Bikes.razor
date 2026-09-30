@@ -36,42 +36,86 @@
                     <SurfaceCard>
                         @if (bike.PictureSavedAt is { } pictureSavedAt)
                         {
-                            <img src="@BikePictureEndpoint.PathFor(bike.Id, pictureSavedAt)" alt="@bike.Name" class="em-bike-picture mb-4" loading="lazy" onerror="this.style.display='none'" />
+                            <img src="@BikeMediaEndpoint.PicturePath(bike.Id, pictureSavedAt)" alt="@bike.Name" class="em-bike-picture mb-4" loading="lazy" onerror="this.style.display='none'" />
                         }
                         <MudText Typo="Typo.h5" HtmlTag="h2" Class="font-weight-bold">@bike.Name</MudText>
                         @if (bike.Brand is { } brand && !bike.Name.StartsWith(brand, StringComparison.OrdinalIgnoreCase))
                         {
-                            <MudText Typo="Typo.body2" Class="em-muted mb-3">@brand</MudText>
+                            <MudText Typo="Typo.body2" Class="em-muted">@brand</MudText>
                         }
-                        <DataRow Label="@WebStrings.BikeFrameNumber" Value="@(bike.FrameNumber ?? DisplayFormat.Missing)" />
-                        <DataRow Label="@WebStrings.BikeMaxAssistSpeed" Value="@DisplayFormat.Speed(bike.MaxAssistSpeedKmh)" />
-                        <DataRow Label="@WebStrings.BikeWalkAssist" Value="@BikeText.YesNo(bike.WalkAssistEnabled)" />
-                        @if (bike.LockEnabled != null)
-                        {
-                            <DataRow Label="@WebStrings.BikeLock" Value="@BikeText.OnOff(bike.LockEnabled)" />
-                        }
-                        @if (bike.AlarmEnabled != null)
-                        {
-                            <DataRow Label="@WebStrings.BikeAlarm" Value="@BikeText.OnOff(bike.AlarmEnabled)" />
-                        }
-                        <DataRow Label="@WebStrings.BikeFlowPlus" Value="@BikeText.YesNo(bike.HasFlowPlus)" />
-                        @if (bike.ServiceDue is { } service)
-                        {
-                            <DataRow Label="@WebStrings.BikeServiceDue" Value="@ServiceDueText(service)" />
-                        }
+                        <div class="mt-3">
+                            <DataRow Label="@WebStrings.BikeFrameNumber" Value="@(bike.FrameNumber ?? DisplayFormat.Missing)" />
+                            @if (bike.FrameNumberPosition is { } position)
+                            {
+                                <DataRow Label="@WebStrings.BikeFrameNumberPosition" Value="@position" />
+                            }
+                            <DataRow Label="@WebStrings.BikeMaxAssistSpeed" Value="@DisplayFormat.Speed(bike.MaxAssistSpeedKmh)" />
+                            @if (bike.WheelCircumferenceMm is { } wheel)
+                            {
+                                <DataRow Label="@WebStrings.BikeWheelCircumference" Value="@DisplayFormat.Number(wheel, "#,0 mm")" />
+                            }
+                            <DataRow Label="@WebStrings.BikeWalkAssist" Value="@BikeText.YesNo(bike.WalkAssistEnabled)" />
+                            @if (bike.LockEnabled != null)
+                            {
+                                <DataRow Label="@WebStrings.BikeLock" Value="@BikeText.OnOff(bike.LockEnabled)" />
+                            }
+                            @if (bike.AlarmEnabled != null)
+                            {
+                                <DataRow Label="@WebStrings.BikeAlarm" Value="@BikeText.OnOff(bike.AlarmEnabled)" />
+                            }
+                            <DataRow Label="@WebStrings.BikeFlowPlus" Value="@BikeText.YesNo(bike.HasFlowPlus)" />
+                            @if (bike.ServiceDue is { } service)
+                            {
+                                <DataRow Label="@WebStrings.BikeServiceDue" Value="@ServiceDueText(service)" />
+                            }
+                        </div>
                     </SurfaceCard>
                 </MudItem>
 
                 <MudItem xs="12" md="7">
                     <MudGrid Spacing="4">
-                        <MudItem xs="12" sm="6">
-                            <StatTile Icon="@Icons.Material.Rounded.Route" Title="@WebStrings.BikeOdometer"
-                                      Value="@DisplayFormat.Number(bike.OdometerMeters / 1000, "#,0")" Unit="km" Label="@WebStrings.BikeOdometerLabel" />
-                        </MudItem>
-                        <MudItem xs="12" sm="6">
-                            <StatTile Icon="@Icons.Material.Rounded.Timer" Title="@WebStrings.BikeMotorHours"
-                                      Value="@DisplayFormat.Number(bike.MotorHours, "#,0")" Unit="h"
-                                      Label="@WebStrings.Format(WebStrings.BikeMotorHoursAssisted, DisplayFormat.Number(bike.MotorHoursAssisted, "#,0"))" />
+                        <MudItem xs="12">
+                            <SurfaceCard Icon="@Icons.Material.Rounded.Route" Title="@WebStrings.BikeMileage">
+                                <div class="d-flex flex-wrap justify-space-between align-end gap-4">
+                                    <div>
+                                        <div class="em-stat-value">
+                                            <MudText Typo="Typo.h4" Class="em-hero-value font-weight-bold">@DisplayFormat.Number(bike.OdometerMeters / 1000, "#,0")</MudText>
+                                            <MudText Typo="Typo.body1" Class="em-muted">km</MudText>
+                                        </div>
+                                        <MudText Typo="Typo.caption" Class="em-muted d-block">@WebStrings.BikeMileageLabel</MudText>
+                                    </div>
+                                    <div class="text-right">
+                                        <div class="em-stat-value justify-end">
+                                            <MudText Typo="Typo.h6" Class="em-hero-value font-weight-bold">@DisplayFormat.Number(bike.MotorHours, "#,0")</MudText>
+                                            <MudText Typo="Typo.body2" Class="em-muted">h</MudText>
+                                        </div>
+                                        <MudText Typo="Typo.caption" Class="em-muted d-block">@MotorHoursText(bike)</MudText>
+                                    </div>
+                                </div>
+                                @if (bike.ModeMileage.Count > 0)
+                                {
+                                    <MudDivider Class="my-3" />
+                                    <MudText Typo="Typo.body2" Class="font-weight-bold mb-2">@WebStrings.BikeMileageByMode</MudText>
+                                    <div class="em-mode-bar mb-3" role="img" aria-label="@MileageText(bike)">
+                                        @foreach (var mode in bike.ModeMileage.Where(mode => mode.Percent > 0))
+                                        {
+                                            <span class="em-mode-segment" style="@SegmentStyle(mode)"></span>
+                                        }
+                                    </div>
+                                    <div class="em-mileage">
+                                        @foreach (var mode in bike.ModeMileage)
+                                        {
+                                            <div class="d-flex align-center gap-2">
+                                                <span class="em-mode-dot" style="@BikeText.ModeBackground(mode.Color, mode.IsOff)"></span>
+                                                <MudText Typo="Typo.body2">@mode.Name</MudText>
+                                            </div>
+                                            <MudText Typo="Typo.body2" Class="text-right font-weight-bold">@DisplayFormat.Distance(mode.DistanceMeters)</MudText>
+                                            <MudText Typo="Typo.body2" Class="text-right em-muted">@DisplayFormat.Percent(mode.Percent)</MudText>
+                                            <MudText Typo="Typo.body2" Class="text-right em-muted">@DisplayFormat.WattHours(mode.EnergyWh)</MudText>
+                                        }
+                                    </div>
+                                }
+                            </SurfaceCard>
                         </MudItem>
                         @foreach (var battery in bike.Batteries)
                         {
@@ -98,7 +142,7 @@
                                         <div class="em-range-row">
                                             <div class="d-flex justify-space-between align-center">
                                                 <div class="d-flex align-center gap-2">
-                                                    <span class="em-mode-dot" style="@ModeColour(mode)"></span>
+                                                    <span class="em-mode-dot" style="@BikeText.ModeBackground(mode.Color)"></span>
                                                     <MudText Typo="Typo.body2">@mode.Name</MudText>
                                                 </div>
                                                 <MudText Typo="Typo.body2" Class="font-weight-bold">@DisplayFormat.Kilometres(mode.ReachableRangeKm)</MudText>
@@ -147,24 +191,60 @@
                     </MudItem>
                 }
 
-                <MudItem xs="12">
+                <MudItem xs="12" md="@(bike.Documents.Count > 0 ? 7 : 12)">
                     <SurfaceCard Icon="@Icons.Material.Rounded.Memory" Title="@WebStrings.BikeComponentsTitle" Description="@WebStrings.BikeComponentsDescription">
                         <MudTable Items="ComponentRows(bike)" T="ComponentRow" Dense="true" Elevation="0" Breakpoint="Breakpoint.Sm">
                             <HeaderContent>
                                 <MudTh>@WebStrings.BikeComponent</MudTh>
-                                <MudTh>@WebStrings.BikeProduct</MudTh>
                                 <MudTh>@WebStrings.BikeSoftware</MudTh>
                                 <MudTh>@WebStrings.BikeSerialNumber</MudTh>
                             </HeaderContent>
                             <RowTemplate>
-                                <MudTd DataLabel="@WebStrings.BikeComponent">@context.Name</MudTd>
-                                <MudTd DataLabel="@WebStrings.BikeProduct">@(context.Product ?? DisplayFormat.Missing)</MudTd>
+                                <MudTd DataLabel="@WebStrings.BikeComponent">
+                                    <div class="d-flex flex-column">
+                                        <MudText Typo="Typo.body2" Class="font-weight-bold">@(context.Product ?? context.Name)</MudText>
+                                        @if (context.Product != null)
+                                        {
+                                            <MudText Typo="Typo.caption" Class="em-muted">@context.Name</MudText>
+                                        }
+                                    </div>
+                                </MudTd>
                                 <MudTd DataLabel="@WebStrings.BikeSoftware">@(context.Software ?? DisplayFormat.Missing)</MudTd>
-                                <MudTd DataLabel="@WebStrings.BikeSerialNumber">@(context.Serial ?? DisplayFormat.Missing)</MudTd>
+                                <MudTd DataLabel="@WebStrings.BikeSerialNumber" Class="em-serial">@(context.Serial ?? DisplayFormat.Missing)</MudTd>
                             </RowTemplate>
                         </MudTable>
                     </SurfaceCard>
                 </MudItem>
+
+                @if (bike.Documents.Count > 0)
+                {
+                    <MudItem xs="12" md="5">
+                        <SurfaceCard Icon="@Icons.Material.Rounded.Description" Title="@WebStrings.BikeDocumentsTitle" Description="@WebStrings.BikeDocumentsDescription">
+                            <div class="em-documents">
+                                @foreach (var document in bike.Documents)
+                                {
+                                    <a class="em-document" href="@BikeMediaEndpoint.DocumentPath(bike.Id, document)" target="_blank" rel="noopener">
+                                        @if (document.IsImage)
+                                        {
+                                            <img src="@BikeMediaEndpoint.DocumentPath(bike.Id, document)" alt="" class="em-document-preview" loading="lazy" />
+                                        }
+                                        else
+                                        {
+                                            <span class="em-document-preview em-document-icon">
+                                                <MudIcon Icon="@Icons.Material.Rounded.PictureAsPdf" />
+                                            </span>
+                                        }
+                                        <span class="em-document-text">
+                                            <MudText Typo="Typo.body2" Class="font-weight-bold">@BikeText.DocumentName(document.Kind)</MudText>
+                                            <MudText Typo="Typo.caption" Class="em-muted">@DocumentDate(document)</MudText>
+                                        </span>
+                                        <MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" Class="em-muted" />
+                                    </a>
+                                }
+                            </div>
+                        </SurfaceCard>
+                    </MudItem>
+                }
             </MudGrid>
         }
     </div>
@@ -228,8 +308,17 @@
     private static ComponentRow Row(BikeComponentDto component) =>
         new(BikeText.ComponentName(component.Kind), component.ProductName, component.SoftwareVersion, component.SerialNumber);
 
-    private static string ModeColour(AssistModeDto mode) =>
-        mode.Color is { } colour ? $"background-color:{colour}" : "background-color:var(--mud-palette-primary)";
+    private static string MotorHoursText(BikeDetailsDto bike) =>
+        WebStrings.Format(WebStrings.BikeMotorHoursLabel, DisplayFormat.Number(bike.MotorHoursAssisted, "#,0"));
+
+    private static string MileageText(BikeDetailsDto bike) =>
+        string.Join(", ", bike.ModeMileage.Select(mode => $"{mode.Name} {DisplayFormat.Distance(mode.DistanceMeters)}"));
+
+    private static string SegmentStyle(AssistModeMileageDto mode) =>
+        FormattableString.Invariant($"flex-grow:{mode.Percent};{BikeText.ModeBackground(mode.Color, mode.IsOff)}");
+
+    private string DocumentDate(BikeDocumentDto document) =>
+        WebStrings.Format(WebStrings.BikeDocumentAdded, DisplayFormat.Date(Preferences.ToLocal(document.AddedAt ?? document.SavedAt)));
 
     private static string RangeText(BikeLiveStateDto live) =>
         live.MinRangeKm is { } min && live.MaxRangeKm is { } max && Math.Abs(max - min) >= 1

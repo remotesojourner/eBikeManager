@@ -67,6 +67,20 @@ public sealed partial class BrowserInteropService
         }
     }
 
+    public async Task<bool> CopyTextAsync(string text)
+    {
+        try
+        {
+            await _js.InvokeVoidAsync("ebikeManagerInterop.copyText", text);
+            return true;
+        }
+        catch (Exception ex) when (FailureLevel(ex) is { } level)
+        {
+            LogCopyFailed(level, ex);
+            return false;
+        }
+    }
+
     private static LogLevel? FailureLevel(Exception ex) => ex switch
     {
         JSDisconnectedException or TaskCanceledException => LogLevel.Debug,
@@ -82,6 +96,9 @@ public sealed partial class BrowserInteropService
 
     [LoggerMessage(Message = "Could not read the browser's time zone")]
     private partial void LogTimeZoneFailed(LogLevel level, Exception exception);
+
+    [LoggerMessage(Message = "Could not copy to the clipboard")]
+    private partial void LogCopyFailed(LogLevel level, Exception exception);
 
     [LoggerMessage(Message = "Could not download {FileName}")]
     private partial void LogDownloadFailed(LogLevel level, Exception exception, string fileName);

@@ -60,32 +60,51 @@ public sealed partial class RideSyncService
         if (fullScanRequested) await _settings.SaveAsync(new Dictionary<string, string> { [SettingDefinitions.BoschFullScan] = "false" }, cancellationToken);
 
         var pending = rides.Values
-            .Where(ride => bikeIds.Contains(ride.BikeId) && ride.FitPath == null && !ride.FitUnavailable && ride.EndTime != null)
+            .Where(ride => bikeIds.Contains(ride.BikeId) && ride.EndTime != null && (NeedsFit(ride) || NeedsGpx(ride)))
             .OrderByDescending(ride => ride.StartTime)
             .ToList();
 
         var saved = 0;
+        var gpxSaved = 0;
         var problems = new List<string>();
         for (var index = 0; index < pending.Count; index++)
         {
             var ride = pending[index];
             _state.ReportProgress(ApplicationStrings.Format(ApplicationStrings.SyncProgressDownloading, index + 1, pending.Count));
-            try
+            if (NeedsFit(ride))
             {
-                if (await BackUpFitAsync(ride, cancellationToken)) saved++;
+                try
+                {
+                    if (await BackUpFitAsync(ride, cancellationToken)) saved++;
+                }
+                catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or IOException)
+                {
+                    LogFitBackupFailed(ex, ride.Id);
+                    ride.FitError = ex.Message;
+                    problems.Add($"{ride.Title ?? ride.Id}: {ex.Message}");
+                }
+
+                if (NeedsGpx(ride)) await Task.Delay(DownloadDelay, _time, cancellationToken);
             }
-            catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or IOException)
+
+            if (NeedsGpx(ride))
             {
-                LogFitBackupFailed(ex, ride.Id);
-                ride.FitError = ex.Message;
-                problems.Add($"{ride.Title ?? ride.Id}: {ex.Message}");
+                try
+                {
+                    if (await BackUpGpxAsync(ride, cancellationToken)) gpxSaved++;
+                }
+                catch (Exception ex) when (ex is HttpRequestException or InvalidDataException or IOException)
+                {
+                    LogGpxBackupFailed(ex, ride.Id);
+                    problems.Add(ApplicationStrings.Format(ApplicationStrings.GpxProblem, ride.Title ?? ride.Id, ex.Message));
+                }
             }
 
             await _rides.SaveChangesAsync(cancellationToken);
             if (index < pending.Count - 1) await Task.Delay(DownloadDelay, _time, cancellationToken);
         }
 
-        LogFinished(ridesChecked, newRides, saved, problems.Count);
+        LogFinished(ridesChecked, newRides, saved, gpxSaved, problems.Count);
         return new SyncRunResult(ridesChecked, newRides, saved, problems);
     }
 
@@ -123,6 +142,28 @@ public sealed partial class RideSyncService
 
             if (result.Activities.Count == 0 || page + 1 >= result.TotalPages || (!fullScan && nothingNew)) return (ridesChecked, newRides);
         }
+    }
+
+    private static bool NeedsFit(Ride ride) => ride.FitPath == null && !ride.FitUnavailable;
+
+    private static bool NeedsGpx(Ride ride) => ride.GpxPath == null && !ride.GpxUnavailable;
+
+    private async Task<bool> BackUpGpxAsync(Ride ride, CancellationToken cancellationToken)
+    {
+        var gpx = await _bosch.DownloadGpxAsync(ride.Id, cancellationToken);
+        if (gpx == null)
+        {
+            ride.GpxUnavailable = true;
+            return false;
+        }
+
+        if (!GpxFile.LooksLikeGpx(gpx)) throw new InvalidDataException(ApplicationStrings.GpxNotGpxFile);
+
+        var relativePath = FitArchiveService.GpxPathFor(ride);
+        await _archive.SaveGpxAsync(relativePath, gpx, cancellationToken);
+        ride.GpxPath = relativePath;
+        ride.GpxDownloadedAt = _time.GetUtcNow().UtcDateTime;
+        return true;
     }
 
     private async Task<bool> BackUpFitAsync(Ride ride, CancellationToken cancellationToken)
@@ -169,6 +210,9 @@ public sealed partial class RideSyncService
     [LoggerMessage(Level = LogLevel.Warning, Message = "Could not back up the FIT file of ride {RideId}")]
     private partial void LogFitBackupFailed(Exception exception, string rideId);
 
-    [LoggerMessage(Level = LogLevel.Information, Message = "Sync finished: {Checked} rides checked, {New} new, {Saved} FIT files saved, {Problems} problems")]
-    private partial void LogFinished(int @checked, int @new, int saved, int problems);
+    [LoggerMessage(Level = LogLevel.Warning, Message = "Could not back up the GPX file of ride {RideId}")]
+    private partial void LogGpxBackupFailed(Exception exception, string rideId);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Sync finished: {Checked} rides checked, {New} new, {Saved} FIT files and {GpxSaved} GPX files saved, {Problems} problems")]
+    private partial void LogFinished(int @checked, int @new, int saved, int gpxSaved, int problems);
 }
