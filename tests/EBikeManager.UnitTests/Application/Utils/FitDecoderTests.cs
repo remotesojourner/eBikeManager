@@ -22,6 +22,22 @@ public class FitDecoderTests
     }
 
     [Fact]
+    public void ReadsEveryRecordWithPositionsInDegrees()
+    {
+        var records = FitDecoder.ReadRecords(TestFit.Create(_start, TimeSpan.FromMinutes(10), distanceMeters: 3_000));
+
+        var positions = records.Where(record => record.Latitude != null).ToList();
+        var measurements = records.Where(record => record.DistanceMeters != null).ToList();
+        Assert.Equal(121, positions.Count);
+        Assert.Equal(121, measurements.Count);
+        Assert.Equal(_start, records[0].Time);
+        Assert.Equal(55.93, positions[0].Latitude!.Value, 2);
+        Assert.Equal(-3.12, positions[0].Longitude!.Value, 2);
+        Assert.Equal(3_000, measurements[^1].DistanceMeters!.Value, 0);
+        Assert.All(measurements, record => Assert.NotNull(record.SpeedMetresPerSecond));
+    }
+
+    [Fact]
     public void BoschFilesCarryNoCalories()
     {
         Assert.Null(FitDecoder.ReadSummary(TestFit.Create(_start, TimeSpan.FromMinutes(10))).CaloriesKcal);

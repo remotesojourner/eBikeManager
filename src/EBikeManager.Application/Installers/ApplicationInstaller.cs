@@ -22,6 +22,7 @@ public static class ApplicationInstaller
         services.AddSingleton<SyncStateService>();
         services.AddSingleton<PkceLoginService>();
         services.AddSingleton<BoschConnectionService>();
+        services.AddSingleton<GoogleHealthConnectionService>();
         services.AddSingleton<FitArchiveService>();
 
         services.AddScoped<SettingsService>();
@@ -33,6 +34,10 @@ public static class ApplicationInstaller
         services.AddScoped<RideSyncService>();
         services.AddScoped<BikeDetailsSyncService>();
         services.AddScoped<SyncRunService>();
+        services.AddScoped<GoogleHealthAccountService>();
+        services.AddScoped<IntegrationSyncService>();
+        services.AddScoped<IRideIntegration, GoogleHealthIntegration>();
+        services.AddScoped<VersionService>();
 
         services.AddDbContext<EBikeManagerDbContext>((provider, options) =>
         {
@@ -44,7 +49,9 @@ public static class ApplicationInstaller
         services.AddScoped<ISecretRepository, SecretRepository>();
         services.AddScoped<IBikeRepository, BikeRepository>();
         services.AddScoped<IBikePictureRepository, BikePictureRepository>();
+        services.AddScoped<IBikeDocumentRepository, BikeDocumentRepository>();
         services.AddScoped<IRideRepository, RideRepository>();
+        services.AddScoped<IRideExportRepository, RideExportRepository>();
 
         services.TryAddSingleton(TimeProvider.System);
 
@@ -60,12 +67,38 @@ public static class ApplicationInstaller
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(90);
             });
 
+        services.AddHttpClient(GoogleHealthAuthService.HttpClientName, ConfigureBoschClient);
+        services.AddSingleton<IGoogleHealthAuthService, GoogleHealthAuthService>();
+        services.AddTransient<GoogleHealthAuthenticationHandler>();
+        services.AddHttpClient<IGoogleHealthApiService, GoogleHealthApiService>(ConfigureBoschClient)
+            .AddHttpMessageHandler<GoogleHealthAuthenticationHandler>()
+            .AddStandardResilienceHandler(options =>
+            {
+                options.AttemptTimeout.Timeout = TimeSpan.FromSeconds(30);
+                options.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(1);
+                options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(90);
+            });
+
         services.AddHttpClient(BoschApiService.MediaHttpClientName, http =>
         {
             ConfigureBoschClient(http);
             http.Timeout = TimeSpan.FromSeconds(60);
             http.MaxResponseContentBufferSize = ImageFormat.MaxBytes;
         });
+
+        services.AddHttpClient(OidcDiscoveryService.HttpClientName, http =>
+        {
+            ConfigureBoschClient(http);
+            http.Timeout = TimeSpan.FromSeconds(10);
+        });
+        services.AddSingleton<IOidcDiscoveryService, OidcDiscoveryService>();
+
+        services.AddHttpClient(GitHubReleaseService.HttpClientName, http =>
+        {
+            ConfigureBoschClient(http);
+            http.Timeout = TimeSpan.FromSeconds(5);
+        });
+        services.AddSingleton<IReleaseService, GitHubReleaseService>();
 
         services.AddHostedService<SyncSchedulerService>();
         return services;

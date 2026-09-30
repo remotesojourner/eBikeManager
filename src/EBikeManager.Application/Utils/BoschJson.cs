@@ -105,6 +105,28 @@ public static class BoschJson
     public static string? PassFor(JsonElement root, string bikeId) =>
         root.Items("bikePasses").FirstOrDefault(pass => pass.Text("bikeId") == bikeId) is { ValueKind: JsonValueKind.Object } pass ? pass.GetRawText() : null;
 
+    public static IReadOnlyList<BoschPassFile> PassFiles(string? passJson)
+    {
+        if (string.IsNullOrWhiteSpace(passJson)) return [];
+
+        try
+        {
+            using var pass = JsonDocument.Parse(passJson);
+            return
+            [
+                .. pass.RootElement.Items("files")
+                    .Select(file => file.Text("fileId") is { } id ? new BoschPassFile(id, file.Text("fileType") ?? "", file.Timestamp("createdAt"), file.Timestamp("updatedAt")) : null)
+                    .OfType<BoschPassFile>()
+                    .GroupBy(file => file.FileId)
+                    .Select(copies => copies.OrderByDescending(file => file.UpdatedAt).First())
+            ];
+        }
+        catch (JsonException)
+        {
+            return [];
+        }
+    }
+
     public static string? LatestLocation(JsonElement root) =>
         root.Items("locations") is [var latest, ..] && latest.ValueKind == JsonValueKind.Object ? latest.GetRawText() : null;
 

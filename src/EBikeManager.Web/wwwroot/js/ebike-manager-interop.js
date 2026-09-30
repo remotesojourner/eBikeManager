@@ -7,6 +7,10 @@ window.ebikeManagerInterop = {
         localStorage.setItem(key, value);
     },
 
+    copyText: function (text) {
+        return navigator.clipboard.writeText(text);
+    },
+
     getTimeZone: function () {
         return Intl.DateTimeFormat().resolvedOptions().timeZone;
     },

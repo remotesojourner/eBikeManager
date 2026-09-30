@@ -20,9 +20,9 @@ public static class BikeProfileParser
 
     private const string OffModeName = "OFF";
 
-    public static BikeDetailsDto Parse(Bike bike) => Parse(bike, new Dictionary<string, AssistModeName>(), null);
+    public static BikeDetailsDto Parse(Bike bike) => Parse(bike, new Dictionary<string, AssistModeName>(), null, []);
 
-    public static BikeDetailsDto Parse(Bike bike, IReadOnlyDictionary<string, AssistModeName> modeNames, DateTime? pictureSavedAt)
+    public static BikeDetailsDto Parse(Bike bike, IReadOnlyDictionary<string, AssistModeName> modeNames, DateTime? pictureSavedAt, IReadOnlyList<BikeDocumentDto> documents)
     {
         using var profileDocument = Read(bike.ProfileJson);
         using var chargeDocument = Read(bike.StateOfChargeJson);
@@ -31,18 +31,22 @@ public static class BikeProfileParser
 
         var profile = profileDocument?.RootElement ?? default;
         var driveUnit = profile.Property("driveUnit");
+        var wheel = driveUnit.Property("rearWheelCircumference");
         var charge = chargeDocument?.RootElement;
+        var pass = passDocument?.RootElement ?? default;
 
         return new BikeDetailsDto(
             bike.Id,
             bike.Name,
             profile.Text("brandName"),
             pictureSavedAt,
-            passDocument?.RootElement.Text("frameNumber") ?? profile.Text("frameNumber"),
+            pass.Text("frameNumber") ?? profile.Text("frameNumber"),
+            pass.Text("frameNumberPosition"),
             charge?.Number("odometer") ?? driveUnit.Number("totalDistanceTraveled"),
             driveUnit.Property("powerOnTime").Number("total"),
             driveUnit.Property("powerOnTime").Number("withMotorSupport"),
             driveUnit.Number("maxAssistanceSpeed") ?? driveUnit.Property("maximumAssistance").Number("speed"),
+            wheel.Number("userValue") ?? wheel.Number("defaultValue"),
             driveUnit.Property("walkAssist").Flag("isEnabled"),
             driveUnit.Property("lock").Flag("isEnabled"),
             profile.Property("connectedModule").Flag("isAlarmFeatureEnabled"),
@@ -50,8 +54,10 @@ public static class BikeProfileParser
             [.. profile.Items("batteries").Select(Battery)],
             [.. _components.Select(component => Component(profile.Property(component.Property), component.Kind)).OfType<BikeComponentDto>()],
             [.. driveUnit.Items("driveUnitAssistModes").Select(mode => AssistMode(mode, modeNames)).OfType<AssistModeDto>().OrderByDescending(mode => mode.ReachableRangeKm ?? 0)],
+            ModeMileage(driveUnit, modeNames),
             charge is { } live ? LiveState(live) : null,
             locationDocument?.RootElement is { } location ? Location(location) : null,
+            documents,
             bike.HasFlowPlus,
             bike.DetailsUpdatedAt);
     }
@@ -95,12 +101,35 @@ public static class BikeProfileParser
 
     private static AssistModeDto? AssistMode(JsonElement mode, IReadOnlyDictionary<string, AssistModeName> modeNames)
     {
+        var (name, color, isOff) = Describe(mode, modeNames);
+        return name == null || isOff ? null : new AssistModeDto(name, mode.Whole("slot"), mode.Number("reachableRange"), color);
+    }
+
+    private static List<AssistModeMileageDto> ModeMileage(JsonElement driveUnit, IReadOnlyDictionary<string, AssistModeName> modeNames)
+    {
+        var modes = new List<(string Name, string? Color, bool IsOff, double Distance, double? Energy)>();
+        foreach (var mode in driveUnit.Items("driveUnitAssistModes"))
+        {
+            var statistics = mode.Property("statistics");
+            if (statistics.Number("distance") is not { } distance) continue;
+
+            var (name, color, isOff) = Describe(mode, modeNames);
+            if (name == null || (isOff && distance <= 0)) continue;
+
+            modes.Add((name, isOff ? null : color, isOff, distance, statistics.Number("consumedEnergy")));
+        }
+
+        var total = modes.Sum(mode => mode.Distance);
+        return [.. modes.Select(mode => new AssistModeMileageDto(mode.Name, mode.Color, mode.IsOff, mode.Distance, mode.Energy, total > 0 ? mode.Distance * 100 / total : 0))];
+    }
+
+    private static (string? Name, string? Color, bool IsOff) Describe(JsonElement mode, IReadOnlyDictionary<string, AssistModeName> modeNames)
+    {
         var id = mode.Text("id");
         var known = id != null ? modeNames.GetValueOrDefault(id) : null;
         var name = known?.Name ?? mode.Text("longName") ?? mode.Text("shortName") ?? id;
-        if (name == null || mode.Flag("isOffMode") == true || id == "0" || string.Equals(name, OffModeName, StringComparison.OrdinalIgnoreCase)) return null;
-
-        return new AssistModeDto(name, mode.Whole("slot"), mode.Number("reachableRange"), known?.Color ?? BoschJson.Colour(mode.Number("color")));
+        var isOff = mode.Flag("isOffMode") == true || id == "0" || string.Equals(name, OffModeName, StringComparison.OrdinalIgnoreCase);
+        return (isOff && id == name ? OffModeName : name, known?.Color ?? BoschJson.Colour(mode.Number("color")), isOff);
     }
 
     private static ServiceDueDto? ServiceDue(JsonElement serviceDue)

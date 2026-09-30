@@ -19,6 +19,12 @@ public abstract class BrowserApp : TestApp
 
     public Uri BaseAddress => new(Services.GetRequiredService<IServer>().Features.GetRequiredFeature<IServerAddressesFeature>().Addresses.First());
 
+    public override async ValueTask InitializeAsync()
+    {
+        await base.InitializeAsync();
+        Oidc.AuthorizeEndpoint = new Uri(BaseAddress, FakeOidcProvider.AuthorizePath);
+    }
+
     public async Task<AppSettings> SettingsAsync(CancellationToken cancellationToken)
     {
         using var scope = Services.CreateScope();

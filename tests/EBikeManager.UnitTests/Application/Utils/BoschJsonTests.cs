@@ -1,6 +1,7 @@
 using System.Text.Json;
 using EBikeManager.Application.Models;
 using EBikeManager.Application.Utils;
+using EBikeManager.TestSupport;
 
 namespace EBikeManager.UnitTests.Application.Utils;
 
@@ -102,5 +103,28 @@ public class BoschJsonTests
 
         Assert.Empty(BoschJson.ParseBikes(json.RootElement));
         Assert.Equal(0, BoschJson.ParseActivityPage(json.RootElement).TotalPages);
+    }
+
+    [Fact]
+    public void BikePassFilesAreListedOnceEachWithTheirLatestChange()
+    {
+        var files = BoschJson.PassFiles(BoschSamples.BikePass("bike-1"));
+
+        Assert.Equal(
+            [(BoschSamples.PhotoFileId, "BIKE_IMAGE"), (BoschSamples.InvoiceFileId, "BIKE_INVOICE")],
+            files.Select(file => (file.FileId, file.FileType)));
+        Assert.Equal(new DateTime(2026, 8, 13, 20, 31, 20, DateTimeKind.Utc), files[0].CreatedAt);
+        Assert.Equal(new DateTime(2026, 8, 13, 20, 31, 22, DateTimeKind.Utc), files[0].UpdatedAt);
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("")]
+    [InlineData("{}")]
+    [InlineData("{\"files\":[{\"fileType\":\"BIKE_IMAGE\"}]}")]
+    [InlineData("not json")]
+    public void ABikePassWithoutUsableFilesListsNone(string? pass)
+    {
+        Assert.Empty(BoschJson.PassFiles(pass));
     }
 }

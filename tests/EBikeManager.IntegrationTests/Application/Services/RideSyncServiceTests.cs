@@ -5,6 +5,7 @@ using EBikeManager.Application.Repositories;
 using EBikeManager.Application.Services;
 using EBikeManager.IntegrationTests.Fixtures;
 using EBikeManager.TestSupport;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Time.Testing;
@@ -149,6 +150,80 @@ public sealed class RideSyncServiceTests : IDisposable
         _bosch.Activities[0] = ride;
         await NewSync().RunAsync(cancellationToken);
         Assert.Equal(["fresh"], _bosch.DownloadedFits);
+    }
+
+    [Fact]
+    public async Task EveryRidesGpxFileIsKeptNextToItsFitFileAsItCame()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await ChooseBikesAsync("bike-a");
+        _bosch.AddRide("a0", "bike-a", _now.AddDays(-2));
+
+        await NewSync().RunAsync(cancellationToken);
+
+        var ride = Assert.Single(await RidesAsync());
+        Assert.Equal(Path.ChangeExtension(ride.FitPath, ".gpx"), ride.GpxPath);
+        Assert.Equal(_bosch.GpxFiles["a0"], await File.ReadAllBytesAsync(_archive.FullPath(ride.GpxPath!), cancellationToken));
+        Assert.Equal(_now, ride.GpxDownloadedAt);
+    }
+
+    [Fact]
+    public async Task RidesBackedUpBeforeGpxFilesGetTheirGpxWithoutDownloadingTheFitAgain()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await ChooseBikesAsync("bike-a");
+        _bosch.AddRide("a0", "bike-a", _now.AddDays(-2));
+        var gpx = _bosch.GpxFiles["a0"];
+        _bosch.GpxFiles.Remove("a0");
+        await NewSync().RunAsync(cancellationToken);
+        await using (var db = NewContext())
+        {
+            var stored = await db.Rides.SingleAsync(ride => ride.Id == "a0", cancellationToken);
+            stored.GpxUnavailable = false;
+            await db.SaveChangesAsync(cancellationToken);
+        }
+
+        _bosch.GpxFiles["a0"] = gpx;
+        _bosch.DownloadedFits.Clear();
+        await NewSync().RunAsync(cancellationToken);
+
+        Assert.Empty(_bosch.DownloadedFits);
+        Assert.NotNull(Assert.Single(await RidesAsync()).GpxPath);
+    }
+
+    [Fact]
+    public async Task RidesWithoutAGpxFileAreMarkedAndNotAskedForAgain()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await ChooseBikesAsync("bike-a");
+        _bosch.AddRide("a0", "bike-a", _now.AddDays(-2));
+        _bosch.GpxFiles.Remove("a0");
+
+        var result = await NewSync().RunAsync(cancellationToken);
+        await NewSync().RunAsync(cancellationToken);
+
+        Assert.Empty(result.Problems);
+        var ride = Assert.Single(await RidesAsync());
+        Assert.True(ride.GpxUnavailable);
+        Assert.Null(ride.GpxPath);
+        Assert.Single(_bosch.DownloadedGpx);
+        Assert.NotNull(ride.FitPath);
+    }
+
+    [Fact]
+    public async Task SomethingThatIsNotAGpxFileIsReportedAndTriedAgain()
+    {
+        var cancellationToken = TestContext.Current.CancellationToken;
+        await ChooseBikesAsync("bike-a");
+        _bosch.AddRide("a0", "bike-a", _now.AddDays(-2), title: "Commute");
+        _bosch.GpxFiles["a0"] = "<html>Service unavailable</html>"u8.ToArray();
+
+        var result = await NewSync().RunAsync(cancellationToken);
+        await NewSync().RunAsync(cancellationToken);
+
+        Assert.Equal("Commute (GPX file): Bosch sent something that isn't a GPX file.", Assert.Single(result.Problems));
+        Assert.Equal(2, _bosch.DownloadedGpx.Count);
+        Assert.Null(Assert.Single(await RidesAsync()).GpxPath);
     }
 
     [Fact]

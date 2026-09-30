@@ -1,4 +1,5 @@
 using EBikeManager.Application.Enums;
+using EBikeManager.Application.Models.Dtos;
 using EBikeManager.Application.Models.Entities;
 using EBikeManager.Application.Utils;
 using EBikeManager.TestSupport;
@@ -15,15 +16,20 @@ public class BikeProfileParserTests
         var bike = NewBike(BoschSamples.Profile("bike-1"));
         var names = BoschJson.AssistModeNames([BoschSamples.RideSummary("Ride")]);
 
-        var details = BikeProfileParser.Parse(bike, names, _updated);
+        var document = new BikeDocumentDto(BoschSamples.InvoiceFileId, BikeDocumentKind.BikeInvoice, "application/pdf", _updated, _updated);
+
+        var details = BikeProfileParser.Parse(bike, names, _updated, [document]);
 
         Assert.True(details.HasDetails);
         Assert.Equal("TENWAYS", details.Brand);
         Assert.Equal(_updated, details.PictureSavedAt);
         Assert.Equal("WTEN123456789", details.FrameNumber);
+        Assert.Equal("Seat stem", details.FrameNumberPosition);
+        Assert.Equal(document, Assert.Single(details.Documents));
         Assert.Equal(36445, details.OdometerMeters);
         Assert.Equal((9, 8), (details.MotorHours, details.MotorHoursAssisted));
         Assert.Equal(27.4, details.MaxAssistSpeedKmh);
+        Assert.Equal(2299, details.WheelCircumferenceMm);
         Assert.True(details.LockEnabled);
         Assert.Null(details.AlarmEnabled);
         Assert.Null(details.ServiceDue);
@@ -42,11 +48,41 @@ public class BikeProfileParserTests
     [Fact]
     public void AssistModesAreNamedFromRideSummariesAndOffIsLeftOut()
     {
-        var details = BikeProfileParser.Parse(NewBike(BoschSamples.Profile("bike-1")), BoschJson.AssistModeNames([BoschSamples.RideSummary("Ride")]), null);
+        var details = BikeProfileParser.Parse(NewBike(BoschSamples.Profile("bike-1")), BoschJson.AssistModeNames([BoschSamples.RideSummary("Ride")]), null, []);
 
         Assert.Equal(["ECO", "AUTO", "SPORT", "TURBO"], details.AssistModes.Select(mode => mode.Name));
         Assert.Equal([33.0, 25.0, 16.0, 12.0], details.AssistModes.Select(mode => mode.ReachableRangeKm ?? 0));
         Assert.Equal("#78BE20", details.AssistModes[0].Color);
+    }
+
+    [Fact]
+    public void TheMileageIsSplitOverTheAssistanceModesLikeTheFlowAppShowsIt()
+    {
+        var details = BikeProfileParser.Parse(NewBike(BoschSamples.Profile("bike-1")), BoschJson.AssistModeNames([BoschSamples.RideSummary("Ride")]), null, []);
+
+        Assert.Equal(["ECO", "AUTO", "SPORT", "TURBO"], details.ModeMileage.Select(mode => mode.Name));
+        Assert.Equal([0.0, 14010.0, 18618.0, 3817.0], details.ModeMileage.Select(mode => mode.DistanceMeters));
+        Assert.Equal(details.OdometerMeters, details.ModeMileage.Sum(mode => mode.DistanceMeters));
+        Assert.Equal([0.0, 116.0, 142.0, 31.0], details.ModeMileage.Select(mode => mode.EnergyWh ?? -1));
+        Assert.Equal(51.1, details.ModeMileage[2].Percent, 1);
+        Assert.Equal(100, details.ModeMileage.Sum(mode => mode.Percent), 6);
+        Assert.Equal("#78BE20", details.ModeMileage[0].Color);
+        Assert.DoesNotContain(details.ModeMileage, mode => mode.IsOff);
+    }
+
+    [Fact]
+    public void RidingWithTheMotorOffCountsAsItsOwnModeOnceItHasDistance()
+    {
+        var profile = BoschSamples.Profile("bike-1").Replace(
+            """{ "id": "0", "reachableRange": 0.0, "statistics": { "consumedEnergy": 0.0, "distance": 0.0 } }""",
+            """{ "id": "0", "reachableRange": 0.0, "statistics": { "consumedEnergy": 0.0, "distance": 1200.0 } }""",
+            StringComparison.Ordinal);
+
+        var details = BikeProfileParser.Parse(NewBike(profile));
+
+        var off = details.ModeMileage[0];
+        Assert.Equal(("OFF", true, 1200.0, (string?)null), (off.Name, off.IsOff, off.DistanceMeters, off.Color));
+        Assert.DoesNotContain(details.AssistModes, mode => mode.Name == "OFF");
     }
 
     [Fact]
@@ -81,6 +117,9 @@ public class BikeProfileParserTests
 
         Assert.False(details.HasDetails);
         Assert.Empty(details.Components);
+        Assert.Empty(details.ModeMileage);
+        Assert.Empty(details.Documents);
+        Assert.Null(details.FrameNumberPosition);
         Assert.Null(details.LiveState);
     }
 

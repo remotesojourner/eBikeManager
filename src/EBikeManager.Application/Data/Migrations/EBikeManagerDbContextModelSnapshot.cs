@@ -61,6 +61,48 @@ namespace EBikeManager.Application.Data.Migrations
                     b.ToTable("bikes", (string)null);
                 });
 
+            modelBuilder.Entity("EBikeManager.Application.Models.Entities.BikeDocument", b =>
+                {
+                    b.Property<string>("BikeId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("bikeId");
+
+                    b.Property<string>("FileId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("fileId");
+
+                    b.Property<DateTime?>("AddedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("addedAt");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("BLOB")
+                        .HasColumnName("content");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("contentType");
+
+                    b.Property<string>("FileType")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("fileType");
+
+                    b.Property<DateTime>("SavedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("savedAt");
+
+                    b.Property<DateTime?>("SourceUpdatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("sourceUpdatedAt");
+
+                    b.HasKey("BikeId", "FileId");
+
+                    b.ToTable("bikeDocuments", (string)null);
+                });
+
             modelBuilder.Entity("EBikeManager.Application.Models.Entities.BikePicture", b =>
                 {
                     b.Property<string>("BikeId")
@@ -188,6 +230,20 @@ namespace EBikeManager.Application.Data.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("fitUnavailable");
 
+                    b.Property<DateTime?>("GpxDownloadedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("gpxDownloadedAt");
+
+                    b.Property<string>("GpxPath")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("gpxPath");
+
+                    b.Property<bool>("GpxUnavailable")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("INTEGER")
+                        .HasDefaultValue(false)
+                        .HasColumnName("gpxUnavailable");
+
                     b.Property<int?>("MovingSeconds")
                         .HasColumnType("INTEGER")
                         .HasColumnName("movingSeconds");
@@ -222,6 +278,50 @@ namespace EBikeManager.Application.Data.Migrations
                     b.ToTable("rides", (string)null);
                 });
 
+            modelBuilder.Entity("EBikeManager.Application.Models.Entities.RideExport", b =>
+                {
+                    b.Property<string>("RideId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("rideId");
+
+                    b.Property<string>("Integration")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("integration");
+
+                    b.Property<int>("Attempts")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("attempts");
+
+                    b.Property<DateTime?>("ExportedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("exportedAt");
+
+                    b.Property<DateTime>("LastAttemptAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("lastAttemptAt");
+
+                    b.Property<string>("Note")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("note");
+
+                    b.Property<string>("Problem")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("problem");
+
+                    b.Property<string>("RemoteId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("remoteId");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("status");
+
+                    b.HasKey("RideId", "Integration");
+
+                    b.ToTable("rideExports", (string)null);
+                });
+
             modelBuilder.Entity("EBikeManager.Application.Models.Entities.SecretEntry", b =>
                 {
                     b.Property<string>("Name")
@@ -242,11 +342,29 @@ namespace EBikeManager.Application.Data.Migrations
                     b.ToTable("secrets", (string)null);
                 });
 
+            modelBuilder.Entity("EBikeManager.Application.Models.Entities.BikeDocument", b =>
+                {
+                    b.HasOne("EBikeManager.Application.Models.Entities.Bike", null)
+                        .WithMany()
+                        .HasForeignKey("BikeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("EBikeManager.Application.Models.Entities.BikePicture", b =>
                 {
                     b.HasOne("EBikeManager.Application.Models.Entities.Bike", null)
                         .WithOne()
                         .HasForeignKey("EBikeManager.Application.Models.Entities.BikePicture", "BikeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("EBikeManager.Application.Models.Entities.RideExport", b =>
+                {
+                    b.HasOne("EBikeManager.Application.Models.Entities.Ride", null)
+                        .WithMany()
+                        .HasForeignKey("RideId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
                 });

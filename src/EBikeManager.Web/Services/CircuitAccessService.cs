@@ -23,6 +23,8 @@ public sealed class CircuitAccessService
 
     public bool SignedIn => _auth.IsActive && Level == Access.Full;
 
+    public string? UserName => SignedIn ? SignedInUser.DisplayName(_user) : null;
+
     public async Task StartAsync()
     {
         _user = (await _authenticationState.GetAuthenticationStateAsync()).User;

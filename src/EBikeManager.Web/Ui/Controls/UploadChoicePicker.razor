@@ -1,0 +1,75 @@
+@inject PreferencesService Preferences
+
+<div class="em-option-list mb-2">
+    <OptionCard Title="@WebStrings.UploadChoiceNew" Description="@WebStrings.UploadChoiceNewDescription" Icon="@Icons.Material.Rounded.FiberNew"
+                Active="@(_mode == Mode.New)" OnClick="@(() => ChooseAsync(Mode.New))" />
+    <OptionCard Title="@WebStrings.UploadChoiceSince" Description="@WebStrings.UploadChoiceSinceDescription" Icon="@Icons.Material.Rounded.Event"
+                Active="@(_mode == Mode.Since)" OnClick="@(() => ChooseAsync(Mode.Since))" />
+    <OptionCard Title="@WebStrings.UploadChoiceAll" Description="@WebStrings.UploadChoiceAllDescription" Icon="@Icons.Material.Rounded.History"
+                Active="@(_mode == Mode.All)" OnClick="@(() => ChooseAsync(Mode.All))" />
+</div>
+
+@if (_mode == Mode.Since)
+{
+    <MudDatePicker Date="_since" DateChanged="SinceChangedAsync" Label="@WebStrings.UploadChoiceSinceDate" MaxDate="DateTime.Today"
+                   Variant="Variant.Outlined" Margin="Margin.Dense" Class="mb-2" />
+}
+
+@code {
+    private enum Mode { New, Since, All }
+
+    [Parameter] public string? UploadFrom { get; set; }
+    [Parameter] public EventCallback<string?> UploadFromChanged { get; set; }
+
+    private Mode _mode = Mode.New;
+    private DateTime? _since = DateTime.Today;
+    private bool _initialised;
+    private bool _reportDefault;
+
+    protected override void OnParametersSet()
+    {
+        if (_initialised) return;
+
+        _initialised = true;
+        if (UploadFrom == null)
+        {
+            _reportDefault = true;
+        }
+        else if (UploadFrom == GoogleHealthSettings.AllRides)
+        {
+            _mode = Mode.All;
+        }
+        else if (new GoogleHealthSettings(null, null, UploadFrom).UploadFromUtc is { } from)
+        {
+            _mode = Mode.Since;
+            _since = Preferences.ToLocal(from).Date;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!_reportDefault) return;
+
+        _reportDefault = false;
+        await UploadFromChanged.InvokeAsync(Value());
+    }
+
+    private Task ChooseAsync(Mode mode)
+    {
+        _mode = mode;
+        return UploadFromChanged.InvokeAsync(Value());
+    }
+
+    private Task SinceChangedAsync(DateTime? date)
+    {
+        _since = date;
+        return UploadFromChanged.InvokeAsync(Value());
+    }
+
+    private string? Value() => _mode switch
+    {
+        Mode.All => GoogleHealthSettings.AllRides,
+        Mode.Since => _since is { } date ? GoogleHealthSettings.UploadFromValue(Preferences.ToUtc(date.Date)) : null,
+        _ => GoogleHealthSettings.UploadFromValue(DateTime.UtcNow)
+    };
+}

@@ -1,9 +1,12 @@
 using EBikeManager.Application.Configuration;
 using EBikeManager.Application.Services.Interfaces;
+using EBikeManager.Web.Authorization;
 using EBikeManager.Web.Configuration;
 using EBikeManager.Web.Services;
 using EBikeManager.Web.Utils;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.OpenIdConnect;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.DataProtection.KeyManagement;
 using Microsoft.AspNetCore.DataProtection.Repositories;
@@ -48,17 +51,22 @@ public static class WebInstaller
                 options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 options.ExpireTimeSpan = TimeSpan.FromDays(30);
                 options.SlidingExpiration = true;
+                options.LoginPath = AccessPolicy.SignInPath;
                 options.Events.OnValidatePrincipal = SignInCookie.ValidateAsync;
-            });
+            })
+            .AddOpenIdConnect(AuthSettingsService.OidcScheme, _ => { });
+        services.AddSingleton<IConfigureOptions<OpenIdConnectOptions>, OidcOptionsSetup>();
 
         services.AddSingleton<AuthSettingsService>();
         services.AddSingleton<ISignInStateService>(provider => provider.GetRequiredService<AuthSettingsService>());
-        services.AddSingleton<SignInTicketService>();
         services.AddHttpContextAccessor();
         services.AddScoped<HttpCurrentAccessService>();
         services.AddScoped<CircuitAccessService>();
         services.AddScoped<ICurrentAccessService, CurrentAccessService>();
-        services.AddAuthorization();
+
+        services.AddAuthorization(options => options.FallbackPolicy = new AuthorizationPolicyBuilder().AddRequirements(new FullAccessRequirement()).Build());
+        services.AddSingleton<IAuthorizationHandler, FullAccessRequirementHandler>();
+        services.AddSingleton<IAuthorizationMiddlewareResultHandler, AccessDeniedResponder>();
         services.AddCascadingAuthenticationState();
         services.AddControllers();
         return services;
@@ -70,6 +78,7 @@ public static class WebInstaller
         services.AddMudServices();
 
         services.AddScoped<BrowserInteropService>();
+        services.AddScoped<MapViewService>();
         services.AddScoped<PreferencesService>();
         services.AddScoped<SettingsStateService>();
         services.AddScoped<SyncStatusStateService>();

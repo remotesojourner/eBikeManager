@@ -1,0 +1,17 @@
+@inject VersionService Versions
+
+@if (_updateVersion != null)
+{
+    <MudTooltip Text="@WebStrings.Format(WebStrings.UpdateAvailableVersion, _updateVersion)" Placement="Placement.Bottom">
+        <MudIconButton Icon="@Icons.Material.Rounded.ArrowCircleUp" Color="Color.Warning"
+                       Href="@($"{ProjectInfo.RepositoryUrl}/releases/latest")" Target="_blank"
+                       aria-label="@WebStrings.UpdateNoticeLabel" />
+    </MudTooltip>
+}
+
+@code {
+    private string? _updateVersion;
+
+    protected override async Task OnInitializedAsync() =>
+        _updateVersion = UpdateCheck.AvailableUpdate(await Versions.GetVersionAsync());
+}

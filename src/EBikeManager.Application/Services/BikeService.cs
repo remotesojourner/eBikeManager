@@ -16,16 +16,18 @@ public sealed class BikeService
 
     private readonly IBikeRepository _bikes;
     private readonly IBikePictureRepository _pictures;
+    private readonly IBikeDocumentRepository _documents;
     private readonly IRideRepository _rides;
     private readonly BikeDetailsSyncService _detailsSync;
     private readonly SettingsService _settings;
     private readonly ICurrentAccessService _access;
     private readonly TimeProvider _time;
 
-    public BikeService(IBikeRepository bikes, IBikePictureRepository pictures, IRideRepository rides, BikeDetailsSyncService detailsSync, SettingsService settings, ICurrentAccessService access, TimeProvider time)
+    public BikeService(IBikeRepository bikes, IBikePictureRepository pictures, IBikeDocumentRepository documents, IRideRepository rides, BikeDetailsSyncService detailsSync, SettingsService settings, ICurrentAccessService access, TimeProvider time)
     {
         _bikes = bikes;
         _pictures = pictures;
+        _documents = documents;
         _rides = rides;
         _detailsSync = detailsSync;
         _settings = settings;
@@ -40,21 +42,34 @@ public sealed class BikeService
     {
         var details = new List<BikeDetailsDto>();
         var pictures = await _pictures.GetSavedTimesAsync(cancellationToken);
+        var documents = (await _documents.GetInfoAsync(cancellationToken)).ToLookup(document => document.BikeId);
         foreach (var bike in await _bikes.GetAllAsync(cancellationToken))
         {
             var modeNames = BoschJson.AssistModeNames(await _rides.GetRecentSummariesAsync(bike.Id, RecentRidesForModeNames, cancellationToken));
-            details.Add(BikeProfileParser.Parse(bike, modeNames, pictures.TryGetValue(bike.Id, out var savedAt) ? savedAt : null));
+            details.Add(BikeProfileParser.Parse(
+                bike,
+                modeNames,
+                pictures.TryGetValue(bike.Id, out var savedAt) ? savedAt : null,
+                [.. documents[bike.Id].Select(BikeDocumentDto.From)]));
         }
 
         return details;
     }
 
-    public async Task<OperationResult<ImageFile>> GetPictureAsync(string bikeId, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<MediaFile>> GetPictureAsync(string bikeId, CancellationToken cancellationToken = default)
     {
         if (!_access.HasFullAccess) return OperationResult.Denied();
         if (await _pictures.FindAsync(bikeId, cancellationToken) is not { } picture) return OperationResult.NotFound(ApplicationStrings.BikePictureMissing);
 
-        return OperationResult.Ok(new ImageFile(picture.ContentType, picture.Content));
+        return OperationResult.Ok(new MediaFile(picture.ContentType, picture.Content));
+    }
+
+    public async Task<OperationResult<MediaFile>> GetDocumentAsync(string bikeId, string fileId, CancellationToken cancellationToken = default)
+    {
+        if (!_access.HasFullAccess) return OperationResult.Denied();
+        if (await _documents.FindAsync(bikeId, fileId, cancellationToken) is not { } document) return OperationResult.NotFound(ApplicationStrings.BikeDocumentMissing);
+
+        return OperationResult.Ok(new MediaFile(document.ContentType, document.Content));
     }
 
     public async Task<OperationResult<IReadOnlyList<string>>> RefreshDetailsAsync(CancellationToken cancellationToken = default)

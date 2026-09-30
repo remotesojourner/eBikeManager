@@ -2,7 +2,6 @@ using EBikeManager.Application.Configuration;
 using EBikeManager.Application.Models.Entities;
 using EBikeManager.Application.Repositories.Interfaces;
 using EBikeManager.Application.Services;
-using EBikeManager.Application.Utils;
 using EBikeManager.TestSupport;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -37,13 +36,29 @@ internal static class SampleData
         }, cancellationToken);
     }
 
-    public static async Task RequirePasswordAsync(IServiceProvider services, string password, CancellationToken cancellationToken)
+    public static async Task RequireSignInAsync(IServiceProvider services, CancellationToken cancellationToken)
     {
+        await services.GetRequiredService<SecretStoreService>().SetAsync(SecretStoreService.OidcClientSecret, FakeOidcProvider.ClientSecret, cancellationToken);
         var saved = await services.GetRequiredService<ISettingsRepository>().SaveSignInAsync(new Dictionary<string, string>
         {
             [SettingDefinitions.AuthEnabled] = "true",
-            [SettingDefinitions.AuthPasswordHash] = PasswordHash.Create(password),
+            [SettingDefinitions.OidcAuthority] = FakeOidcProvider.Authority,
+            [SettingDefinitions.OidcClientId] = FakeOidcProvider.ClientId,
             [SettingDefinitions.AuthStamp] = Guid.NewGuid().ToString("N")
+        }, cancellationToken);
+        Assert.True(saved.Succeeded, saved.Error);
+    }
+
+    public static async Task ConnectGoogleHealthAsync(IServiceProvider services, string uploadFrom, CancellationToken cancellationToken)
+    {
+        var secrets = services.GetRequiredService<SecretStoreService>();
+        await secrets.SetAsync(SecretStoreService.GoogleHealthRefreshToken, "google-refresh", cancellationToken);
+        await secrets.SetAsync(SecretStoreService.GoogleHealthClientSecret, FakeGoogleHealthAuth.ClientSecret, cancellationToken);
+        var saved = await services.GetRequiredService<ISettingsRepository>().SaveAsync(new Dictionary<string, string>
+        {
+            [SettingDefinitions.GoogleHealthClientId] = FakeGoogleHealthAuth.ClientId,
+            [SettingDefinitions.GoogleHealthAccount] = FakeGoogleHealthAuth.Account,
+            [SettingDefinitions.GoogleHealthUploadFrom] = uploadFrom
         }, cancellationToken);
         Assert.True(saved.Succeeded, saved.Error);
     }

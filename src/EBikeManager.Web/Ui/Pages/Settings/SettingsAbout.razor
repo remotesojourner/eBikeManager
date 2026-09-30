@@ -1,28 +1,51 @@
-<div class="d-flex flex-column gap-4">
-    <SurfaceCard Icon="@Icons.Material.Rounded.Info" Title="@ProjectInfo.Name" FullHeight="false" Description="@WebStrings.AboutDescription">
-        <DataRow Label="@WebStrings.AboutVersion" Value="@ProjectInfo.Version" />
-    </SurfaceCard>
+@inject VersionService Versions
 
-    <SurfaceCard Icon="@Icons.Material.Rounded.Favorite" Title="@WebStrings.AboutCreditsTitle" FullHeight="false">
-        <div class="em-option-list">
-            @foreach (var credit in Credits)
+<MudGrid Spacing="4">
+    <MudItem xs="12" md="6">
+        <SurfaceCard>
+            <div class="d-flex align-center gap-3 mb-3">
+                <img src="img/logo.svg" class="em-about-logo" alt="" />
+                <div>
+                    <MudText Typo="Typo.h6" Class="font-weight-bold">@ProjectInfo.Name</MudText>
+                    <MudText Typo="Typo.body2" Class="em-muted">v@(ProjectInfo.Version)</MudText>
+                </div>
+            </div>
+            @if (UpdateCheck.AvailableUpdate(_version) is { } update)
             {
-                <MudLink Href="@credit.Url" Target="_blank" Class="em-option" Underline="Underline.None">
-                    <MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" Class="em-option-icon" />
-                    <span class="em-option-text">@credit.Title</span>
-                </MudLink>
+                <MudAlert Severity="Severity.Success" Class="mb-3">
+                    @WebStrings.Format(WebStrings.UpdateAvailableVersion, update)
+                    <MudLink Href="@($"{ProjectInfo.RepositoryUrl}/releases")" Target="_blank" Class="ml-2">@WebStrings.AboutChangelog</MudLink>
+                </MudAlert>
             }
-        </div>
-    </SurfaceCard>
-</div>
+            else if (_versionChecked && (_version == null || _version.Remote == "0"))
+            {
+                <MudText Typo="Typo.caption" Class="em-muted d-block mb-3">@WebStrings.AboutUpdateCheckFailed</MudText>
+            }
+            <MudText Typo="Typo.body2" Class="em-muted">
+                @WebStrings.AboutDescription
+            </MudText>
+        </SurfaceCard>
+    </MudItem>
+
+    <MudItem xs="12" md="6">
+        <SurfaceCard Icon="@Icons.Material.Rounded.Link" Title="@WebStrings.AboutLinks">
+            <div class="d-flex flex-wrap gap-2">
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Code" Href="@ProjectInfo.RepositoryUrl" Target="_blank">GitHub</MudButton>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.NewReleases" Href="@($"{ProjectInfo.RepositoryUrl}/releases")" Target="_blank">@WebStrings.AboutReleases</MudButton>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.BugReport" Href="@($"{ProjectInfo.RepositoryUrl}/issues")" Target="_blank">@WebStrings.AboutReportIssue</MudButton>
+                <MudButton Variant="Variant.Outlined" StartIcon="@Icons.Material.Rounded.Favorite" Href="@ProjectInfo.SponsorUrl" Target="_blank" Class="em-sponsor">@WebStrings.AboutSponsor</MudButton>
+            </div>
+        </SurfaceCard>
+    </MudItem>
+</MudGrid>
 
 @code {
-    private static (string Title, string Url)[] Credits =>
-    [
-        (WebStrings.AboutCreditHomeAssistant, "https://github.com/marq24/ha-bosch-ebike-flow"),
-        (WebStrings.AboutCreditModernity, "https://github.com/russkyc/modernity-css-experiment"),
-        (WebStrings.AboutCreditMudBlazor, "https://mudblazor.com"),
-        (WebStrings.AboutCreditFit, "https://developer.garmin.com/fit/"),
-        (WebStrings.AboutCreditInter, "https://rsms.me/inter/")
-    ];
+    private VersionInfoDto? _version;
+    private bool _versionChecked;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _version = await Versions.GetVersionAsync();
+        _versionChecked = true;
+    }
 }

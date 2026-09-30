@@ -1,0 +1,74 @@
+@inject GoogleHealthAccountService Google
+@inject PreferencesService Preferences
+@inject ISnackbar Snackbar
+
+@if (Upload is { Status: RideExportStatus.Uploaded } uploaded)
+{
+    @if (Compact)
+    {
+        <MudTooltip Text="@UploadedText(uploaded)">
+            <span class="em-upload-done" role="img" aria-label="@UploadedText(uploaded)">
+                <MudIcon Icon="@Icons.Material.Rounded.CloudDone" Color="@UploadAppearance.ColorOf(uploaded)" Size="Size.Small" />
+            </span>
+        </MudTooltip>
+    }
+    else
+    {
+        <MudButton Variant="Variant.Text" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.CloudSync" Disabled="_busy" OnClick="UploadAsync">
+            @(_busy ? WebStrings.RidesUploading : WebStrings.RidesUploadAgainButton)
+        </MudButton>
+    }
+}
+else if (Compact)
+{
+    <MudTooltip Text="@UploadLabel">
+        <MudIconButton Icon="@Icons.Material.Rounded.CloudUpload" Size="Size.Small" Color="@(Upload is { } failed ? UploadAppearance.ColorOf(failed) : Color.Default)"
+                       aria-label="@WebStrings.RidesUploadToGoogleHealth" Disabled="@(_busy || !Finished)" OnClick="UploadAsync" />
+    </MudTooltip>
+}
+else
+{
+    <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.CloudUpload" Disabled="@(_busy || !Finished)" OnClick="UploadAsync">
+        @(_busy ? WebStrings.RidesUploading : WebStrings.RidesUploadToGoogleHealth)
+    </MudButton>
+}
+
+@code {
+    [Parameter, EditorRequired] public string RideId { get; set; } = "";
+    [Parameter] public string? RideTitle { get; set; }
+    [Parameter] public RideExportDto? Upload { get; set; }
+    [Parameter] public bool Finished { get; set; } = true;
+    [Parameter] public bool Compact { get; set; }
+    [Parameter] public EventCallback OnUploaded { get; set; }
+
+    private bool _busy;
+
+    private bool Failed => Upload is { Status: not RideExportStatus.Uploaded };
+
+    private string UploadLabel => Failed && Upload?.Problem is { } problem
+        ? WebStrings.Format(WebStrings.RidesUploadAgain, problem)
+        : WebStrings.RidesUploadToGoogleHealth;
+
+    private string UploadedText(RideExportDto upload)
+    {
+        var uploaded = upload.ExportedAt is { } at
+            ? WebStrings.Format(WebStrings.RidesUploadedToGoogleHealth, DisplayFormat.DateTime(Preferences.ToLocal(at)))
+            : WebStrings.UploadStatusUploaded;
+        return upload.Note is { } note ? $"{uploaded}. {note}" : uploaded;
+    }
+
+    private async Task UploadAsync()
+    {
+        _busy = true;
+        var result = await Google.UploadRideAsync(RideId);
+        _busy = false;
+        if (!result.Succeeded)
+        {
+            Snackbar.Add(result.Message ?? WebStrings.RideUploadFailed, Severity.Error);
+            return;
+        }
+
+        Snackbar.Add(WebStrings.Format(WebStrings.RideUploadedMessage, RideTitle ?? WebStrings.RideUntitled), Severity.Success);
+        await OnUploaded.InvokeAsync();
+    }
+}

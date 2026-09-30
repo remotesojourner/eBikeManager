@@ -27,6 +27,15 @@ public sealed partial class FitArchiveService
         return string.Create(CultureInfo.InvariantCulture, $"{local:yyyy}/{local:MM}/{local:yyyy-MM-dd_HHmm}_{safeId}.fit");
     }
 
+    public static string GpxPathFor(Ride ride) => Path.ChangeExtension(RelativePathFor(ride), ".gpx");
+
+    public async Task SaveGpxAsync(string relativePath, byte[] gpx, CancellationToken cancellationToken = default)
+    {
+        var gpxPath = FullPath(relativePath);
+        Directory.CreateDirectory(Path.GetDirectoryName(gpxPath)!);
+        await WriteAtomicallyAsync(gpxPath, gpx, cancellationToken);
+    }
+
     public async Task<string> SaveAsync(string relativePath, byte[] fit, string summaryJson, CancellationToken cancellationToken = default)
     {
         var fitPath = FullPath(relativePath);

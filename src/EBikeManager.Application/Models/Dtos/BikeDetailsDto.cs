@@ -6,10 +6,12 @@ public sealed record BikeDetailsDto(
     string? Brand,
     DateTime? PictureSavedAt,
     string? FrameNumber,
+    string? FrameNumberPosition,
     double? OdometerMeters,
     double? MotorHours,
     double? MotorHoursAssisted,
     double? MaxAssistSpeedKmh,
+    double? WheelCircumferenceMm,
     bool? WalkAssistEnabled,
     bool? LockEnabled,
     bool? AlarmEnabled,
@@ -17,8 +19,10 @@ public sealed record BikeDetailsDto(
     IReadOnlyList<BikeBatteryDto> Batteries,
     IReadOnlyList<BikeComponentDto> Components,
     IReadOnlyList<AssistModeDto> AssistModes,
+    IReadOnlyList<AssistModeMileageDto> ModeMileage,
     BikeLiveStateDto? LiveState,
     BikeLocationDto? LastLocation,
+    IReadOnlyList<BikeDocumentDto> Documents,
     bool? HasFlowPlus,
     DateTime? UpdatedAt)
 {

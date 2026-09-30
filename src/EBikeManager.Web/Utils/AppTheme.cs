@@ -4,6 +4,8 @@ namespace EBikeManager.Web.Utils;
 
 public static class AppTheme
 {
+    public const string DarkModeCascade = "DarkMode";
+
     private const string Primary = "#0799e8";
 
     public static MudTheme Theme { get; } = new()

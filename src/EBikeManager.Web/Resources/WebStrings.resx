@@ -56,12 +56,6 @@
   <data name="Custom" xml:space="preserve">
     <value>Custom</value>
   </data>
-  <data name="Password" xml:space="preserve">
-    <value>Password</value>
-  </data>
-  <data name="SignIn" xml:space="preserve">
-    <value>Sign in</value>
-  </data>
   <data name="SignOut" xml:space="preserve">
     <value>Sign out</value>
   </data>
@@ -134,15 +128,6 @@
   <data name="SyncStartFailed" xml:space="preserve">
     <value>The sync couldn't be started.</value>
   </data>
-  <data name="SignInTitle" xml:space="preserve">
-    <value>Sign in</value>
-  </data>
-  <data name="SignInDescription" xml:space="preserve">
-    <value>This {0} is protected with a password.</value>
-  </data>
-  <data name="SignInFailed" xml:space="preserve">
-    <value>Signing in didn't work. Try again.</value>
-  </data>
   <data name="SettingsSaveFailed" xml:space="preserve">
     <value>The settings couldn't be saved.</value>
   </data>
@@ -198,7 +183,7 @@
     <value>Rides</value>
   </data>
   <data name="RidesSubtitle" xml:space="preserve">
-    <value>Every ride synced from Bosch eBike Flow, with its FIT backup</value>
+    <value>Every ride synced from Bosch eBike Flow, with its FIT and GPX backup</value>
   </data>
   <data name="RidesNone" xml:space="preserve">
     <value>No rides yet. They appear here after the first sync.</value>
@@ -212,44 +197,20 @@
   <data name="RidesYourShare" xml:space="preserve">
     <value>Your share</value>
   </data>
-  <data name="RidesBackup" xml:space="preserve">
-    <value>FIT backup</value>
-  </data>
   <data name="RidesDownloadFit" xml:space="preserve">
     <value>Download FIT file</value>
   </data>
   <data name="RidesDownloadFailed" xml:space="preserve">
-    <value>The FIT file couldn't be downloaded.</value>
+    <value>The file couldn't be downloaded.</value>
   </data>
   <data name="RidesLoadFailed" xml:space="preserve">
     <value>Your rides couldn't be loaded.</value>
   </data>
   <data name="RidesProblems" xml:space="preserve">
-    <value>{0} FIT files couldn't be backed up during the last sync. Hover over their status for the reason.</value>
+    <value>{0} files couldn't be backed up during the last sync. They're tried again on the next sync. Hover over a file for details.</value>
   </data>
   <data name="RideUntitled" xml:space="preserve">
     <value>Untitled ride</value>
-  </data>
-  <data name="FitStatusSaved" xml:space="preserve">
-    <value>Backed up</value>
-  </data>
-  <data name="FitStatusUnavailable" xml:space="preserve">
-    <value>No FIT file</value>
-  </data>
-  <data name="FitStatusFailed" xml:space="preserve">
-    <value>Failed</value>
-  </data>
-  <data name="FitStatusProcessing" xml:space="preserve">
-    <value>Processing</value>
-  </data>
-  <data name="FitStatusPending" xml:space="preserve">
-    <value>Pending</value>
-  </data>
-  <data name="FitStatusProcessingTooltip" xml:space="preserve">
-    <value>Bosch hasn't finished processing this ride yet.</value>
-  </data>
-  <data name="FitStatusPendingTooltip" xml:space="preserve">
-    <value>The FIT file is downloaded on the next sync.</value>
   </data>
   <data name="BoschOpenLogin" xml:space="preserve">
     <value>Open Bosch login</value>
@@ -408,7 +369,7 @@
     <value>Settings</value>
   </data>
   <data name="SettingsSubtitle" xml:space="preserve">
-    <value>Your Bosch connection, sync schedule and sign-in</value>
+    <value>Your Bosch connection, Google Health, sync schedule, map and sign-in</value>
   </data>
   <data name="SettingsTabBosch" xml:space="preserve">
     <value>Bosch</value>
@@ -440,62 +401,35 @@
   <data name="SettingsBoschBikesSaved" xml:space="preserve">
     <value>Bikes saved.</value>
   </data>
-  <data name="SecurityPasswordTitle" xml:space="preserve">
-    <value>Password</value>
-  </data>
-  <data name="SecurityPasswordDescription" xml:space="preserve">
-    <value>Ask for a password before anyone can use this app. Recommended unless only you can reach it.</value>
-  </data>
   <data name="SecurityDisabledByEnvironment" xml:space="preserve">
-    <value>Sign-in is switched off by the DISABLE_AUTH environment variable, so the password isn't asked for.</value>
-  </data>
-  <data name="SecurityPasswordOn" xml:space="preserve">
-    <value>A password is required to use this app.</value>
-  </data>
-  <data name="SecurityNewPassword" xml:space="preserve">
-    <value>New password</value>
-  </data>
-  <data name="SecurityConfirmPassword" xml:space="preserve">
-    <value>Confirm password</value>
-  </data>
-  <data name="SecurityPasswordHelp" xml:space="preserve">
-    <value>At least {0} characters</value>
-  </data>
-  <data name="SecurityPasswordsDiffer" xml:space="preserve">
-    <value>The passwords don't match.</value>
-  </data>
-  <data name="SecurityTurnOn" xml:space="preserve">
-    <value>Require this password</value>
-  </data>
-  <data name="SecurityChangePassword" xml:space="preserve">
-    <value>Change password</value>
-  </data>
-  <data name="SecurityTurnOff" xml:space="preserve">
-    <value>Stop asking for a password</value>
-  </data>
-  <data name="SecurityTurnedOff" xml:space="preserve">
-    <value>The password is no longer required.</value>
+    <value>Sign-in is switched off by the DISABLE_AUTH environment variable, so anyone who can reach this app can use it. Correct the settings below, then remove the variable and restart.</value>
   </data>
   <data name="AboutDescription" xml:space="preserve">
-    <value>A self-hosted home for your Bosch eBike rides.</value>
+    <value>A self-hosted companion for Bosch eBike Flow that backs up every ride, shows your rides and your bike, and uploads them to Google Health.</value>
   </data>
-  <data name="AboutVersion" xml:space="preserve">
-    <value>Version</value>
+  <data name="AboutUpdateCheckFailed" xml:space="preserve">
+    <value>Couldn't check for updates.</value>
   </data>
-  <data name="AboutCreditsTitle" xml:space="preserve">
-    <value>Built with</value>
+  <data name="AboutChangelog" xml:space="preserve">
+    <value>Changelog</value>
   </data>
-  <data name="AboutCreditHomeAssistant" xml:space="preserve">
-    <value>ha-bosch-ebike-flow, the Home Assistant integration this login is based on</value>
+  <data name="AboutLinks" xml:space="preserve">
+    <value>Links</value>
   </data>
-  <data name="AboutCreditModernity" xml:space="preserve">
-    <value>Modernity CSS for MudBlazor</value>
+  <data name="AboutReleases" xml:space="preserve">
+    <value>Releases</value>
   </data>
-  <data name="AboutCreditMudBlazor" xml:space="preserve">
-    <value>MudBlazor</value>
+  <data name="AboutReportIssue" xml:space="preserve">
+    <value>Report an issue</value>
   </data>
-  <data name="AboutCreditFit" xml:space="preserve">
-    <value>Garmin FIT SDK</value>
+  <data name="AboutSponsor" xml:space="preserve">
+    <value>Sponsor</value>
+  </data>
+  <data name="UpdateAvailableVersion" xml:space="preserve">
+    <value>Update available: v{0}</value>
+  </data>
+  <data name="UpdateNoticeLabel" xml:space="preserve">
+    <value>Update available</value>
   </data>
   <data name="NotFoundTitle" xml:space="preserve">
     <value>Page not found</value>
@@ -575,17 +509,8 @@
   <data name="BikeServiceDueDistance" xml:space="preserve">
     <value>At {0} km</value>
   </data>
-  <data name="BikeOdometer" xml:space="preserve">
-    <value>Odometer</value>
-  </data>
-  <data name="BikeOdometerLabel" xml:space="preserve">
-    <value>Total distance ridden</value>
-  </data>
   <data name="BikeMotorHours" xml:space="preserve">
     <value>Motor hours</value>
-  </data>
-  <data name="BikeMotorHoursAssisted" xml:space="preserve">
-    <value>{0} h with motor support</value>
   </data>
   <data name="BikeBattery" xml:space="preserve">
     <value>Battery</value>
@@ -662,9 +587,6 @@
   <data name="BikeComponent" xml:space="preserve">
     <value>Component</value>
   </data>
-  <data name="BikeProduct" xml:space="preserve">
-    <value>Product</value>
-  </data>
   <data name="BikeSoftware" xml:space="preserve">
     <value>Software</value>
   </data>
@@ -695,7 +617,538 @@
   <data name="BikeLock" xml:space="preserve">
     <value>eBike Lock</value>
   </data>
-  <data name="AboutCreditInter" xml:space="preserve">
-    <value>Inter typeface</value>
+  <data name="RideTitle" xml:space="preserve">
+    <value>Ride</value>
+  </data>
+  <data name="RideSubtitle" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="RideBackToRides" xml:space="preserve">
+    <value>All rides</value>
+  </data>
+  <data name="RideLoadFailed" xml:space="preserve">
+    <value>The ride couldn't be loaded.</value>
+  </data>
+  <data name="RideTotalTime" xml:space="preserve">
+    <value>{0} in total</value>
+  </data>
+  <data name="RideAverageSpeed" xml:space="preserve">
+    <value>Average speed</value>
+  </data>
+  <data name="RideTopSpeed" xml:space="preserve">
+    <value>Top speed {0}</value>
+  </data>
+  <data name="RideYourShareOfWork" xml:space="preserve">
+    <value>You did {0} of the work</value>
+  </data>
+  <data name="RideClimbSummary" xml:space="preserve">
+    <value>{0} up, {1} down</value>
+  </data>
+  <data name="RideMap" xml:space="preserve">
+    <value>Route</value>
+  </data>
+  <data name="RideNoRoute" xml:space="preserve">
+    <value>This ride has no GPS track.</value>
+  </data>
+  <data name="RideDetails" xml:space="preserve">
+    <value>Details</value>
+  </data>
+  <data name="RideClimbed" xml:space="preserve">
+    <value>Climbed</value>
+  </data>
+  <data name="RideDescended" xml:space="preserve">
+    <value>Descended</value>
+  </data>
+  <data name="RideCadence" xml:space="preserve">
+    <value>Cadence</value>
+  </data>
+  <data name="RideYourPower" xml:space="preserve">
+    <value>Your power</value>
+  </data>
+  <data name="RideHeartRate" xml:space="preserve">
+    <value>Heart rate</value>
+  </data>
+  <data name="RideAverageAndTop" xml:space="preserve">
+    <value>{0} average, {1} top</value>
+  </data>
+  <data name="RideCo2" xml:space="preserve">
+    <value>CO₂</value>
+  </data>
+  <data name="RideCo2Value" xml:space="preserve">
+    <value>{0} g, {1} g by car</value>
+  </data>
+  <data name="RideAssistModes" xml:space="preserve">
+    <value>Assistance modes</value>
+  </data>
+  <data name="RideAssistModeShare" xml:space="preserve">
+    <value>{0} · {1}</value>
+  </data>
+  <data name="RideAlongTheRide" xml:space="preserve">
+    <value>Along the ride</value>
+  </data>
+  <data name="RideAlongTheRideDescription" xml:space="preserve">
+    <value>Point at a chart to read the values at that spot and see it on the map.</value>
+  </data>
+  <data name="RideChartHint" xml:space="preserve">
+    <value>Point at a chart to read its values.</value>
+  </data>
+  <data name="RideChartTitle" xml:space="preserve">
+    <value>{0} ({1})</value>
+  </data>
+  <data name="RideElevation" xml:space="preserve">
+    <value>Elevation</value>
+  </data>
+  <data name="RideSpeed" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="RidePower" xml:space="preserve">
+    <value>Power</value>
+  </data>
+  <data name="RideSplits" xml:space="preserve">
+    <value>Splits</value>
+  </data>
+  <data name="RideSplitsDescription" xml:space="preserve">
+    <value>Every kilometre of the ride, timed while moving.</value>
+  </data>
+  <data name="RideSplitNumber" xml:space="preserve">
+    <value>Km</value>
+  </data>
+  <data name="RideSplitTime" xml:space="preserve">
+    <value>Time</value>
+  </data>
+  <data name="MapFailed" xml:space="preserve">
+    <value>The map couldn't be loaded from this map server.</value>
+  </data>
+  <data name="MapUnavailable" xml:space="preserve">
+    <value>This browser can't show maps.</value>
+  </data>
+  <data name="MapAttributionOpenStreetMap" xml:space="preserve">
+    <value>© OpenStreetMap contributors</value>
+  </data>
+  <data name="SettingsTabMap" xml:space="preserve">
+    <value>Map</value>
+  </data>
+  <data name="MapTitle" xml:space="preserve">
+    <value>Map</value>
+  </data>
+  <data name="MapDescription" xml:space="preserve">
+    <value>Where the maps on ride pages come from. Your browser loads the map from this server, which learns only which area you're looking at. Your rides stay in eBike Manager.</value>
+  </data>
+  <data name="MapOpenStreetMap" xml:space="preserve">
+    <value>OpenStreetMap</value>
+  </data>
+  <data name="MapOpenStreetMapDescription" xml:space="preserve">
+    <value>The standard map from openstreetmap.org</value>
+  </data>
+  <data name="MapOpenFreeMap" xml:space="preserve">
+    <value>OpenFreeMap</value>
+  </data>
+  <data name="MapOpenFreeMapDescription" xml:space="preserve">
+    <value>A vector map from openfreemap.org, with a dark version for the dark theme</value>
+  </data>
+  <data name="MapCustom" xml:space="preserve">
+    <value>Your own map server</value>
+  </data>
+  <data name="MapCustomDescription" xml:space="preserve">
+    <value>A MapLibre style from a server you host, such as a self-hosted OpenFreeMap</value>
+  </data>
+  <data name="MapStyleUrl" xml:space="preserve">
+    <value>Style URL</value>
+  </data>
+  <data name="MapStyleUrlHelp" xml:space="preserve">
+    <value>The address of the map's style.json</value>
+  </data>
+  <data name="MapStyleUrlInvalid" xml:space="preserve">
+    <value>Enter the full address, starting with https:// or http://</value>
+  </data>
+  <data name="MapDarkStyleUrl" xml:space="preserve">
+    <value>Dark style URL (optional)</value>
+  </data>
+  <data name="MapDarkStyleUrlHelp" xml:space="preserve">
+    <value>Used with the dark theme. Leave it empty to use the style above.</value>
+  </data>
+  <data name="MapSave" xml:space="preserve">
+    <value>Save map</value>
+  </data>
+  <data name="MapSaved" xml:space="preserve">
+    <value>Map saved.</value>
+  </data>
+  <data name="MapPreviewTitle" xml:space="preserve">
+    <value>Preview</value>
+  </data>
+  <data name="MapPreviewDescription" xml:space="preserve">
+    <value>Your latest ride on the chosen map. It changes before you save, so you can try a map first.</value>
+  </data>
+  <data name="GoogleHealthDescription" xml:space="preserve">
+    <value>Uploads every ride as an electric bike workout with Bosch's calories. Bosch counts only your own effort, not the motor's, so your daily calories stay right.</value>
+  </data>
+  <data name="GoogleHealthConnected" xml:space="preserve">
+    <value>Connected to Google Health.</value>
+  </data>
+  <data name="GoogleHealthConnectedAs" xml:space="preserve">
+    <value>Connected to Google Health as {0}.</value>
+  </data>
+  <data name="GoogleHealthSignInAgain" xml:space="preserve">
+    <value>Sign in again</value>
+  </data>
+  <data name="GoogleHealthDisconnect" xml:space="preserve">
+    <value>Disconnect</value>
+  </data>
+  <data name="GoogleHealthLoginRejected" xml:space="preserve">
+    <value>Google no longer accepts eBike Manager's sign-in, so rides aren't being uploaded. Sign in again below.</value>
+  </data>
+  <data name="GoogleHealthStepClientTitle" xml:space="preserve">
+    <value>1. Create your own Google sign-in</value>
+  </data>
+  <data name="GoogleHealthStepProject" xml:space="preserve">
+    <value>Create a project in the Google Cloud console.</value>
+  </data>
+  <data name="GoogleHealthOpenConsole" xml:space="preserve">
+    <value>Open the console</value>
+  </data>
+  <data name="GoogleHealthStepApi" xml:space="preserve">
+    <value>Enable the Google Health API for the project.</value>
+  </data>
+  <data name="GoogleHealthOpenApi" xml:space="preserve">
+    <value>Open the API</value>
+  </data>
+  <data name="GoogleHealthStepConsent" xml:space="preserve">
+    <value>In Google Auth Platform, set up the app for External users and add your Google account as a test user.</value>
+  </data>
+  <data name="GoogleHealthOpenAuthPlatform" xml:space="preserve">
+    <value>Open Google Auth Platform</value>
+  </data>
+  <data name="GoogleHealthOpenClients" xml:space="preserve">
+    <value>Open Clients</value>
+  </data>
+  <data name="GoogleHealthClientId" xml:space="preserve">
+    <value>Client ID</value>
+  </data>
+  <data name="GoogleHealthClientIdHint" xml:space="preserve">
+    <value>The client ID ends with .apps.googleusercontent.com</value>
+  </data>
+  <data name="GoogleHealthClientSecret" xml:space="preserve">
+    <value>Client secret</value>
+  </data>
+  <data name="GoogleHealthClientSecretKept" xml:space="preserve">
+    <value>Leave it empty to keep the saved secret.</value>
+  </data>
+  <data name="GoogleHealthStepRidesTitle" xml:space="preserve">
+    <value>2. Choose which rides to upload</value>
+  </data>
+  <data name="GoogleHealthStepSignInTitle" xml:space="preserve">
+    <value>3. Sign in to Google</value>
+  </data>
+  <data name="GoogleHealthStepUnverified" xml:space="preserve">
+    <value>Google warns that the app hasn't been verified or is still being tested. Continue anyway; it's the app you created.</value>
+  </data>
+  <data name="GoogleHealthStepAllow" xml:space="preserve">
+    <value>Allow access to your activity and fitness data.</value>
+  </data>
+  <data name="GoogleHealthConnectFailed" xml:space="preserve">
+    <value>Google Health couldn't be connected.</value>
+  </data>
+  <data name="GoogleHealthConnectedMessage" xml:space="preserve">
+    <value>Google Health is connected. Rides are uploaded after each sync.</value>
+  </data>
+  <data name="GoogleHealthOptionsTitle" xml:space="preserve">
+    <value>Upload settings</value>
+  </data>
+  <data name="GoogleHealthOptionsDescription" xml:space="preserve">
+    <value>Which rides go to Google Health.</value>
+  </data>
+  <data name="GoogleHealthSaveOptions" xml:space="preserve">
+    <value>Save upload settings</value>
+  </data>
+  <data name="GoogleHealthOptionsSaved" xml:space="preserve">
+    <value>Upload settings saved.</value>
+  </data>
+  <data name="GoogleHealthDisconnectFailed" xml:space="preserve">
+    <value>Google Health couldn't be disconnected.</value>
+  </data>
+  <data name="GoogleHealthDisconnected" xml:space="preserve">
+    <value>Google Health is disconnected. Rides already uploaded stay in Google Health.</value>
+  </data>
+  <data name="GoogleHealthUploadsTitle" xml:space="preserve">
+    <value>Uploads</value>
+  </data>
+  <data name="GoogleHealthUploadsDescription" xml:space="preserve">
+    <value>{0} uploaded, {1} failed, {2} with a note. Rides are uploaded after each sync, and the Rides page shows how each one went.</value>
+  </data>
+  <data name="GoogleHealthUploadNow" xml:space="preserve">
+    <value>Upload now</value>
+  </data>
+  <data name="UploadChoiceNew" xml:space="preserve">
+    <value>Only new rides</value>
+  </data>
+  <data name="UploadChoiceNewDescription" xml:space="preserve">
+    <value>Rides you start from now on</value>
+  </data>
+  <data name="UploadChoiceSince" xml:space="preserve">
+    <value>Rides since a date</value>
+  </data>
+  <data name="UploadChoiceSinceDescription" xml:space="preserve">
+    <value>Also uploads the rides you've done since then</value>
+  </data>
+  <data name="UploadChoiceSinceDate" xml:space="preserve">
+    <value>Upload rides since</value>
+  </data>
+  <data name="UploadChoiceAll" xml:space="preserve">
+    <value>All my rides</value>
+  </data>
+  <data name="UploadChoiceAllDescription" xml:space="preserve">
+    <value>Every ride eBike Manager has, however old</value>
+  </data>
+  <data name="UploadStatusUploaded" xml:space="preserve">
+    <value>Uploaded</value>
+  </data>
+  <data name="UploadStatusUploadedWithNote" xml:space="preserve">
+    <value>Uploaded, see note</value>
+  </data>
+  <data name="UploadStatusFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="UploadStatusUploadedAt" xml:space="preserve">
+    <value>Uploaded {0}</value>
+  </data>
+  <data name="LayoutUploadedOneRide" xml:space="preserve">
+    <value>Uploaded 1 ride to your integrations.</value>
+  </data>
+  <data name="LayoutUploadedRides" xml:space="preserve">
+    <value>Uploaded {0} rides to your integrations.</value>
+  </data>
+  <data name="GoogleHealthNeedsHttpsTitle" xml:space="preserve">
+    <value>Open eBike Manager through your reverse proxy to connect Google Health</value>
+  </data>
+  <data name="GoogleHealthNeedsHttpsDescription" xml:space="preserve">
+    <value>Google only sends the sign-in back to an HTTPS address on a domain name, such as https://ebike.example.com. This page is open at {0}. Put eBike Manager behind a reverse proxy with HTTPS, then open this page at that address.</value>
+  </data>
+  <data name="GoogleHealthStepWebClient" xml:space="preserve">
+    <value>Create an OAuth client of type Web application. Add the authorized redirect URI below, then copy the client's ID and secret here.</value>
+  </data>
+  <data name="GoogleHealthRedirectUri" xml:space="preserve">
+    <value>Authorized redirect URI</value>
+  </data>
+  <data name="GoogleHealthCopy" xml:space="preserve">
+    <value>Copy</value>
+  </data>
+  <data name="GoogleHealthCopied" xml:space="preserve">
+    <value>Copied to the clipboard.</value>
+  </data>
+  <data name="GoogleHealthStepSignIn" xml:space="preserve">
+    <value>Click Sign in with Google and choose your Google account.</value>
+  </data>
+  <data name="GoogleHealthStepBack" xml:space="preserve">
+    <value>Google then brings you back here, and eBike Manager finishes connecting.</value>
+  </data>
+  <data name="GoogleHealthSignInButton" xml:space="preserve">
+    <value>Sign in with Google</value>
+  </data>
+  <data name="GoogleHealthSigningIn" xml:space="preserve">
+    <value>Opening Google…</value>
+  </data>
+  <data name="RidesUploadToGoogleHealth" xml:space="preserve">
+    <value>Upload to Google Health</value>
+  </data>
+  <data name="RidesUploadAgain" xml:space="preserve">
+    <value>Upload to Google Health again. The last try failed: {0}</value>
+  </data>
+  <data name="RidesUploadedToGoogleHealth" xml:space="preserve">
+    <value>Uploaded to Google Health {0}</value>
+  </data>
+  <data name="RidesUploading" xml:space="preserve">
+    <value>Uploading…</value>
+  </data>
+  <data name="RideUploadedMessage" xml:space="preserve">
+    <value>Uploaded {0} to Google Health.</value>
+  </data>
+  <data name="RideUploadFailed" xml:space="preserve">
+    <value>The ride couldn't be uploaded to Google Health.</value>
+  </data>
+  <data name="RidesUploadAgainButton" xml:space="preserve">
+    <value>Upload to Google Health again</value>
+  </data>
+  <data name="GoogleHealthWatchNoteTitle" xml:space="preserve">
+    <value>Wearing a Fitbit or Pixel Watch?</value>
+  </data>
+  <data name="GoogleHealthWatchNote" xml:space="preserve">
+    <value>Turn off automatic recognition of bike rides for your watch in the Fitbit app, so it doesn't record your e-bike rides. When your watch records a ride, Google Health shows the watch's version, with its far higher calories, instead of eBike Manager's, and keeps part of it even after you delete it. eBike Manager doesn't upload those rides; it marks them as failed with this reason.</value>
+  </data>
+  <data name="RidesDownloadGpx" xml:space="preserve">
+    <value>Download GPX file</value>
+  </data>
+  <data name="BackupStatusLabel" xml:space="preserve">
+    <value>{0}: {1}</value>
+  </data>
+  <data name="BackupStatusUnavailable" xml:space="preserve">
+    <value>Not available</value>
+  </data>
+  <data name="BackupStatusFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="BackupStatusProcessing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="BackupStatusPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="BackupProcessingTooltip" xml:space="preserve">
+    <value>Bosch hasn't finished processing this ride yet.</value>
+  </data>
+  <data name="BackupPendingTooltip" xml:space="preserve">
+    <value>The {0} file is downloaded on the next sync.</value>
+  </data>
+  <data name="BackupUnavailableTooltip" xml:space="preserve">
+    <value>Bosch has no {0} file for this ride.</value>
+  </data>
+  <data name="BikeFrameNumberPosition" xml:space="preserve">
+    <value>Frame number position</value>
+  </data>
+  <data name="BikeMileage" xml:space="preserve">
+    <value>Mileage</value>
+  </data>
+  <data name="BikeMileageLabel" xml:space="preserve">
+    <value>Total distance ridden</value>
+  </data>
+  <data name="BikeMileageByMode" xml:space="preserve">
+    <value>Distance per assistance mode</value>
+  </data>
+  <data name="BikeMotorHoursLabel" xml:space="preserve">
+    <value>Motor hours, {0} h with motor support</value>
+  </data>
+  <data name="BikeDocumentsTitle" xml:space="preserve">
+    <value>Documents</value>
+  </data>
+  <data name="BikeDocumentsDescription" xml:space="preserve">
+    <value>Photos and invoices from the eBike Pass in the Flow app</value>
+  </data>
+  <data name="BikeDocumentBikePhoto" xml:space="preserve">
+    <value>Bike photo</value>
+  </data>
+  <data name="BikeDocumentBikeInvoice" xml:space="preserve">
+    <value>Bike invoice</value>
+  </data>
+  <data name="BikeDocumentLockInvoice" xml:space="preserve">
+    <value>Lock invoice</value>
+  </data>
+  <data name="BikeDocumentOther" xml:space="preserve">
+    <value>Document</value>
+  </data>
+  <data name="BikeDocumentAdded" xml:space="preserve">
+    <value>Added {0}</value>
+  </data>
+  <data name="DashboardBikeDetails" xml:space="preserve">
+    <value>Bike details</value>
+  </data>
+  <data name="DashboardBatteryCycles" xml:space="preserve">
+    <value>{0} charge cycles</value>
+  </data>
+  <data name="DashboardBatteryLevelAndCycles" xml:space="preserve">
+    <value>{0}, {1} charge cycles</value>
+  </data>
+  <data name="BikeWheelCircumference" xml:space="preserve">
+    <value>Wheel circumference</value>
+  </data>
+  <data name="SignOutAs" xml:space="preserve">
+    <value>Sign out {0}</value>
+  </data>
+  <data name="SecuritySignInTitle" xml:space="preserve">
+    <value>Sign-in</value>
+  </data>
+  <data name="SecuritySignInDescription" xml:space="preserve">
+    <value>Ask everyone to sign in with your own OpenID Connect provider, such as Authentik, Authelia, Keycloak or Pocket ID, before they can use {0}.</value>
+  </data>
+  <data name="SecuritySignedInAs" xml:space="preserve">
+    <value>Signed in as {0}.</value>
+  </data>
+  <data name="SecurityRequireSignIn" xml:space="preserve">
+    <value>Require sign-in</value>
+  </data>
+  <data name="SecurityRequireSignInDescription" xml:space="preserve">
+    <value>Everyone is sent to your provider before they see anything. The provider is checked before this is saved.</value>
+  </data>
+  <data name="SecurityProviderUrl" xml:space="preserve">
+    <value>Provider address</value>
+  </data>
+  <data name="SecurityProviderUrlHelp" xml:space="preserve">
+    <value>The issuer address your provider shows for this app</value>
+  </data>
+  <data name="SecurityProviderUrlInvalid" xml:space="preserve">
+    <value>Enter the full address, starting with https:// or http://.</value>
+  </data>
+  <data name="SecurityClientId" xml:space="preserve">
+    <value>Client ID</value>
+  </data>
+  <data name="SecurityClientSecret" xml:space="preserve">
+    <value>Client secret</value>
+  </data>
+  <data name="SecurityShowSecret" xml:space="preserve">
+    <value>Show or hide the client secret</value>
+  </data>
+  <data name="SecuritySecretSavedPlaceholder" xml:space="preserve">
+    <value>Saved</value>
+  </data>
+  <data name="SecuritySecretSaved" xml:space="preserve">
+    <value>A secret is saved. Leave this empty to keep it.</value>
+  </data>
+  <data name="SecuritySecretEmpty" xml:space="preserve">
+    <value>Leave empty if your provider set this app up as a public client.</value>
+  </data>
+  <data name="SecurityRemoveSecret" xml:space="preserve">
+    <value>Remove the saved secret</value>
+  </data>
+  <data name="SecurityScopes" xml:space="preserve">
+    <value>Scopes</value>
+  </data>
+  <data name="SecurityScopesHelp" xml:space="preserve">
+    <value>Separated by spaces. openid is always included.</value>
+  </data>
+  <data name="SecurityRedirectUri" xml:space="preserve">
+    <value>Redirect URI</value>
+  </data>
+  <data name="SecurityCopyRedirectUri" xml:space="preserve">
+    <value>Copy the redirect URI</value>
+  </data>
+  <data name="SecurityRedirectUriHelp" xml:space="preserve">
+    <value>Register this address with your provider</value>
+  </data>
+  <data name="SecurityPlainHttp" xml:space="preserve">
+    <value>This page is on plain http. Many providers only accept https redirect addresses.</value>
+  </data>
+  <data name="SecuritySave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="SecurityCheckingProvider" xml:space="preserve">
+    <value>Checking the provider…</value>
+  </data>
+  <data name="SecuritySaved" xml:space="preserve">
+    <value>Sign-in settings saved.</value>
+  </data>
+  <data name="SecuritySignInOn" xml:space="preserve">
+    <value>Sign-in is on. Taking you to your provider…</value>
+  </data>
+  <data name="SecurityCopied" xml:space="preserve">
+    <value>Copied.</value>
+  </data>
+  <data name="AuthSignedOutTitle" xml:space="preserve">
+    <value>You've signed out</value>
+  </data>
+  <data name="AuthSignedOutMessage" xml:space="preserve">
+    <value>You're signed out of {0}. Your provider may still have you signed in there.</value>
+  </data>
+  <data name="AuthSignInAgain" xml:space="preserve">
+    <value>Sign in again</value>
+  </data>
+  <data name="AuthFailedTitle" xml:space="preserve">
+    <value>Signing in didn't work</value>
+  </data>
+  <data name="AuthFailedReason" xml:space="preserve">
+    <value>Your provider didn't complete the sign-in.</value>
+  </data>
+  <data name="AuthFailedNote" xml:space="preserve">
+    <value>If the sign-in settings are wrong, start {0} with {1}. Sign-in is then off, so you can correct them under Settings, Security, then remove the variable again.</value>
+  </data>
+  <data name="RidesDataFiles" xml:space="preserve">
+    <value>Data files</value>
   </data>
 </root>

@@ -1,6 +1,6 @@
 namespace EBikeManager.Application.Configuration;
 
-public sealed record AppSettings(bool SetupCompleted, ScheduleSettings Schedule, BoschSettings Bosch, SignInSettings SignIn)
+public sealed record AppSettings(bool SetupCompleted, ScheduleSettings Schedule, BoschSettings Bosch, SignInSettings SignIn, MapSettings Map, GoogleHealthSettings GoogleHealth)
 {
     public static AppSettings Defaults { get; } = From(SettingDefinitions.All.ToDictionary(definition => definition.Key, definition => definition.Default));
 
@@ -26,7 +26,17 @@ public sealed record AppSettings(bool SetupCompleted, ScheduleSettings Schedule,
             Bosch: new BoschSettings(Optional(SettingDefinitions.BoschAccount), Flag(SettingDefinitions.BoschFullScan)),
             SignIn: new SignInSettings(
                 Flag(SettingDefinitions.AuthEnabled),
-                Optional(SettingDefinitions.AuthPasswordHash),
-                Optional(SettingDefinitions.AuthStamp)));
+                Optional(SettingDefinitions.OidcAuthority),
+                Optional(SettingDefinitions.OidcClientId),
+                string.Join(' ', SignInSettings.ParseScopes(Text(SettingDefinitions.OidcScopes))),
+                Optional(SettingDefinitions.AuthStamp)),
+            Map: MapSettings.From(
+                Text(SettingDefinitions.MapProvider),
+                Optional(SettingDefinitions.MapStyleUrl),
+                Optional(SettingDefinitions.MapDarkStyleUrl)),
+            GoogleHealth: new GoogleHealthSettings(
+                Optional(SettingDefinitions.GoogleHealthClientId),
+                Optional(SettingDefinitions.GoogleHealthAccount),
+                Optional(SettingDefinitions.GoogleHealthUploadFrom)));
     }
 }
