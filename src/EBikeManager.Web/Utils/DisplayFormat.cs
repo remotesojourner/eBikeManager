@@ -20,6 +20,18 @@ public static class DisplayFormat
             : WebStrings.Format(WebStrings.UnitMinutes, Math.Max(1, total / 60));
     }
 
+    public static string Kilometres(double? kilometres) =>
+        kilometres is { } value ? WebStrings.Format(WebStrings.UnitKilometres, value.ToString("0", CultureInfo.CurrentCulture)) : Missing;
+
+    public static string Speed(double? kilometresPerHour) =>
+        kilometresPerHour is { } value ? WebStrings.Format(WebStrings.UnitKilometresPerHour, value.ToString("0.#", CultureInfo.CurrentCulture)) : Missing;
+
+    public static string WattHours(double? wattHours) =>
+        wattHours is { } value ? WebStrings.Format(WebStrings.UnitWattHours, value.ToString("#,0", CultureInfo.CurrentCulture)) : Missing;
+
+    public static string KilowattHours(double? wattHours) =>
+        wattHours is { } value ? WebStrings.Format(WebStrings.UnitKilowattHours, (value / 1000).ToString("#,0.#", CultureInfo.CurrentCulture)) : Missing;
+
     public static string Calories(double? kcal) =>
         kcal is { } value ? WebStrings.Format(WebStrings.UnitKilocalories, value.ToString("0", CultureInfo.CurrentCulture)) : Missing;
 

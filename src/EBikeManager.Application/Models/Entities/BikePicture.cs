@@ -1,0 +1,14 @@
+namespace EBikeManager.Application.Models.Entities;
+
+public class BikePicture
+{
+    public string BikeId { get; set; } = string.Empty;
+
+    public string SourceUrl { get; set; } = string.Empty;
+
+    public string ContentType { get; set; } = string.Empty;
+
+    public byte[] Content { get; set; } = [];
+
+    public DateTime SavedAt { get; set; }
+}

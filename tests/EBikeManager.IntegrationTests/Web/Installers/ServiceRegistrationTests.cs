@@ -1,3 +1,4 @@
+using EBikeManager.Application.Repositories.Interfaces;
 using EBikeManager.Application.Services;
 using EBikeManager.Application.Services.Interfaces;
 using EBikeManager.IntegrationTests.Fixtures;
@@ -24,6 +25,8 @@ public sealed class ServiceRegistrationTests : IClassFixture<NotSetUpApp>
         typeof(BikeService),
         typeof(RideService),
         typeof(RideSyncService),
+        typeof(BikeDetailsSyncService),
+        typeof(IBikePictureRepository),
         typeof(SyncRunService),
         typeof(SyncStateService),
         typeof(PkceLoginService),

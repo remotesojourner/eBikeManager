@@ -10,6 +10,7 @@ public sealed class PageLayoutTests : BrowserTest, IClassFixture<BrowserAppWithR
     [
         ("/", "dashboard", "Recent rides"),
         ("/rides", "rides", "FIT backup"),
+        ("/bikes", "bike", "Components"),
         ("/settings/bosch", "bosch", "Bosch eBike Flow account"),
         ("/settings/schedule", "schedule", "Sync schedule"),
         ("/settings/security", "security", "Require this password"),

@@ -1,4 +1,5 @@
 using EBikeManager.Application.Data;
+using EBikeManager.Application.Models;
 using EBikeManager.Application.Models.Entities;
 using EBikeManager.Application.Repositories.Interfaces;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,19 @@ internal sealed class BikeRepository : IBikeRepository
             else _db.Bikes.Add(bike);
         }
 
+        await _db.SaveChangesAsync(cancellationToken);
+    }
+
+    public async Task SaveSnapshotAsync(string bikeId, BikeSnapshot snapshot, DateTime updatedAt, CancellationToken cancellationToken = default)
+    {
+        if (await _db.Bikes.SingleOrDefaultAsync(bike => bike.Id == bikeId, cancellationToken) is not { } bike) return;
+
+        bike.ProfileJson = snapshot.ProfileJson;
+        bike.StateOfChargeJson = snapshot.StateOfChargeJson;
+        bike.PassJson = snapshot.PassJson;
+        bike.LocationJson = snapshot.LocationJson;
+        bike.HasFlowPlus = snapshot.HasFlowPlus;
+        bike.DetailsUpdatedAt = updatedAt;
         await _db.SaveChangesAsync(cancellationToken);
     }
 }

@@ -27,14 +27,68 @@ namespace EBikeManager.Application.Data.Migrations
                         .HasColumnType("TEXT")
                         .HasColumnName("addedAt");
 
+                    b.Property<DateTime?>("DetailsUpdatedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("detailsUpdatedAt");
+
+                    b.Property<bool?>("HasFlowPlus")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("hasFlowPlus");
+
+                    b.Property<string>("LocationJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("locationJson");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("name");
 
+                    b.Property<string>("PassJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("passJson");
+
+                    b.Property<string>("ProfileJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("profileJson");
+
+                    b.Property<string>("StateOfChargeJson")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("stateOfChargeJson");
+
                     b.HasKey("Id");
 
                     b.ToTable("bikes", (string)null);
+                });
+
+            modelBuilder.Entity("EBikeManager.Application.Models.Entities.BikePicture", b =>
+                {
+                    b.Property<string>("BikeId")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("bikeId");
+
+                    b.Property<byte[]>("Content")
+                        .IsRequired()
+                        .HasColumnType("BLOB")
+                        .HasColumnName("content");
+
+                    b.Property<string>("ContentType")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("contentType");
+
+                    b.Property<DateTime>("SavedAt")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("savedAt");
+
+                    b.Property<string>("SourceUrl")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("sourceUrl");
+
+                    b.HasKey("BikeId");
+
+                    b.ToTable("bikePictures", (string)null);
                 });
 
             modelBuilder.Entity("EBikeManager.Application.Models.Entities.ConfigEntry", b =>
@@ -186,6 +240,15 @@ namespace EBikeManager.Application.Data.Migrations
                     b.HasKey("Name");
 
                     b.ToTable("secrets", (string)null);
+                });
+
+            modelBuilder.Entity("EBikeManager.Application.Models.Entities.BikePicture", b =>
+                {
+                    b.HasOne("EBikeManager.Application.Models.Entities.Bike", null)
+                        .WithOne()
+                        .HasForeignKey("EBikeManager.Application.Models.Entities.BikePicture", "BikeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 #pragma warning restore 612, 618
         }

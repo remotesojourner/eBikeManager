@@ -1,8 +1,8 @@
 using EBikeManager.Application.Configuration;
-using EBikeManager.Application.Models;
 using EBikeManager.Application.Models.Entities;
 using EBikeManager.Application.Repositories.Interfaces;
 using EBikeManager.Application.Services;
+using EBikeManager.Application.Utils;
 using EBikeManager.TestSupport;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -15,8 +15,8 @@ internal static class SampleData
 
     public static void AddBikesAndRides(FakeBoschApi bosch, int rides = 30)
     {
-        bosch.Bikes.Add(new BoschBikeInfo(BikeId, "TENWAYS (Performance Line)"));
-        bosch.Bikes.Add(new BoschBikeInfo(OtherBikeId, "Cube (Performance Line CX)"));
+        bosch.AddBike(BikeId, "TENWAYS (Performance Line)");
+        bosch.AddBike(OtherBikeId, "Cube (Performance Line CX)");
         var now = DateTime.UtcNow;
         for (var index = 0; index < rides; index++)
         {
@@ -37,10 +37,22 @@ internal static class SampleData
         }, cancellationToken);
     }
 
+    public static async Task RequirePasswordAsync(IServiceProvider services, string password, CancellationToken cancellationToken)
+    {
+        var saved = await services.GetRequiredService<ISettingsRepository>().SaveSignInAsync(new Dictionary<string, string>
+        {
+            [SettingDefinitions.AuthEnabled] = "true",
+            [SettingDefinitions.AuthPasswordHash] = PasswordHash.Create(password),
+            [SettingDefinitions.AuthStamp] = Guid.NewGuid().ToString("N")
+        }, cancellationToken);
+        Assert.True(saved.Succeeded, saved.Error);
+    }
+
     public static async Task SyncAsync(IServiceProvider services, CancellationToken cancellationToken)
     {
         var sync = services.GetRequiredService<RideSyncService>();
         sync.DownloadDelay = TimeSpan.Zero;
         await sync.RunAsync(cancellationToken);
+        await services.GetRequiredService<BikeDetailsSyncService>().RefreshAsync(cancellationToken);
     }
 }

@@ -13,6 +13,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <EmbeddedResource Include="Samples\bike.png" LogicalName="EBikeManager.TestSupport.Samples.bike.png" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="EBikeManager.UnitTests" />
     <InternalsVisibleTo Include="EBikeManager.IntegrationTests" />
   </ItemGroup>
