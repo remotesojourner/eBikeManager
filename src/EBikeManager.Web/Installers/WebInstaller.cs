@@ -24,8 +24,12 @@ public static class WebInstaller
 
         services.AddDataProtection().SetApplicationName("EBikeManager");
         services.AddOptions<KeyManagementOptions>()
-            .Configure<IOptions<EBikeManagerOptions>, ILoggerFactory>((keyManagement, options, loggerFactory) =>
-                keyManagement.XmlRepository = new FileSystemXmlRepository(new DirectoryInfo(options.Value.KeysDirectory), loggerFactory));
+            .PostConfigure<IOptions<EBikeManagerOptions>, ILoggerFactory>((keyManagement, options, loggerFactory) =>
+            {
+                var keysDir = new DirectoryInfo(options.Value.KeysDirectory);
+                keysDir.Create();
+                keyManagement.XmlRepository = new FileSystemXmlRepository(keysDir, loggerFactory);
+            });
         services.AddSingleton<ISecretProtectionService, DataProtectionSecretService>();
 
         services.AddHealthChecks();

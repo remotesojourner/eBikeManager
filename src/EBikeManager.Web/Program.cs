@@ -21,6 +21,7 @@ var app = builder.Build();
 
 var hosting = app.Services.GetRequiredService<IOptions<EBikeManagerOptions>>().Value;
 Directory.CreateDirectory(hosting.DataDirectory);
+Directory.CreateDirectory(hosting.KeysDirectory);
 Directory.CreateDirectory(hosting.FitDirectory);
 
 await app.Services.InitializeDatabaseAsync();
