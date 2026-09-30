@@ -26,6 +26,15 @@ internal sealed class RideRepository : IRideRepository
     public Task<Ride?> FindAsync(string id, CancellationToken cancellationToken = default) =>
         _db.Rides.AsNoTracking().SingleOrDefaultAsync(ride => ride.Id == id, cancellationToken);
 
+    public async Task<IReadOnlyList<string>> GetRecentSummariesAsync(string bikeId, int count, CancellationToken cancellationToken = default) =>
+        await _db.Rides.AsNoTracking()
+            .Where(ride => ride.BikeId == bikeId)
+            .OrderByDescending(ride => ride.StartTime)
+            .ThenBy(ride => ride.Id)
+            .Take(count)
+            .Select(ride => ride.SummaryJson)
+            .ToListAsync(cancellationToken);
+
     public async Task<RideTotalsDto> TotalsSinceAsync(DateTime? sinceUtc, CancellationToken cancellationToken = default)
     {
         var rides = _db.Rides.AsNoTracking().Where(ride => sinceUtc == null || ride.StartTime >= sinceUtc);

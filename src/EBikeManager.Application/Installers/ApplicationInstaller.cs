@@ -31,6 +31,7 @@ public static class ApplicationInstaller
         services.AddScoped<BikeService>();
         services.AddScoped<RideService>();
         services.AddScoped<RideSyncService>();
+        services.AddScoped<BikeDetailsSyncService>();
         services.AddScoped<SyncRunService>();
 
         services.AddDbContext<EBikeManagerDbContext>((provider, options) =>
@@ -42,6 +43,7 @@ public static class ApplicationInstaller
         services.AddScoped<ISettingsRepository, SettingsRepository>();
         services.AddScoped<ISecretRepository, SecretRepository>();
         services.AddScoped<IBikeRepository, BikeRepository>();
+        services.AddScoped<IBikePictureRepository, BikePictureRepository>();
         services.AddScoped<IRideRepository, RideRepository>();
 
         services.TryAddSingleton(TimeProvider.System);
@@ -57,6 +59,13 @@ public static class ApplicationInstaller
                 options.CircuitBreaker.SamplingDuration = TimeSpan.FromMinutes(1);
                 options.TotalRequestTimeout.Timeout = TimeSpan.FromSeconds(90);
             });
+
+        services.AddHttpClient(BoschApiService.MediaHttpClientName, http =>
+        {
+            ConfigureBoschClient(http);
+            http.Timeout = TimeSpan.FromSeconds(60);
+            http.MaxResponseContentBufferSize = ImageFormat.MaxBytes;
+        });
 
         services.AddHostedService<SyncSchedulerService>();
         return services;

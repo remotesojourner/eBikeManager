@@ -506,4 +506,196 @@
   <data name="NotFoundHome" xml:space="preserve">
     <value>Go to the dashboard</value>
   </data>
+  <data name="Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="UnitWattHours" xml:space="preserve">
+    <value>{0} Wh</value>
+  </data>
+  <data name="UnitKilowattHours" xml:space="preserve">
+    <value>{0} kWh</value>
+  </data>
+  <data name="UnitKilometresPerHour" xml:space="preserve">
+    <value>{0} km/h</value>
+  </data>
+  <data name="BikeTitle" xml:space="preserve">
+    <value>Bike</value>
+  </data>
+  <data name="BikeSubtitle" xml:space="preserve">
+    <value>Everything Bosch knows about your bike</value>
+  </data>
+  <data name="BikeUpdated" xml:space="preserve">
+    <value>Updated {0}</value>
+  </data>
+  <data name="BikeRefresh" xml:space="preserve">
+    <value>Refresh</value>
+  </data>
+  <data name="BikeRefreshing" xml:space="preserve">
+    <value>Refreshing…</value>
+  </data>
+  <data name="BikeRefreshed" xml:space="preserve">
+    <value>Bike details refreshed.</value>
+  </data>
+  <data name="BikeRefreshFailed" xml:space="preserve">
+    <value>The bike details couldn't be refreshed.</value>
+  </data>
+  <data name="BikeLoadFailed" xml:space="preserve">
+    <value>Your bike details couldn't be loaded.</value>
+  </data>
+  <data name="BikeNone" xml:space="preserve">
+    <value>No bikes are chosen. Choose them under Settings, Bosch.</value>
+  </data>
+  <data name="BikeNoDetailsYet" xml:space="preserve">
+    <value>The details of {0} are fetched on the next sync. Click Refresh to get them now.</value>
+  </data>
+  <data name="BikeFrameNumber" xml:space="preserve">
+    <value>Frame number</value>
+  </data>
+  <data name="BikeMaxAssistSpeed" xml:space="preserve">
+    <value>Assistance up to</value>
+  </data>
+  <data name="BikeWalkAssist" xml:space="preserve">
+    <value>Walk assist</value>
+  </data>
+  <data name="BikeAlarm" xml:space="preserve">
+    <value>eBike Alarm</value>
+  </data>
+  <data name="BikeFlowPlus" xml:space="preserve">
+    <value>Flow+ subscription</value>
+  </data>
+  <data name="BikeServiceDue" xml:space="preserve">
+    <value>Service due</value>
+  </data>
+  <data name="BikeServiceDueBoth" xml:space="preserve">
+    <value>{0} or at {1} km</value>
+  </data>
+  <data name="BikeServiceDueDistance" xml:space="preserve">
+    <value>At {0} km</value>
+  </data>
+  <data name="BikeOdometer" xml:space="preserve">
+    <value>Odometer</value>
+  </data>
+  <data name="BikeOdometerLabel" xml:space="preserve">
+    <value>Total distance ridden</value>
+  </data>
+  <data name="BikeMotorHours" xml:space="preserve">
+    <value>Motor hours</value>
+  </data>
+  <data name="BikeMotorHoursAssisted" xml:space="preserve">
+    <value>{0} h with motor support</value>
+  </data>
+  <data name="BikeBattery" xml:space="preserve">
+    <value>Battery</value>
+  </data>
+  <data name="BikeChargeCycles" xml:space="preserve">
+    <value>Full charge cycles</value>
+  </data>
+  <data name="BikeCapacity" xml:space="preserve">
+    <value>Capacity</value>
+  </data>
+  <data name="BikeChargeLevel" xml:space="preserve">
+    <value>Charge level</value>
+  </data>
+  <data name="BikeLifetimeEnergy" xml:space="preserve">
+    <value>Energy delivered</value>
+  </data>
+  <data name="BikeCyclesOnOffBike" xml:space="preserve">
+    <value>Cycles on / off the bike</value>
+  </data>
+  <data name="BikeRange" xml:space="preserve">
+    <value>Range</value>
+  </data>
+  <data name="BikeRangeDescription" xml:space="preserve">
+    <value>How far the battery would take you in each assistance mode</value>
+  </data>
+  <data name="BikeLiveTitle" xml:space="preserve">
+    <value>Live battery</value>
+  </data>
+  <data name="BikeLiveDescription" xml:space="preserve">
+    <value>Reported by the ConnectModule</value>
+  </data>
+  <data name="BikeCharging" xml:space="preserve">
+    <value>Charging</value>
+  </data>
+  <data name="BikeChargerConnected" xml:space="preserve">
+    <value>Charger connected</value>
+  </data>
+  <data name="BikeRemainingEnergy" xml:space="preserve">
+    <value>Remaining energy</value>
+  </data>
+  <data name="BikeLiveRange" xml:space="preserve">
+    <value>Range</value>
+  </data>
+  <data name="BikeRangeBetween" xml:space="preserve">
+    <value>{0} to {1} km</value>
+  </data>
+  <data name="BikeLiveUpdated" xml:space="preserve">
+    <value>Reported</value>
+  </data>
+  <data name="BikeLocationTitle" xml:space="preserve">
+    <value>Last known location</value>
+  </data>
+  <data name="BikeLocationDescription" xml:space="preserve">
+    <value>Where the ConnectModule last reported the bike</value>
+  </data>
+  <data name="BikeCoordinates" xml:space="preserve">
+    <value>Coordinates</value>
+  </data>
+  <data name="BikeAccuracy" xml:space="preserve">
+    <value>Accuracy</value>
+  </data>
+  <data name="BikeSeenAt" xml:space="preserve">
+    <value>Seen</value>
+  </data>
+  <data name="BikeOpenMap" xml:space="preserve">
+    <value>Open map</value>
+  </data>
+  <data name="BikeComponentsTitle" xml:space="preserve">
+    <value>Components</value>
+  </data>
+  <data name="BikeComponentsDescription" xml:space="preserve">
+    <value>Product names, software versions and serial numbers</value>
+  </data>
+  <data name="BikeComponent" xml:space="preserve">
+    <value>Component</value>
+  </data>
+  <data name="BikeProduct" xml:space="preserve">
+    <value>Product</value>
+  </data>
+  <data name="BikeSoftware" xml:space="preserve">
+    <value>Software</value>
+  </data>
+  <data name="BikeSerialNumber" xml:space="preserve">
+    <value>Serial number</value>
+  </data>
+  <data name="BikeComponentDriveUnit" xml:space="preserve">
+    <value>Drive unit</value>
+  </data>
+  <data name="BikeComponentHeadUnit" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="BikeComponentRemoteControl" xml:space="preserve">
+    <value>Remote control</value>
+  </data>
+  <data name="BikeComponentConnectModule" xml:space="preserve">
+    <value>ConnectModule</value>
+  </data>
+  <data name="BikeComponentAbs" xml:space="preserve">
+    <value>ABS</value>
+  </data>
+  <data name="On" xml:space="preserve">
+    <value>On</value>
+  </data>
+  <data name="Off" xml:space="preserve">
+    <value>Off</value>
+  </data>
+  <data name="BikeLock" xml:space="preserve">
+    <value>eBike Lock</value>
+  </data>
+  <data name="AboutCreditInter" xml:space="preserve">
+    <value>Inter typeface</value>
+  </data>
 </root>

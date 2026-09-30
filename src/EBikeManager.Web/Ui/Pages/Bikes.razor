@@ -1,0 +1,255 @@
+@page "/bikes"
+@using System.Data.Common
+@inject BikeService BikeService
+@inject SyncStatusStateService SyncStatus
+@inject PreferencesService Preferences
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<PageTitle>@ProjectInfo.Name - @WebStrings.BikeTitle</PageTitle>
+
+<PageHeader Title="@WebStrings.BikeTitle" Subtitle="@WebStrings.BikeSubtitle">
+    <Actions>
+        @if (LastUpdated is { } updated)
+        {
+            <MudText Typo="Typo.caption" Class="em-muted">@WebStrings.Format(WebStrings.BikeUpdated, DisplayFormat.DateTime(Preferences.ToLocal(updated)))</MudText>
+        }
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Refresh"
+                   Disabled="@(_refreshing || _loading)" OnClick="RefreshAsync">
+            @(_refreshing ? WebStrings.BikeRefreshing : WebStrings.BikeRefresh)
+        </MudButton>
+    </Actions>
+</PageHeader>
+
+<StateView Loading="_loading" ErrorMessage="@_error" OnRetry="LoadAsync" Empty="@(_bikes.Count == 0)" EmptyMessage="@WebStrings.BikeNone">
+    <div class="d-flex flex-column gap-8">
+        @foreach (var bike in _bikes)
+        {
+            @if (!bike.HasDetails)
+            {
+                <MudAlert Severity="Severity.Info" Variant="Variant.Outlined">@WebStrings.Format(WebStrings.BikeNoDetailsYet, bike.Name)</MudAlert>
+                continue;
+            }
+
+            <MudGrid Spacing="4">
+                <MudItem xs="12" md="5">
+                    <SurfaceCard>
+                        @if (bike.PictureSavedAt is { } pictureSavedAt)
+                        {
+                            <img src="@BikePictureEndpoint.PathFor(bike.Id, pictureSavedAt)" alt="@bike.Name" class="em-bike-picture mb-4" loading="lazy" onerror="this.style.display='none'" />
+                        }
+                        <MudText Typo="Typo.h5" HtmlTag="h2" Class="font-weight-bold">@bike.Name</MudText>
+                        @if (bike.Brand is { } brand && !bike.Name.StartsWith(brand, StringComparison.OrdinalIgnoreCase))
+                        {
+                            <MudText Typo="Typo.body2" Class="em-muted mb-3">@brand</MudText>
+                        }
+                        <DataRow Label="@WebStrings.BikeFrameNumber" Value="@(bike.FrameNumber ?? DisplayFormat.Missing)" />
+                        <DataRow Label="@WebStrings.BikeMaxAssistSpeed" Value="@DisplayFormat.Speed(bike.MaxAssistSpeedKmh)" />
+                        <DataRow Label="@WebStrings.BikeWalkAssist" Value="@BikeText.YesNo(bike.WalkAssistEnabled)" />
+                        @if (bike.LockEnabled != null)
+                        {
+                            <DataRow Label="@WebStrings.BikeLock" Value="@BikeText.OnOff(bike.LockEnabled)" />
+                        }
+                        @if (bike.AlarmEnabled != null)
+                        {
+                            <DataRow Label="@WebStrings.BikeAlarm" Value="@BikeText.OnOff(bike.AlarmEnabled)" />
+                        }
+                        <DataRow Label="@WebStrings.BikeFlowPlus" Value="@BikeText.YesNo(bike.HasFlowPlus)" />
+                        @if (bike.ServiceDue is { } service)
+                        {
+                            <DataRow Label="@WebStrings.BikeServiceDue" Value="@ServiceDueText(service)" />
+                        }
+                    </SurfaceCard>
+                </MudItem>
+
+                <MudItem xs="12" md="7">
+                    <MudGrid Spacing="4">
+                        <MudItem xs="12" sm="6">
+                            <StatTile Icon="@Icons.Material.Rounded.Route" Title="@WebStrings.BikeOdometer"
+                                      Value="@DisplayFormat.Number(bike.OdometerMeters / 1000, "#,0")" Unit="km" Label="@WebStrings.BikeOdometerLabel" />
+                        </MudItem>
+                        <MudItem xs="12" sm="6">
+                            <StatTile Icon="@Icons.Material.Rounded.Timer" Title="@WebStrings.BikeMotorHours"
+                                      Value="@DisplayFormat.Number(bike.MotorHours, "#,0")" Unit="h"
+                                      Label="@WebStrings.Format(WebStrings.BikeMotorHoursAssisted, DisplayFormat.Number(bike.MotorHoursAssisted, "#,0"))" />
+                        </MudItem>
+                        @foreach (var battery in bike.Batteries)
+                        {
+                            <MudItem xs="12" sm="6">
+                                <StatTile Icon="@Icons.Material.Rounded.BatteryChargingFull" Title="@(battery.ProductName ?? WebStrings.BikeBattery)"
+                                          Value="@DisplayFormat.Number(battery.ChargeCycles, "0.#")" Label="@WebStrings.BikeChargeCycles">
+                                    <DataRow Label="@WebStrings.BikeCapacity" Value="@DisplayFormat.WattHours(battery.CapacityWh)" />
+                                    @if ((bike.LiveState?.ChargePercent ?? battery.LevelPercent) is { } level)
+                                    {
+                                        <DataRow Label="@WebStrings.BikeChargeLevel" Value="@DisplayFormat.Percent(level)" />
+                                    }
+                                    <DataRow Label="@WebStrings.BikeLifetimeEnergy" Value="@DisplayFormat.KilowattHours(battery.LifetimeDeliveredWh)" />
+                                    <DataRow Label="@WebStrings.BikeCyclesOnOffBike" Value="@($"{DisplayFormat.Number(battery.ChargeCyclesOnBike, "0.#")} / {DisplayFormat.Number(battery.ChargeCyclesOffBike, "0.#")}")" />
+                                </StatTile>
+                            </MudItem>
+                        }
+                        @if (bike.AssistModes.Count > 0)
+                        {
+                            <MudItem xs="12" sm="6">
+                                <SurfaceCard Icon="@Icons.Material.Rounded.Speed" Title="@WebStrings.BikeRange" Description="@WebStrings.BikeRangeDescription">
+                                    @{ var longest = bike.AssistModes.Max(mode => mode.ReachableRangeKm ?? 0); }
+                                    @foreach (var mode in bike.AssistModes)
+                                    {
+                                        <div class="em-range-row">
+                                            <div class="d-flex justify-space-between align-center">
+                                                <div class="d-flex align-center gap-2">
+                                                    <span class="em-mode-dot" style="@ModeColour(mode)"></span>
+                                                    <MudText Typo="Typo.body2">@mode.Name</MudText>
+                                                </div>
+                                                <MudText Typo="Typo.body2" Class="font-weight-bold">@DisplayFormat.Kilometres(mode.ReachableRangeKm)</MudText>
+                                            </div>
+                                            <MudProgressLinear Value="@(longest > 0 ? (mode.ReachableRangeKm ?? 0) * 100 / longest : 0)" Color="Color.Primary" Rounded="true" Size="Size.Small" />
+                                        </div>
+                                    }
+                                </SurfaceCard>
+                            </MudItem>
+                        }
+                    </MudGrid>
+                </MudItem>
+
+                @if (bike.LiveState is { } live)
+                {
+                    <MudItem xs="12" md="6">
+                        <SurfaceCard Icon="@Icons.Material.Rounded.Bolt" Title="@WebStrings.BikeLiveTitle" Description="@WebStrings.BikeLiveDescription">
+                            <DataRow Label="@WebStrings.BikeChargeLevel" Value="@DisplayFormat.Percent(live.ChargePercent)" />
+                            <DataRow Label="@WebStrings.BikeCharging" Value="@BikeText.YesNo(live.Charging)" />
+                            <DataRow Label="@WebStrings.BikeChargerConnected" Value="@BikeText.YesNo(live.ChargerConnected)" />
+                            <DataRow Label="@WebStrings.BikeRemainingEnergy" Value="@DisplayFormat.WattHours(live.RemainingWh)" />
+                            <DataRow Label="@WebStrings.BikeLiveRange" Value="@RangeText(live)" />
+                            @if (live.UpdatedAt is { } liveUpdated)
+                            {
+                                <DataRow Label="@WebStrings.BikeLiveUpdated" Value="@DisplayFormat.DateTime(Preferences.ToLocal(liveUpdated))" />
+                            }
+                        </SurfaceCard>
+                    </MudItem>
+                }
+
+                @if (bike.LastLocation is { } location)
+                {
+                    <MudItem xs="12" md="6">
+                        <SurfaceCard Icon="@Icons.Material.Rounded.LocationOn" Title="@WebStrings.BikeLocationTitle" Description="@WebStrings.BikeLocationDescription">
+                            <DataRow Label="@WebStrings.BikeCoordinates" Value="@BikeText.Coordinates(location.Latitude, location.Longitude)" />
+                            <DataRow Label="@WebStrings.BikeAccuracy" Value="@DisplayFormat.Number(location.AccuracyMeters, "0 m")" />
+                            @if (location.DetectedAt is { } seen)
+                            {
+                                <DataRow Label="@WebStrings.BikeSeenAt" Value="@DisplayFormat.DateTime(Preferences.ToLocal(seen))" />
+                            }
+                            <div class="mt-3">
+                                <MudButton Href="@BikeText.MapUrl(location.Latitude, location.Longitude)" Target="_blank" Variant="Variant.Text" Color="Color.Primary"
+                                           EndIcon="@Icons.Material.Rounded.OpenInNew">@WebStrings.BikeOpenMap</MudButton>
+                            </div>
+                        </SurfaceCard>
+                    </MudItem>
+                }
+
+                <MudItem xs="12">
+                    <SurfaceCard Icon="@Icons.Material.Rounded.Memory" Title="@WebStrings.BikeComponentsTitle" Description="@WebStrings.BikeComponentsDescription">
+                        <MudTable Items="ComponentRows(bike)" T="ComponentRow" Dense="true" Elevation="0" Breakpoint="Breakpoint.Sm">
+                            <HeaderContent>
+                                <MudTh>@WebStrings.BikeComponent</MudTh>
+                                <MudTh>@WebStrings.BikeProduct</MudTh>
+                                <MudTh>@WebStrings.BikeSoftware</MudTh>
+                                <MudTh>@WebStrings.BikeSerialNumber</MudTh>
+                            </HeaderContent>
+                            <RowTemplate>
+                                <MudTd DataLabel="@WebStrings.BikeComponent">@context.Name</MudTd>
+                                <MudTd DataLabel="@WebStrings.BikeProduct">@(context.Product ?? DisplayFormat.Missing)</MudTd>
+                                <MudTd DataLabel="@WebStrings.BikeSoftware">@(context.Software ?? DisplayFormat.Missing)</MudTd>
+                                <MudTd DataLabel="@WebStrings.BikeSerialNumber">@(context.Serial ?? DisplayFormat.Missing)</MudTd>
+                            </RowTemplate>
+                        </MudTable>
+                    </SurfaceCard>
+                </MudItem>
+            </MudGrid>
+        }
+    </div>
+</StateView>
+
+@code {
+    private sealed record ComponentRow(string Name, string? Product, string? Software, string? Serial);
+
+    private bool _loading = true;
+    private bool _refreshing;
+    private string? _error;
+    private IReadOnlyList<BikeDetailsDto> _bikes = [];
+
+    private DateTime? LastUpdated => _bikes.Select(bike => bike.UpdatedAt).Max();
+
+    protected override async Task OnInitializedAsync()
+    {
+        SyncStatus.Finished += OnSyncFinished;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            _bikes = await BikeService.GetDetailsAsync();
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        {
+            _error = WebStrings.BikeLoadFailed;
+        }
+
+        _loading = false;
+    }
+
+    private async Task RefreshAsync()
+    {
+        _refreshing = true;
+        var result = await BikeService.RefreshDetailsAsync();
+        _refreshing = false;
+
+        if (!result.Succeeded)
+            Snackbar.Add(result.Message ?? WebStrings.BikeRefreshFailed, Severity.Error);
+        else if (result.Value is { Count: > 0 } problems)
+            Snackbar.Add(string.Join(" ", problems), Severity.Warning);
+        else
+            Snackbar.Add(WebStrings.BikeRefreshed, Severity.Success);
+
+        await LoadAsync();
+    }
+
+    private static List<ComponentRow> ComponentRows(BikeDetailsDto bike) =>
+    [
+        .. bike.Components.Where(component => component.Kind == BikeComponentKind.DriveUnit).Select(Row),
+        .. bike.Batteries.Select(battery => new ComponentRow(WebStrings.BikeBattery, battery.ProductName, battery.SoftwareVersion, battery.SerialNumber)),
+        .. bike.Components.Where(component => component.Kind != BikeComponentKind.DriveUnit).Select(Row)
+    ];
+
+    private static ComponentRow Row(BikeComponentDto component) =>
+        new(BikeText.ComponentName(component.Kind), component.ProductName, component.SoftwareVersion, component.SerialNumber);
+
+    private static string ModeColour(AssistModeDto mode) =>
+        mode.Color is { } colour ? $"background-color:{colour}" : "background-color:var(--mud-palette-primary)";
+
+    private static string RangeText(BikeLiveStateDto live) =>
+        live.MinRangeKm is { } min && live.MaxRangeKm is { } max && Math.Abs(max - min) >= 1
+            ? WebStrings.Format(WebStrings.BikeRangeBetween, DisplayFormat.Number(min), DisplayFormat.Number(max))
+            : DisplayFormat.Kilometres(live.MaxRangeKm);
+
+    private string ServiceDueText(ServiceDueDto service) =>
+        (service.Date, service.OdometerMeters) switch
+        {
+            ({ } date, { } meters) => WebStrings.Format(WebStrings.BikeServiceDueBoth, DisplayFormat.Date(Preferences.ToLocal(date)), DisplayFormat.Number(meters / 1000, "#,0")),
+            ({ } date, null) => DisplayFormat.Date(Preferences.ToLocal(date)),
+            (null, { } meters) => WebStrings.Format(WebStrings.BikeServiceDueDistance, DisplayFormat.Number(meters / 1000, "#,0")),
+            _ => DisplayFormat.Missing
+        };
+
+    private void OnSyncFinished(SyncStatus status) => InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose() => SyncStatus.Finished -= OnSyncFinished;
+}

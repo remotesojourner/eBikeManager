@@ -13,6 +13,7 @@ internal class EBikeManagerDbContext : DbContext
     public DbSet<ConfigEntry> Configs => Set<ConfigEntry>();
     public DbSet<SecretEntry> Secrets => Set<SecretEntry>();
     public DbSet<Bike> Bikes => Set<Bike>();
+    public DbSet<BikePicture> BikePictures => Set<BikePicture>();
     public DbSet<Ride> Rides => Set<Ride>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
@@ -49,6 +50,24 @@ internal class EBikeManagerDbContext : DbContext
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Name).HasColumnName("name").IsRequired();
             entity.Property(e => e.AddedAt).HasColumnName("addedAt");
+            entity.Property(e => e.ProfileJson).HasColumnName("profileJson");
+            entity.Property(e => e.StateOfChargeJson).HasColumnName("stateOfChargeJson");
+            entity.Property(e => e.PassJson).HasColumnName("passJson");
+            entity.Property(e => e.LocationJson).HasColumnName("locationJson");
+            entity.Property(e => e.HasFlowPlus).HasColumnName("hasFlowPlus");
+            entity.Property(e => e.DetailsUpdatedAt).HasColumnName("detailsUpdatedAt");
+        });
+
+        modelBuilder.Entity<BikePicture>(entity =>
+        {
+            entity.ToTable("bikePictures");
+            entity.HasKey(e => e.BikeId);
+            entity.Property(e => e.BikeId).HasColumnName("bikeId");
+            entity.Property(e => e.SourceUrl).HasColumnName("sourceUrl").IsRequired();
+            entity.Property(e => e.ContentType).HasColumnName("contentType").IsRequired();
+            entity.Property(e => e.Content).HasColumnName("content").IsRequired();
+            entity.Property(e => e.SavedAt).HasColumnName("savedAt");
+            entity.HasOne<Bike>().WithOne().HasForeignKey<BikePicture>(e => e.BikeId).OnDelete(DeleteBehavior.Cascade);
         });
 
         modelBuilder.Entity<Ride>(entity =>

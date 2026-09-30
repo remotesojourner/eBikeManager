@@ -57,6 +57,45 @@ public class BoschJsonTests
     }
 
     [Fact]
+    public void AssistModeNamesAndColoursComeFromRideSummaries()
+    {
+        var names = BoschJson.AssistModeNames(["not json", EBikeManager.TestSupport.BoschSamples.RideSummary("Ride")]);
+
+        Assert.Equal(new AssistModeName("TURBO", "#E20015"), names["A100M40010"]);
+        Assert.Equal(new AssistModeName("OFF", "#000000"), names["0"]);
+        Assert.Equal(5, names.Count);
+    }
+
+    [Fact]
+    public void ProfilesArriveWrappedOrFlatAndPassesAreMatchedByBike()
+    {
+        using var wrapped = JsonDocument.Parse("""{"data":{"attributes":{"brandName":"Cube"}}}""");
+        using var flat = JsonDocument.Parse("""{"brandName":"Cube"}""");
+        using var passes = JsonDocument.Parse("""{"bikePasses":[{"bikeId":"a","frameNumber":"1"},{"bikeId":"b","frameNumber":"2"}]}""");
+        using var locations = JsonDocument.Parse("""{"locations":[{"latitude":1},{"latitude":2}]}""");
+
+        Assert.Equal("""{"brandName":"Cube"}""", BoschJson.UnwrapProfile(wrapped.RootElement));
+        Assert.Equal("""{"brandName":"Cube"}""", BoschJson.UnwrapProfile(flat.RootElement));
+        Assert.Contains("\"2\"", BoschJson.PassFor(passes.RootElement, "b"), StringComparison.Ordinal);
+        Assert.Null(BoschJson.PassFor(passes.RootElement, "c"));
+        Assert.Equal("""{"latitude":1}""", BoschJson.LatestLocation(locations.RootElement));
+    }
+
+    [Theory]
+    [InlineData("""{"mediaAssets":{"bike_picture_url":"https://cdn.example.test/a.png"}}""", "https://cdn.example.test/a.png")]
+    [InlineData("""{"mediaAssets":{"bikePictureUrl":"https://cdn.example.test/b.jpg"}}""", "https://cdn.example.test/b.jpg")]
+    [InlineData("""{"mediaAssets":{"bikePictureUrl":"http://cdn.example.test/c.png"}}""", null)]
+    [InlineData("""{"mediaAssets":{"bikePictureUrl":"data:image/svg+xml;base64,PHN2Zy8+"}}""", null)]
+    [InlineData("""{"mediaAssets":{"bikePictureUrl":"pictures/d.png"}}""", null)]
+    [InlineData("""{"brandName":"Cube"}""", null)]
+    public void OnlyAnHttpsPictureAddressIsUsed(string profile, string? expected)
+    {
+        using var json = JsonDocument.Parse(profile);
+
+        Assert.Equal(expected, BoschJson.PictureUrl(json.RootElement)?.AbsoluteUri);
+    }
+
+    [Fact]
     public void AnEmptyResponseHasNothingInIt()
     {
         using var json = JsonDocument.Parse("{}");

@@ -12,4 +12,10 @@ public static class BoschEndpoints
     public static Uri ProfileApi { get; } = new("https://obc-rider-profile.prod.connected-biking.cloud/");
 
     public static Uri ActivityApi { get; } = new("https://obc-rider-activity.prod.connected-biking.cloud/");
+
+    public static Uri BikePassApi { get; } = new("https://bike-pass.prod.connected-biking.cloud/");
+
+    public static Uri TheftDetectionApi { get; } = new("https://theft-detection.prod.connected-biking.cloud/");
+
+    public static Uri InAppPurchaseApi { get; } = new("https://in-app-purchase.prod.connected-biking.cloud/");
 }

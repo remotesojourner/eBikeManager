@@ -149,4 +149,16 @@
   <data name="PasswordWrong" xml:space="preserve">
     <value>That password isn't right.</value>
   </data>
+  <data name="BikeProfileMissing" xml:space="preserve">
+    <value>Bosch has no profile for {0}.</value>
+  </data>
+  <data name="BikeRefreshFailed" xml:space="preserve">
+    <value>The details of {0} couldn't be refreshed: {1}</value>
+  </data>
+  <data name="SyncProgressBikeDetails" xml:space="preserve">
+    <value>Refreshing your bike's details</value>
+  </data>
+  <data name="BikePictureMissing" xml:space="preserve">
+    <value>There's no picture of this bike yet. It's downloaded on the next sync.</value>
+  </data>
 </root>

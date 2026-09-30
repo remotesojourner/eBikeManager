@@ -11,6 +11,24 @@ internal sealed class FakeBoschApi : IBoschApiService
 
     public Dictionary<string, byte[]> FitFiles { get; } = [];
 
+    public Dictionary<string, string> Profiles { get; } = [];
+
+    public Dictionary<string, string> StatesOfCharge { get; } = [];
+
+    public Dictionary<string, string> Passes { get; } = [];
+
+    public Dictionary<string, string> Locations { get; } = [];
+
+    public bool? HasFlowPlus { get; set; } = false;
+
+    public HashSet<string> FailingBikes { get; } = [];
+
+    public Dictionary<string, byte[]> Pictures { get; } = [];
+
+    public HashSet<string> FailingPictures { get; } = [];
+
+    public List<Uri> DownloadedPictures { get; } = [];
+
     public List<int> RequestedPages { get; } = [];
 
     public List<string> DownloadedFits { get; } = [];
@@ -32,13 +50,45 @@ internal sealed class FakeBoschApi : IBoschApiService
         return Task.FromResult(FitFiles.GetValueOrDefault(activityId));
     }
 
+    public Task<string?> GetBikeProfileJsonAsync(string bikeId, CancellationToken cancellationToken = default) =>
+        FailingBikes.Contains(bikeId)
+            ? Task.FromException<string?>(new HttpRequestException("Bosch answered 503"))
+            : Task.FromResult(Profiles.GetValueOrDefault(bikeId));
+
+    public Task<string?> GetStateOfChargeJsonAsync(string bikeId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(StatesOfCharge.GetValueOrDefault(bikeId));
+
+    public Task<string?> GetBikePassJsonAsync(string bikeId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Passes.GetValueOrDefault(bikeId));
+
+    public Task<string?> GetLatestLocationJsonAsync(string bikeId, CancellationToken cancellationToken = default) =>
+        Task.FromResult(Locations.GetValueOrDefault(bikeId));
+
+    public Task<bool?> HasFlowPlusAsync(CancellationToken cancellationToken = default) => Task.FromResult(HasFlowPlus);
+
+    public Task<byte[]?> DownloadBikePictureAsync(Uri address, CancellationToken cancellationToken = default)
+    {
+        lock (DownloadedPictures) DownloadedPictures.Add(address);
+        return FailingPictures.Contains(address.AbsoluteUri)
+            ? Task.FromException<byte[]?>(new HttpRequestException("The picture server answered 503"))
+            : Task.FromResult(Pictures.GetValueOrDefault(address.AbsoluteUri));
+    }
+
+    public void AddBike(string bikeId, string name)
+    {
+        Bikes.Add(new BoschBikeInfo(bikeId, name));
+        Profiles[bikeId] = BoschSamples.Profile(bikeId);
+        Passes[bikeId] = BoschSamples.BikePass(bikeId);
+        Pictures[BoschSamples.PictureUrl] = BoschSamples.Picture;
+    }
+
     public BoschActivity AddRide(string id, string bikeId, DateTime start, bool withFit = true, string? title = null)
     {
         var activity = new BoschActivity(
             id, bikeId, title ?? $"Ride {id}", start, start.AddHours(1), "Europe/Berlin",
             DistanceMeters: 20_000, MovingSeconds: 3_300, CaloriesKcal: 410, ElevationGainMeters: 120,
             AverageSpeedKmh: 21.8, RiderEnergySharePercent: 62, AverageRiderPowerWatts: 110,
-            AttributesJson: $$"""{"title":"{{title ?? id}}"}""");
+            AttributesJson: BoschSamples.RideSummary(title ?? id));
         Activities.Add(activity);
         if (withFit) FitFiles[id] = TestFit.Create(start, TimeSpan.FromHours(1));
         return activity;
