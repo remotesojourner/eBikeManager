@@ -1,0 +1,11 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/EBikeManager.Application/EBikeManager.Application.csproj" />
+    <Project Path="src/EBikeManager.Web/EBikeManager.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/EBikeManager.IntegrationTests/EBikeManager.IntegrationTests.csproj" />
+    <Project Path="tests/EBikeManager.TestSupport/EBikeManager.TestSupport.csproj" />
+    <Project Path="tests/EBikeManager.UnitTests/EBikeManager.UnitTests.csproj" />
+  </Folder>
+</Solution>

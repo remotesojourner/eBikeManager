@@ -1,0 +1,133 @@
+@page "/"
+@using System.Data.Common
+@inject RideService Rides
+@inject SyncStatusStateService SyncStatus
+@inject SettingsStateService Settings
+@inject PreferencesService Preferences
+@implements IDisposable
+
+<PageTitle>@ProjectInfo.Name - @WebStrings.DashboardTitle</PageTitle>
+
+<PageHeader Title="@WebStrings.DashboardTitle" Subtitle="@WebStrings.DashboardSubtitle" />
+
+<StateView Loading="_loading" ErrorMessage="@_error" OnRetry="LoadAsync">
+    <MudGrid Spacing="4">
+        @foreach (var period in _periods)
+        {
+            <MudItem xs="12" sm="6" lg="3">
+                <StatTile Icon="@period.Icon" Title="@period.Title" Value="@DisplayFormat.Number(period.Totals.DistanceMeters / 1000, "0.#")" Unit="km"
+                          Label="@RidesText(period.Totals.Rides)">
+                    <DataRow Label="@WebStrings.MovingTime" Value="@DisplayFormat.Duration(period.Totals.MovingSeconds)" />
+                    <DataRow Label="@WebStrings.Calories" Value="@DisplayFormat.Calories(period.Totals.CaloriesKcal)" />
+                    <DataRow Label="@WebStrings.ElevationGain" Value="@DisplayFormat.Number(period.Totals.ElevationGainMeters, "0 m")" />
+                </StatTile>
+            </MudItem>
+        }
+
+        <MudItem xs="12" md="8">
+            <SurfaceCard Icon="@Icons.Material.Rounded.History" Title="@WebStrings.DashboardRecentRides">
+                @if (_recent.Count == 0)
+                {
+                    <MudText Typo="Typo.body2" Class="em-muted">@WebStrings.RidesNone</MudText>
+                }
+                else
+                {
+                    <div class="d-flex flex-column">
+                        @foreach (var ride in _recent)
+                        {
+                            <div class="em-ride-row">
+                                <div class="em-ride-row-title">
+                                    <MudText Typo="Typo.body2" Class="font-weight-bold">@(ride.Title ?? WebStrings.RideUntitled)</MudText>
+                                    <MudText Typo="Typo.caption" Class="em-muted">@DisplayFormat.DateTime(ride.LocalStartTime)</MudText>
+                                </div>
+                                <MudText Typo="Typo.body2">@DisplayFormat.Distance(ride.DistanceMeters)</MudText>
+                                <MudText Typo="Typo.body2" Class="em-muted">@DisplayFormat.Calories(ride.CaloriesKcal)</MudText>
+                            </div>
+                        }
+                    </div>
+                }
+                <div class="mt-3">
+                    <MudButton Href="rides" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Rounded.ArrowForward">@WebStrings.DashboardAllRides</MudButton>
+                </div>
+            </SurfaceCard>
+        </MudItem>
+
+        <MudItem xs="12" md="4">
+            <SurfaceCard Icon="@Icons.Material.Rounded.Sync" Title="@WebStrings.DashboardSyncTitle">
+                <DataRow Label="@WebStrings.DashboardSyncState" Value="@SyncStateText" />
+                <DataRow Label="@WebStrings.DashboardLastSync" Value="@LastSyncText" />
+                <DataRow Label="@WebStrings.DashboardNextSync" Value="@NextSyncText" />
+                @if (SyncStatus.Status.LastError is { } syncError)
+                {
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Dense="true" Class="mt-3">@syncError</MudAlert>
+                }
+            </SurfaceCard>
+        </MudItem>
+    </MudGrid>
+</StateView>
+
+@code {
+    private sealed record Period(string Title, string Icon, RideTotalsDto Totals);
+
+    private bool _loading = true;
+    private string? _error;
+    private List<Period> _periods = [];
+    private IReadOnlyList<RideDto> _recent = [];
+
+    private string SyncStateText => SyncStatus.Status.IsRunning ? SyncStatus.Status.Progress ?? WebStrings.Syncing : WebStrings.DashboardSyncIdle;
+
+    private string LastSyncText => SyncStatus.Status.LastFinishedAt is { } finished ? DisplayFormat.DateTime(Preferences.ToLocal(finished)) : DisplayFormat.Missing;
+
+    private string NextSyncText => Settings.Current.Schedule.NextRunAfter(DateTime.UtcNow) is { } next ? DisplayFormat.DateTime(Preferences.ToLocal(next)) : DisplayFormat.Missing;
+
+    protected override async Task OnInitializedAsync()
+    {
+        SyncStatus.OnChange += OnSyncChanged;
+        SyncStatus.Finished += OnSyncFinished;
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _error = null;
+        try
+        {
+            var today = Preferences.ToLocal(DateTime.UtcNow).Date;
+            var weekStart = today.AddDays(-(((int)today.DayOfWeek + 6) % 7));
+            var monthStart = new DateTime(today.Year, today.Month, 1, 0, 0, 0, DateTimeKind.Unspecified);
+            var yearStart = new DateTime(today.Year, 1, 1, 0, 0, 0, DateTimeKind.Unspecified);
+
+            _periods =
+            [
+                new(WebStrings.DashboardThisWeek, Icons.Material.Rounded.DateRange, await Rides.GetTotalsAsync(Preferences.ToUtc(weekStart))),
+                new(WebStrings.DashboardThisMonth, Icons.Material.Rounded.CalendarMonth, await Rides.GetTotalsAsync(Preferences.ToUtc(monthStart))),
+                new(WebStrings.DashboardThisYear, Icons.Material.Rounded.CalendarToday, await Rides.GetTotalsAsync(Preferences.ToUtc(yearStart))),
+                new(WebStrings.DashboardAllTime, Icons.Material.Rounded.AllInclusive, await Rides.GetTotalsAsync(null))
+            ];
+            _recent = await Rides.GetRidesAsync(5);
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        {
+            _error = WebStrings.DashboardLoadFailed;
+        }
+
+        _loading = false;
+    }
+
+    private static string RidesText(int rides) => rides == 1 ? WebStrings.DashboardOneRide : WebStrings.Format(WebStrings.DashboardRides, rides);
+
+    private void OnSyncChanged() => InvokeAsync(StateHasChanged);
+
+    private void OnSyncFinished(SyncStatus status) => InvokeAsync(async () =>
+    {
+        await LoadAsync();
+        StateHasChanged();
+    });
+
+    public void Dispose()
+    {
+        SyncStatus.OnChange -= OnSyncChanged;
+        SyncStatus.Finished -= OnSyncFinished;
+    }
+}

@@ -1,0 +1,120 @@
+@inject BoschAccountService Bosch
+@inject SettingsStateService Settings
+
+@if (_loading)
+{
+    <StateView Loading="true" Compact="true" />
+}
+else if (_status == BoschConnectionStatus.Connected && !_reconnecting)
+{
+    <MudAlert Severity="Severity.Success" Variant="Variant.Outlined" Dense="true">
+        <div class="d-flex flex-wrap align-center justify-space-between gap-2">
+            <span>@ConnectedText</span>
+            <MudButton Variant="Variant.Text" Size="Size.Small" OnClick="StartReconnect">@WebStrings.BoschSignInAgain</MudButton>
+        </div>
+    </MudAlert>
+}
+else
+{
+    <div class="d-flex flex-column gap-4">
+        @if (_status == BoschConnectionStatus.ReauthRequired)
+        {
+            <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">@WebStrings.BoschLoginRejected</MudAlert>
+        }
+
+        <ol class="em-instructions">
+            <li>@WebStrings.BoschStepDesktop</li>
+            <li>@WebStrings.BoschStepOpen</li>
+            <li>@WebStrings.BoschStepDevTools</li>
+            <li>@WebStrings.BoschStepSignIn</li>
+            <li>@WebStrings.BoschStepCopy</li>
+            <li>@WebStrings.BoschStepPaste</li>
+        </ol>
+
+        <div>
+            <MudButton Href="@_authorizeUrl" Target="_blank" Variant="Variant.Filled" Color="Color.Primary"
+                       StartIcon="@Icons.Material.Rounded.OpenInNew">
+                @WebStrings.BoschOpenLogin
+            </MudButton>
+        </div>
+
+        <MudTextField @bind-Value="_pasted" Label="@WebStrings.BoschPasteLabel" Variant="Variant.Outlined" Lines="3"
+                      Placeholder="@BoschPastePlaceholder" Immediate="true" Error="@(_error != null)" ErrorText="@_error" />
+
+        <div class="d-flex gap-2">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_busy || string.IsNullOrWhiteSpace(_pasted))" OnClick="ConnectAsync">
+                @(_busy ? WebStrings.BoschConnecting : WebStrings.BoschConnect)
+            </MudButton>
+            @if (_reconnecting)
+            {
+                <MudButton Variant="Variant.Text" OnClick="CancelReconnect">@WebStrings.Cancel</MudButton>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    private const string BoschPastePlaceholder = "onebikeapp-ios://com.bosch.ebike.onebikeapp/oauth2redirect?state=…&code=…";
+
+    [Parameter] public EventCallback OnConnected { get; set; }
+
+    private bool _loading = true;
+    private bool _busy;
+    private bool _reconnecting;
+    private BoschConnectionStatus _status;
+    private string? _authorizeUrl;
+    private string? _pasted;
+    private string? _error;
+
+    private string ConnectedText => Settings.Current.Bosch.AccountName is { } account
+        ? WebStrings.Format(WebStrings.BoschConnectedAs, account)
+        : WebStrings.BoschConnected;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _status = await Bosch.GetStatusAsync();
+        if (_status != BoschConnectionStatus.Connected) StartLogin();
+        _loading = false;
+    }
+
+    private void StartLogin()
+    {
+        var login = Bosch.StartLogin();
+        _authorizeUrl = login.Value;
+        if (!login.Succeeded) _error = login.Message;
+    }
+
+    private async Task ConnectAsync()
+    {
+        _busy = true;
+        _error = null;
+        var result = await Bosch.ConnectAsync(_pasted);
+        _busy = false;
+
+        if (!result.Succeeded)
+        {
+            _error = result.Message ?? WebStrings.BoschConnectFailed;
+            StartLogin();
+            return;
+        }
+
+        _pasted = null;
+        _reconnecting = false;
+        _status = BoschConnectionStatus.Connected;
+        await Settings.LoadAsync();
+        await OnConnected.InvokeAsync();
+    }
+
+    private void StartReconnect()
+    {
+        _reconnecting = true;
+        _error = null;
+        StartLogin();
+    }
+
+    private void CancelReconnect()
+    {
+        _reconnecting = false;
+        _error = null;
+    }
+}

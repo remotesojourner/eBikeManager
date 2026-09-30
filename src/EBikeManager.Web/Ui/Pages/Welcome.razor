@@ -1,0 +1,117 @@
+@page "/welcome"
+@inject SettingsStateService Settings
+@inject BoschAccountService Bosch
+@inject BikeService Bikes
+@inject SyncRunService SyncRun
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+
+<PageTitle>@ProjectInfo.Name - @WebStrings.WelcomePageTitle</PageTitle>
+
+<div class="d-flex justify-center mt-6">
+    <SurfaceCard FullHeight="false" Class="em-welcome-card">
+        <MudProgressLinear Color="Color.Primary" Value="@ProgressValue" Rounded="true" Class="mb-2" />
+        <MudText Typo="Typo.caption" Class="em-muted d-block mb-5">@WebStrings.Format(WebStrings.WelcomeStep, _step + 1, Steps.Length)</MudText>
+
+        @switch (CurrentStep)
+        {
+            case WelcomeStep.Greeting:
+                <img src="img/logo.svg" alt="" class="em-welcome-logo mb-4" />
+                <MudText Typo="Typo.h5" HtmlTag="h1" Class="font-weight-bold mb-1">@WebStrings.Format(WebStrings.WelcomeTitle, ProjectInfo.Name)</MudText>
+                <MudText Typo="Typo.body1" Class="em-muted">@WebStrings.Format(WebStrings.WelcomeIntro, ProjectInfo.Name)</MudText>
+                break;
+
+            case WelcomeStep.Bosch:
+                <MudText Typo="Typo.h5" HtmlTag="h1" Class="font-weight-bold mb-1">@WebStrings.WelcomeBoschTitle</MudText>
+                <MudText Typo="Typo.body2" Class="em-muted mb-4">@WebStrings.WelcomeBoschDescription</MudText>
+                <BoschSignIn OnConnected="OnBoschConnectedAsync" />
+                break;
+
+            case WelcomeStep.Bikes:
+                <MudText Typo="Typo.h5" HtmlTag="h1" Class="font-weight-bold mb-1">@WebStrings.WelcomeBikesTitle</MudText>
+                <MudText Typo="Typo.body2" Class="em-muted mb-4">@WebStrings.WelcomeBikesDescription</MudText>
+                <BikeChooser @bind-Selected="_bikes" />
+                break;
+
+            case WelcomeStep.Schedule:
+                <MudText Typo="Typo.h5" HtmlTag="h1" Class="font-weight-bold mb-1">@WebStrings.WelcomeScheduleTitle</MudText>
+                <MudText Typo="Typo.body2" Class="em-muted mb-4">@WebStrings.WelcomeScheduleDescription</MudText>
+                <SchedulePicker @bind-Cron="_cron" />
+                break;
+        }
+
+        <div class="d-flex justify-space-between align-center mt-6">
+            <MudButton Variant="Variant.Text" Disabled="@(_step == 0 || _saving)" OnClick="@(() => _step--)">@WebStrings.WelcomeBack</MudButton>
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!CanContinue)" OnClick="ContinueAsync">
+                @(IsLastStep ? (_saving ? WebStrings.Saving : WebStrings.WelcomeDone) : WebStrings.WelcomeContinue)
+            </MudButton>
+        </div>
+    </SurfaceCard>
+</div>
+
+@code {
+    private enum WelcomeStep { Greeting, Bosch, Bikes, Schedule }
+
+    private static readonly WelcomeStep[] _steps = [WelcomeStep.Greeting, WelcomeStep.Bosch, WelcomeStep.Bikes, WelcomeStep.Schedule];
+
+    private int _step;
+    private bool _boschConnected;
+    private IReadOnlyList<BoschBikeInfo> _bikes = [];
+    private string _cron = ScheduleSettings.Hourly;
+    private bool _saving;
+
+    private static WelcomeStep[] Steps => _steps;
+
+    private WelcomeStep CurrentStep => Steps[_step];
+
+    private bool IsLastStep => _step >= Steps.Length - 1;
+
+    private double ProgressValue => (_step + 1) * 100.0 / Steps.Length;
+
+    private bool CanContinue => !_saving && CurrentStep switch
+    {
+        WelcomeStep.Bosch => _boschConnected,
+        WelcomeStep.Bikes => _bikes.Count > 0,
+        WelcomeStep.Schedule => ScheduleSettings.IsValid(_cron),
+        _ => true
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        _cron = Settings.Current.Schedule.Cron;
+        _boschConnected = await Bosch.GetStatusAsync() == BoschConnectionStatus.Connected;
+    }
+
+    private Task OnBoschConnectedAsync()
+    {
+        _boschConnected = true;
+        _step++;
+        return Task.CompletedTask;
+    }
+
+    private async Task ContinueAsync()
+    {
+        if (!IsLastStep)
+        {
+            _step++;
+            return;
+        }
+
+        _saving = true;
+        var bikes = await Bikes.SaveSelectionAsync(_bikes);
+        var result = bikes.Succeeded
+            ? await Settings.SaveAsync((SettingDefinitions.SyncCron, _cron), (SettingDefinitions.SetupCompleted, "true"))
+            : bikes;
+        _saving = false;
+
+        if (!result.Succeeded)
+        {
+            Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+            return;
+        }
+
+        await SyncRun.StartManualSyncAsync();
+        Snackbar.Add(WebStrings.Format(WebStrings.WelcomeFinished, ProjectInfo.Name), Severity.Success);
+        Navigation.NavigateTo("/rides");
+    }
+}

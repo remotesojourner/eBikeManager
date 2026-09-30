@@ -1,0 +1,14 @@
+services:
+  ebike-manager:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: ebike-manager:latest
+    container_name: ebike-manager
+    restart: unless-stopped
+    ports:
+      - "${PORT:-2004}:${PORT:-2004}"
+    volumes:
+      - ./data:/app/data
+    environment:
+      - PORT=${PORT:-2004}

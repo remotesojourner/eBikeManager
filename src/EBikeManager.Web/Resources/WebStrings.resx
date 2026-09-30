@@ -1,0 +1,509 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="HtmlLanguage" xml:space="preserve">
+    <value>en</value>
+  </data>
+  <data name="TryAgain" xml:space="preserve">
+    <value>Try again</value>
+  </data>
+  <data name="Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Saving" xml:space="preserve">
+    <value>Saving…</value>
+  </data>
+  <data name="Custom" xml:space="preserve">
+    <value>Custom</value>
+  </data>
+  <data name="Password" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="SignIn" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="SignOut" xml:space="preserve">
+    <value>Sign out</value>
+  </data>
+  <data name="Distance" xml:space="preserve">
+    <value>Distance</value>
+  </data>
+  <data name="MovingTime" xml:space="preserve">
+    <value>Moving time</value>
+  </data>
+  <data name="Calories" xml:space="preserve">
+    <value>Calories</value>
+  </data>
+  <data name="ElevationGain" xml:space="preserve">
+    <value>Elevation gain</value>
+  </data>
+  <data name="UnitKilometres" xml:space="preserve">
+    <value>{0} km</value>
+  </data>
+  <data name="UnitMinutes" xml:space="preserve">
+    <value>{0} min</value>
+  </data>
+  <data name="UnitHoursMinutes" xml:space="preserve">
+    <value>{0} h {1} min</value>
+  </data>
+  <data name="UnitKilocalories" xml:space="preserve">
+    <value>{0} kcal</value>
+  </data>
+  <data name="UnitPercent" xml:space="preserve">
+    <value>{0} %</value>
+  </data>
+  <data name="StateViewNothingToShow" xml:space="preserve">
+    <value>There's nothing to show yet.</value>
+  </data>
+  <data name="LayoutToggleNavigation" xml:space="preserve">
+    <value>Toggle navigation</value>
+  </data>
+  <data name="LayoutToggleTheme" xml:space="preserve">
+    <value>Switch between light and dark mode</value>
+  </data>
+  <data name="LayoutLoadFailedTitle" xml:space="preserve">
+    <value>{0} couldn't load its settings</value>
+  </data>
+  <data name="LayoutLoadFailedDescription" xml:space="preserve">
+    <value>The database may be unavailable. Check the logs, then try again.</value>
+  </data>
+  <data name="LayoutPageErrorTitle" xml:space="preserve">
+    <value>Something went wrong</value>
+  </data>
+  <data name="LayoutPageErrorDescription" xml:space="preserve">
+    <value>This page hit an unexpected error. Try again, or go to another page.</value>
+  </data>
+  <data name="LayoutSyncFailed" xml:space="preserve">
+    <value>The sync failed: {0}</value>
+  </data>
+  <data name="LayoutSyncedOneRide" xml:space="preserve">
+    <value>Synced 1 new ride.</value>
+  </data>
+  <data name="LayoutSyncedRides" xml:space="preserve">
+    <value>Synced {0} new rides.</value>
+  </data>
+  <data name="SyncNow" xml:space="preserve">
+    <value>Sync now</value>
+  </data>
+  <data name="SyncNowTooltip" xml:space="preserve">
+    <value>Fetch new rides from Bosch eBike Flow</value>
+  </data>
+  <data name="Syncing" xml:space="preserve">
+    <value>Syncing…</value>
+  </data>
+  <data name="SyncStartFailed" xml:space="preserve">
+    <value>The sync couldn't be started.</value>
+  </data>
+  <data name="SignInTitle" xml:space="preserve">
+    <value>Sign in</value>
+  </data>
+  <data name="SignInDescription" xml:space="preserve">
+    <value>This {0} is protected with a password.</value>
+  </data>
+  <data name="SignInFailed" xml:space="preserve">
+    <value>Signing in didn't work. Try again.</value>
+  </data>
+  <data name="SettingsSaveFailed" xml:space="preserve">
+    <value>The settings couldn't be saved.</value>
+  </data>
+  <data name="DashboardTitle" xml:space="preserve">
+    <value>Dashboard</value>
+  </data>
+  <data name="DashboardSubtitle" xml:space="preserve">
+    <value>Your riding at a glance</value>
+  </data>
+  <data name="DashboardThisWeek" xml:space="preserve">
+    <value>This week</value>
+  </data>
+  <data name="DashboardThisMonth" xml:space="preserve">
+    <value>This month</value>
+  </data>
+  <data name="DashboardThisYear" xml:space="preserve">
+    <value>This year</value>
+  </data>
+  <data name="DashboardAllTime" xml:space="preserve">
+    <value>All time</value>
+  </data>
+  <data name="DashboardOneRide" xml:space="preserve">
+    <value>1 ride</value>
+  </data>
+  <data name="DashboardRides" xml:space="preserve">
+    <value>{0} rides</value>
+  </data>
+  <data name="DashboardRecentRides" xml:space="preserve">
+    <value>Recent rides</value>
+  </data>
+  <data name="DashboardAllRides" xml:space="preserve">
+    <value>All rides</value>
+  </data>
+  <data name="DashboardSyncTitle" xml:space="preserve">
+    <value>Bosch sync</value>
+  </data>
+  <data name="DashboardSyncState" xml:space="preserve">
+    <value>Status</value>
+  </data>
+  <data name="DashboardSyncIdle" xml:space="preserve">
+    <value>Idle</value>
+  </data>
+  <data name="DashboardLastSync" xml:space="preserve">
+    <value>Last sync</value>
+  </data>
+  <data name="DashboardNextSync" xml:space="preserve">
+    <value>Next sync</value>
+  </data>
+  <data name="DashboardLoadFailed" xml:space="preserve">
+    <value>Your rides couldn't be loaded.</value>
+  </data>
+  <data name="RidesTitle" xml:space="preserve">
+    <value>Rides</value>
+  </data>
+  <data name="RidesSubtitle" xml:space="preserve">
+    <value>Every ride synced from Bosch eBike Flow, with its FIT backup</value>
+  </data>
+  <data name="RidesNone" xml:space="preserve">
+    <value>No rides yet. They appear here after the first sync.</value>
+  </data>
+  <data name="RidesDate" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="RidesRide" xml:space="preserve">
+    <value>Ride</value>
+  </data>
+  <data name="RidesYourShare" xml:space="preserve">
+    <value>Your share</value>
+  </data>
+  <data name="RidesBackup" xml:space="preserve">
+    <value>FIT backup</value>
+  </data>
+  <data name="RidesDownloadFit" xml:space="preserve">
+    <value>Download FIT file</value>
+  </data>
+  <data name="RidesDownloadFailed" xml:space="preserve">
+    <value>The FIT file couldn't be downloaded.</value>
+  </data>
+  <data name="RidesLoadFailed" xml:space="preserve">
+    <value>Your rides couldn't be loaded.</value>
+  </data>
+  <data name="RidesProblems" xml:space="preserve">
+    <value>{0} FIT files couldn't be backed up during the last sync. Hover over their status for the reason.</value>
+  </data>
+  <data name="RideUntitled" xml:space="preserve">
+    <value>Untitled ride</value>
+  </data>
+  <data name="FitStatusSaved" xml:space="preserve">
+    <value>Backed up</value>
+  </data>
+  <data name="FitStatusUnavailable" xml:space="preserve">
+    <value>No FIT file</value>
+  </data>
+  <data name="FitStatusFailed" xml:space="preserve">
+    <value>Failed</value>
+  </data>
+  <data name="FitStatusProcessing" xml:space="preserve">
+    <value>Processing</value>
+  </data>
+  <data name="FitStatusPending" xml:space="preserve">
+    <value>Pending</value>
+  </data>
+  <data name="FitStatusProcessingTooltip" xml:space="preserve">
+    <value>Bosch hasn't finished processing this ride yet.</value>
+  </data>
+  <data name="FitStatusPendingTooltip" xml:space="preserve">
+    <value>The FIT file is downloaded on the next sync.</value>
+  </data>
+  <data name="BoschOpenLogin" xml:space="preserve">
+    <value>Open Bosch login</value>
+  </data>
+  <data name="BoschPasteLabel" xml:space="preserve">
+    <value>The copied oauth2redirect URL</value>
+  </data>
+  <data name="BoschConnect" xml:space="preserve">
+    <value>Connect</value>
+  </data>
+  <data name="BoschConnecting" xml:space="preserve">
+    <value>Connecting…</value>
+  </data>
+  <data name="BoschConnectFailed" xml:space="preserve">
+    <value>Connecting to Bosch didn't work.</value>
+  </data>
+  <data name="BoschConnected" xml:space="preserve">
+    <value>Connected to Bosch eBike Flow.</value>
+  </data>
+  <data name="BoschConnectedAs" xml:space="preserve">
+    <value>Connected to Bosch eBike Flow as {0}.</value>
+  </data>
+  <data name="BoschSignInAgain" xml:space="preserve">
+    <value>Sign in again</value>
+  </data>
+  <data name="BoschLoginRejected" xml:space="preserve">
+    <value>Bosch no longer accepts the saved login. Please sign in again.</value>
+  </data>
+  <data name="BoschStepDesktop" xml:space="preserve">
+    <value>Use a desktop or laptop browser. On a phone the Flow app takes over the login.</value>
+  </data>
+  <data name="BoschStepOpen" xml:space="preserve">
+    <value>Click Open Bosch login. It opens in a new tab.</value>
+  </data>
+  <data name="BoschStepDevTools" xml:space="preserve">
+    <value>In that tab, open the developer tools (F12, or Cmd+Option+I on a Mac) and select the Network tab before signing in.</value>
+  </data>
+  <data name="BoschStepSignIn" xml:space="preserve">
+    <value>Sign in with your Bosch eBike Flow account. After the password the page stops loading. That's expected.</value>
+  </data>
+  <data name="BoschStepCopy" xml:space="preserve">
+    <value>Type oauth2redirect into the Network filter box, right-click the request that shows up, and choose Copy, then Copy URL.</value>
+  </data>
+  <data name="BoschStepPaste" xml:space="preserve">
+    <value>Paste it below and click Connect straight away. The code in it expires after about a minute.</value>
+  </data>
+  <data name="BikesNoneOnAccount" xml:space="preserve">
+    <value>Bosch didn't return any bikes for this account.</value>
+  </data>
+  <data name="BikesLoadFailed" xml:space="preserve">
+    <value>Your bikes couldn't be loaded from Bosch.</value>
+  </data>
+  <data name="ScheduleCustomDescription" xml:space="preserve">
+    <value>Your own cron expression, evaluated in UTC</value>
+  </data>
+  <data name="ScheduleCronExpression" xml:space="preserve">
+    <value>Cron expression</value>
+  </data>
+  <data name="ScheduleCronInvalid" xml:space="preserve">
+    <value>That isn't a valid cron expression.</value>
+  </data>
+  <data name="ScheduleNextSync" xml:space="preserve">
+    <value>Next sync: {0}</value>
+  </data>
+  <data name="ScheduleEvery30Minutes" xml:space="preserve">
+    <value>Every 30 minutes</value>
+  </data>
+  <data name="ScheduleEvery30MinutesDescription" xml:space="preserve">
+    <value>New rides show up soon after you get home</value>
+  </data>
+  <data name="ScheduleEveryHour" xml:space="preserve">
+    <value>Every hour</value>
+  </data>
+  <data name="ScheduleEveryHourDescription" xml:space="preserve">
+    <value>Recommended</value>
+  </data>
+  <data name="ScheduleEvery3Hours" xml:space="preserve">
+    <value>Every 3 hours</value>
+  </data>
+  <data name="ScheduleEvery3HoursDescription" xml:space="preserve">
+    <value>Fewer calls to Bosch</value>
+  </data>
+  <data name="ScheduleEvery6Hours" xml:space="preserve">
+    <value>Every 6 hours</value>
+  </data>
+  <data name="ScheduleEvery6HoursDescription" xml:space="preserve">
+    <value>Four times a day</value>
+  </data>
+  <data name="ScheduleDaily" xml:space="preserve">
+    <value>Once a day</value>
+  </data>
+  <data name="ScheduleDailyDescription" xml:space="preserve">
+    <value>Overnight, at 03:00 UTC</value>
+  </data>
+  <data name="ScheduleTitle" xml:space="preserve">
+    <value>Sync schedule</value>
+  </data>
+  <data name="ScheduleDescription" xml:space="preserve">
+    <value>How often new rides and their FIT files are fetched from Bosch eBike Flow.</value>
+  </data>
+  <data name="ScheduleSave" xml:space="preserve">
+    <value>Save schedule</value>
+  </data>
+  <data name="ScheduleSaved" xml:space="preserve">
+    <value>Schedule saved.</value>
+  </data>
+  <data name="ScheduleSyncNowTitle" xml:space="preserve">
+    <value>Sync now</value>
+  </data>
+  <data name="ScheduleSyncNowDescription" xml:space="preserve">
+    <value>Fetch new rides straight away instead of waiting for the next scheduled sync.</value>
+  </data>
+  <data name="WelcomePageTitle" xml:space="preserve">
+    <value>Welcome</value>
+  </data>
+  <data name="WelcomeStep" xml:space="preserve">
+    <value>Step {0} of {1}</value>
+  </data>
+  <data name="WelcomeTitle" xml:space="preserve">
+    <value>Welcome to {0}!</value>
+  </data>
+  <data name="WelcomeIntro" xml:space="preserve">
+    <value>{0} keeps a copy of every ride from Bosch eBike Flow, with its FIT file, and shows your bike and rides in one place. Let's connect your Bosch account.</value>
+  </data>
+  <data name="WelcomeBoschTitle" xml:space="preserve">
+    <value>Connect Bosch eBike Flow</value>
+  </data>
+  <data name="WelcomeBoschDescription" xml:space="preserve">
+    <value>Bosch's login only sends its result to the Flow app, so you copy it from your browser's developer tools. It's the same method as the Home Assistant integration.</value>
+  </data>
+  <data name="WelcomeBikesTitle" xml:space="preserve">
+    <value>Choose your bikes</value>
+  </data>
+  <data name="WelcomeBikesDescription" xml:space="preserve">
+    <value>Rides of these bikes are synced and backed up, however old they are.</value>
+  </data>
+  <data name="WelcomeScheduleTitle" xml:space="preserve">
+    <value>How often should rides sync?</value>
+  </data>
+  <data name="WelcomeScheduleDescription" xml:space="preserve">
+    <value>You can change this later under Settings.</value>
+  </data>
+  <data name="WelcomeBack" xml:space="preserve">
+    <value>Back</value>
+  </data>
+  <data name="WelcomeContinue" xml:space="preserve">
+    <value>Continue</value>
+  </data>
+  <data name="WelcomeDone" xml:space="preserve">
+    <value>Finish</value>
+  </data>
+  <data name="WelcomeFinished" xml:space="preserve">
+    <value>{0} is set up. Your rides are syncing now.</value>
+  </data>
+  <data name="SettingsTitle" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="SettingsSubtitle" xml:space="preserve">
+    <value>Your Bosch connection, sync schedule and sign-in</value>
+  </data>
+  <data name="SettingsTabBosch" xml:space="preserve">
+    <value>Bosch</value>
+  </data>
+  <data name="SettingsTabSchedule" xml:space="preserve">
+    <value>Schedule</value>
+  </data>
+  <data name="SettingsTabSecurity" xml:space="preserve">
+    <value>Security</value>
+  </data>
+  <data name="SettingsTabAbout" xml:space="preserve">
+    <value>About</value>
+  </data>
+  <data name="SettingsBoschAccountTitle" xml:space="preserve">
+    <value>Bosch eBike Flow account</value>
+  </data>
+  <data name="SettingsBoschAccountDescription" xml:space="preserve">
+    <value>The login used to read your bikes and rides.</value>
+  </data>
+  <data name="SettingsBoschBikesTitle" xml:space="preserve">
+    <value>Bikes</value>
+  </data>
+  <data name="SettingsBoschBikesDescription" xml:space="preserve">
+    <value>Only rides of the chosen bikes are synced. Adding a bike reads its whole ride history on the next sync.</value>
+  </data>
+  <data name="SettingsBoschSaveBikes" xml:space="preserve">
+    <value>Save bikes</value>
+  </data>
+  <data name="SettingsBoschBikesSaved" xml:space="preserve">
+    <value>Bikes saved.</value>
+  </data>
+  <data name="SecurityPasswordTitle" xml:space="preserve">
+    <value>Password</value>
+  </data>
+  <data name="SecurityPasswordDescription" xml:space="preserve">
+    <value>Ask for a password before anyone can use this app. Recommended unless only you can reach it.</value>
+  </data>
+  <data name="SecurityDisabledByEnvironment" xml:space="preserve">
+    <value>Sign-in is switched off by the DISABLE_AUTH environment variable, so the password isn't asked for.</value>
+  </data>
+  <data name="SecurityPasswordOn" xml:space="preserve">
+    <value>A password is required to use this app.</value>
+  </data>
+  <data name="SecurityNewPassword" xml:space="preserve">
+    <value>New password</value>
+  </data>
+  <data name="SecurityConfirmPassword" xml:space="preserve">
+    <value>Confirm password</value>
+  </data>
+  <data name="SecurityPasswordHelp" xml:space="preserve">
+    <value>At least {0} characters</value>
+  </data>
+  <data name="SecurityPasswordsDiffer" xml:space="preserve">
+    <value>The passwords don't match.</value>
+  </data>
+  <data name="SecurityTurnOn" xml:space="preserve">
+    <value>Require this password</value>
+  </data>
+  <data name="SecurityChangePassword" xml:space="preserve">
+    <value>Change password</value>
+  </data>
+  <data name="SecurityTurnOff" xml:space="preserve">
+    <value>Stop asking for a password</value>
+  </data>
+  <data name="SecurityTurnedOff" xml:space="preserve">
+    <value>The password is no longer required.</value>
+  </data>
+  <data name="AboutDescription" xml:space="preserve">
+    <value>A self-hosted home for your Bosch eBike rides.</value>
+  </data>
+  <data name="AboutVersion" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="AboutCreditsTitle" xml:space="preserve">
+    <value>Built with</value>
+  </data>
+  <data name="AboutCreditHomeAssistant" xml:space="preserve">
+    <value>ha-bosch-ebike-flow, the Home Assistant integration this login is based on</value>
+  </data>
+  <data name="AboutCreditModernity" xml:space="preserve">
+    <value>Modernity CSS for MudBlazor</value>
+  </data>
+  <data name="AboutCreditMudBlazor" xml:space="preserve">
+    <value>MudBlazor</value>
+  </data>
+  <data name="AboutCreditFit" xml:space="preserve">
+    <value>Garmin FIT SDK</value>
+  </data>
+  <data name="NotFoundTitle" xml:space="preserve">
+    <value>Page not found</value>
+  </data>
+  <data name="NotFoundDescription" xml:space="preserve">
+    <value>There's nothing at this address.</value>
+  </data>
+  <data name="NotFoundHome" xml:space="preserve">
+    <value>Go to the dashboard</value>
+  </data>
+</root>

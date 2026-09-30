@@ -1,0 +1,12 @@
+**/.git
+**/.vs
+**/.vscode
+**/bin
+**/obj
+data/
+.data/
+src/EBikeManager.Web/data/
+tests/
+docs/
+dc/
+TestResults/

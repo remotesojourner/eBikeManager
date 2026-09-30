@@ -1,0 +1,186 @@
+@inherits LayoutComponentBase
+@using System.Data.Common
+@inject PreferencesService PreferencesService
+@inject CircuitAccessService CircuitAccessService
+@inject SettingsStateService Settings
+@inject SyncStatusStateService SyncStatus
+@inject LiveUpdatesService LiveUpdatesService
+@inject NavigationManager Navigation
+@inject ISnackbar Snackbar
+@inject BrowserInteropService Browser
+@inject ILogger<MainLayout> Logger
+@implements IDisposable
+
+<MudThemeProvider Theme="AppTheme.Theme" @bind-IsDarkMode="_isDarkMode" />
+<MudPopoverProvider />
+<MudDialogProvider FullWidth="true" MaxWidth="MaxWidth.Small" />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <MudAppBar Elevation="0" Dense="true" Class="px-3">
+        <MudIconButton Icon="@Icons.Material.Rounded.Menu" Color="Color.Inherit" Edge="Edge.Start" OnClick="@(() => _drawerOpen = !_drawerOpen)" aria-label="@WebStrings.LayoutToggleNavigation" />
+        <a href="" class="em-brand">
+            <img src="img/logo.svg" alt="" class="em-brand-logo" />
+            <MudText Typo="Typo.h6" Class="font-weight-bold em-brand-name">@ProjectInfo.Name</MudText>
+        </a>
+
+        <MudSpacer />
+
+        <div class="d-flex align-center gap-1">
+            @if (_state == AppState.Ready && Settings.Current.SetupCompleted)
+            {
+                <SyncButton />
+            }
+            @if (_state == AppState.Ready && CircuitAccessService.SignedIn)
+            {
+                <form action="auth/logout" method="post" class="d-flex">
+                    <AntiforgeryToken />
+                    <MudTooltip Text="@WebStrings.SignOut">
+                        <MudIconButton ButtonType="ButtonType.Submit" Icon="@Icons.Material.Rounded.Logout" Color="Color.Inherit" aria-label="@WebStrings.SignOut" />
+                    </MudTooltip>
+                </form>
+            }
+            <MudIconButton Icon="@(_isDarkMode ? Icons.Material.Rounded.LightMode : Icons.Material.Rounded.DarkMode)"
+                           Color="Color.Inherit"
+                           OnClick="ToggleThemeAsync"
+                           aria-label="@WebStrings.LayoutToggleTheme" />
+        </div>
+    </MudAppBar>
+
+    <MudDrawer @bind-Open="_drawerOpen" ClipMode="DrawerClipMode.Always" Elevation="0" Variant="DrawerVariant.Responsive">
+        @if (_state == AppState.Ready)
+        {
+            <MudNavMenu Class="pa-2">
+                <MudNavLink Href="" Match="NavLinkMatch.All" Icon="@Icons.Material.Rounded.SpaceDashboard">@WebStrings.DashboardTitle</MudNavLink>
+                <MudNavLink Href="rides" Icon="@Icons.Material.Rounded.DirectionsBike">@WebStrings.RidesTitle</MudNavLink>
+                <MudNavLink Href="settings" Icon="@Icons.Material.Rounded.Settings">@WebStrings.SettingsTitle</MudNavLink>
+            </MudNavMenu>
+        }
+    </MudDrawer>
+
+    <MudMainContent Class="px-4 px-lg-6 pb-4 pb-lg-6 pt-16">
+        <div class="em-page">
+            @switch (_state)
+            {
+                case AppState.Loading:
+                    <StateView Loading="true" />
+                    break;
+                case AppState.SignInRequired:
+                    <SignInCard />
+                    break;
+                case AppState.LoadFailed:
+                    <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mt-4">
+                        <MudText Typo="Typo.subtitle2" Class="font-weight-bold">@WebStrings.Format(WebStrings.LayoutLoadFailedTitle, ProjectInfo.Name)</MudText>
+                        <MudText Typo="Typo.body2">@WebStrings.LayoutLoadFailedDescription</MudText>
+                        <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="mt-3" OnClick="LoadAsync">@WebStrings.TryAgain</MudButton>
+                    </MudAlert>
+                    break;
+                default:
+                    <ErrorBoundary @ref="_pageErrors">
+                        <ChildContent>
+                            @Body
+                        </ChildContent>
+                        <ErrorContent>
+                            <MudAlert Severity="Severity.Error" Variant="Variant.Outlined" Class="mt-4">
+                                <MudText Typo="Typo.subtitle2" Class="font-weight-bold">@WebStrings.LayoutPageErrorTitle</MudText>
+                                <MudText Typo="Typo.body2">@WebStrings.LayoutPageErrorDescription</MudText>
+                                <MudButton Variant="Variant.Outlined" Color="Color.Error" Size="Size.Small" Class="mt-3" OnClick="RecoverPage">@WebStrings.TryAgain</MudButton>
+                            </MudAlert>
+                        </ErrorContent>
+                    </ErrorBoundary>
+                    break;
+            }
+        </div>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private enum AppState { Loading, SignInRequired, LoadFailed, Ready }
+
+    private AppState _state = AppState.Loading;
+    private ErrorBoundary? _pageErrors;
+    private bool _drawerOpen = true;
+    private bool _isDarkMode = true;
+    private bool _disposed;
+
+    protected override void OnInitialized()
+    {
+        Settings.OnChange += OnStateChanged;
+        SyncStatus.OnChange += OnStateChanged;
+        SyncStatus.Finished += OnSyncFinished;
+    }
+
+    protected override void OnParametersSet() => _pageErrors?.Recover();
+
+    private void RecoverPage() => _pageErrors?.Recover();
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender || _disposed) return;
+
+        _isDarkMode = await Browser.GetLocalStorageAsync("theme") != "light";
+        await PreferencesService.InitializeAsync();
+        await CircuitAccessService.StartAsync();
+        LiveUpdatesService.Start(InvokeAsync);
+        await LoadAsync();
+    }
+
+    private async Task LoadAsync()
+    {
+        _state = AppState.Loading;
+        StateHasChanged();
+
+        _state = await LoadStateAsync();
+        if (_state == AppState.Ready && !Settings.Current.SetupCompleted && !OnWelcomePage)
+        {
+            Navigation.NavigateTo("/welcome");
+        }
+
+        if (!_disposed) StateHasChanged();
+    }
+
+    private bool OnWelcomePage => Navigation.ToBaseRelativePath(Navigation.Uri).StartsWith("welcome", StringComparison.OrdinalIgnoreCase);
+
+    private async Task<AppState> LoadStateAsync()
+    {
+        if (CircuitAccessService.Level == Access.None) return AppState.SignInRequired;
+
+        try
+        {
+            await Settings.LoadAsync();
+            return AppState.Ready;
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        {
+            Logger.LogError(ex, "The settings couldn't be loaded");
+            return AppState.LoadFailed;
+        }
+    }
+
+    private void OnStateChanged()
+    {
+        if (!_disposed) InvokeAsync(StateHasChanged);
+    }
+
+    private void OnSyncFinished(SyncStatus status)
+    {
+        if (status.LastError is { } error)
+            Snackbar.Add(WebStrings.Format(WebStrings.LayoutSyncFailed, error), Severity.Error);
+        else if (status.LastResult is { NewRides: > 0 } result)
+            Snackbar.Add(result.NewRides == 1 ? WebStrings.LayoutSyncedOneRide : WebStrings.Format(WebStrings.LayoutSyncedRides, result.NewRides), Severity.Success);
+    }
+
+    private async Task ToggleThemeAsync()
+    {
+        _isDarkMode = !_isDarkMode;
+        await Browser.SetLocalStorageAsync("theme", _isDarkMode ? "dark" : "light");
+    }
+
+    public void Dispose()
+    {
+        _disposed = true;
+        Settings.OnChange -= OnStateChanged;
+        SyncStatus.OnChange -= OnStateChanged;
+        SyncStatus.Finished -= OnSyncFinished;
+    }
+}

@@ -1,0 +1,53 @@
+@page "/settings"
+@page "/settings/{Section}"
+@using EBikeManager.Web.Ui.Pages.Settings
+@inject NavigationManager Navigation
+
+<PageTitle>@ProjectInfo.Name - @WebStrings.SettingsTitle</PageTitle>
+
+<PageHeader Title="@WebStrings.SettingsTitle" Subtitle="@WebStrings.SettingsSubtitle" />
+
+<MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged">
+    <MudTabs Position="@_tabPosition" Rounded="true" ApplyEffectsToContainer="true"
+             Class="em-settings-tabs" TabPanelsClass="em-settings-panels"
+             ActivePanelIndex="_activeIndex" ActivePanelIndexChanged="OnTabChanged">
+        <MudTabPanel Text="@WebStrings.SettingsTabBosch" Icon="@Icons.Material.Rounded.ElectricBike">
+            <SettingsBosch />
+        </MudTabPanel>
+        <MudTabPanel Text="@WebStrings.SettingsTabSchedule" Icon="@Icons.Material.Rounded.Schedule">
+            <SettingsSchedule />
+        </MudTabPanel>
+        <MudTabPanel Text="@WebStrings.SettingsTabSecurity" Icon="@Icons.Material.Rounded.Security">
+            <SettingsSecurity />
+        </MudTabPanel>
+        <MudTabPanel Text="@WebStrings.SettingsTabAbout" Icon="@Icons.Material.Rounded.Info">
+            <SettingsAbout />
+        </MudTabPanel>
+    </MudTabs>
+</MudBreakpointProvider>
+
+@code {
+    private static readonly string[] _sections = ["bosch", "schedule", "security", "about"];
+
+    [Parameter] public string? Section { get; set; }
+
+    private int _activeIndex;
+    private Position _tabPosition = Position.Left;
+
+    protected override void OnParametersSet()
+    {
+        var index = Array.IndexOf(_sections, Section?.ToLowerInvariant());
+        _activeIndex = index >= 0 ? index : 0;
+    }
+
+    private void OnBreakpointChanged(Breakpoint breakpoint) =>
+        _tabPosition = breakpoint is Breakpoint.Xs or Breakpoint.Sm ? Position.Top : Position.Left;
+
+    private void OnTabChanged(int index)
+    {
+        if (index < 0 || index >= _sections.Length) return;
+
+        _activeIndex = index;
+        Navigation.NavigateTo($"/settings/{_sections[index]}");
+    }
+}

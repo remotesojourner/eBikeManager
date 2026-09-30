@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <data name="AuthenticationRequired" xml:space="preserve">
+    <value>Sign in to do that.</value>
+  </data>
+  <data name="SettingValueRequired" xml:space="preserve">
+    <value>A value is required.</value>
+  </data>
+  <data name="SettingBooleanNeeded" xml:space="preserve">
+    <value>Use true or false.</value>
+  </data>
+  <data name="SettingCronInvalid" xml:space="preserve">
+    <value>That isn't a valid cron expression.</value>
+  </data>
+  <data name="SettingsNoChanges" xml:space="preserve">
+    <value>There were no changes to save.</value>
+  </data>
+  <data name="SettingsUnknownKey" xml:space="preserve">
+    <value>There's no setting called {0}.</value>
+  </data>
+  <data name="SettingsOnSecurityTab" xml:space="preserve">
+    <value>Sign-in settings can only be changed on the Security tab.</value>
+  </data>
+  <data name="SettingsOnlySignIn" xml:space="preserve">
+    <value>Only sign-in settings can be saved here.</value>
+  </data>
+  <data name="BoschPasteNotRedirect" xml:space="preserve">
+    <value>That doesn't look like the oauth2redirect URL. Copy the whole URL of that request.</value>
+  </data>
+  <data name="BoschLoginError" xml:space="preserve">
+    <value>Bosch reported an error: {0}</value>
+  </data>
+  <data name="BoschLoginExpired" xml:space="preserve">
+    <value>That URL is from an older login attempt. Open the Bosch login again and copy the new one.</value>
+  </data>
+  <data name="BoschCodeRejected" xml:space="preserve">
+    <value>Bosch didn't accept that code. It has probably expired, so open the Bosch login again and be a little quicker.</value>
+  </data>
+  <data name="BoschUnreachable" xml:space="preserve">
+    <value>Couldn't reach Bosch: {0}</value>
+  </data>
+  <data name="BoschNotConnected" xml:space="preserve">
+    <value>Bosch eBike Flow isn't connected.</value>
+  </data>
+  <data name="BoschReconnectNeeded" xml:space="preserve">
+    <value>Bosch no longer accepts the saved login. Sign in again under Settings, Bosch.</value>
+  </data>
+  <data name="BoschRejectedLogin" xml:space="preserve">
+    <value>Bosch rejected the login: {0}</value>
+  </data>
+  <data name="BoschTokenFailed" xml:space="preserve">
+    <value>Bosch's login server answered {0}: {1}</value>
+  </data>
+  <data name="BoschTokenUnreadable" xml:space="preserve">
+    <value>Bosch's login server sent an answer that couldn't be read.</value>
+  </data>
+  <data name="BoschRequestFailed" xml:space="preserve">
+    <value>Bosch answered {0} {1} for {2}: {3}</value>
+  </data>
+  <data name="BikesNoneChosen" xml:space="preserve">
+    <value>Choose at least one bike.</value>
+  </data>
+  <data name="SyncAlreadyRunning" xml:space="preserve">
+    <value>A sync is already running.</value>
+  </data>
+  <data name="SyncNotSetUp" xml:space="preserve">
+    <value>Finish the setup first.</value>
+  </data>
+  <data name="SyncStoppedByShutdown" xml:space="preserve">
+    <value>The sync stopped because the app is shutting down.</value>
+  </data>
+  <data name="SyncProgressStarting" xml:space="preserve">
+    <value>Starting</value>
+  </data>
+  <data name="SyncProgressReadingList" xml:space="preserve">
+    <value>Reading the ride list from Bosch (page {0})</value>
+  </data>
+  <data name="SyncProgressDownloading" xml:space="preserve">
+    <value>Downloading FIT file {0} of {1}</value>
+  </data>
+  <data name="FitNoFile" xml:space="preserve">
+    <value>Bosch has no FIT file for this ride.</value>
+  </data>
+  <data name="FitNotFitFile" xml:space="preserve">
+    <value>The file isn't a FIT file.</value>
+  </data>
+  <data name="FitDamaged" xml:space="preserve">
+    <value>The FIT file is incomplete or damaged.</value>
+  </data>
+  <data name="FitUnreadable" xml:space="preserve">
+    <value>The FIT file couldn't be read: {0}</value>
+  </data>
+  <data name="FitNoSession" xml:space="preserve">
+    <value>The FIT file has no activity session.</value>
+  </data>
+  <data name="RideNotFound" xml:space="preserve">
+    <value>That ride doesn't exist.</value>
+  </data>
+  <data name="RideNoBackup" xml:space="preserve">
+    <value>This ride has no FIT backup yet.</value>
+  </data>
+  <data name="RideFileMissing" xml:space="preserve">
+    <value>The FIT backup of this ride is missing from the archive.</value>
+  </data>
+  <data name="PasswordTooShort" xml:space="preserve">
+    <value>Use at least {0} characters.</value>
+  </data>
+  <data name="PasswordWrong" xml:space="preserve">
+    <value>That password isn't right.</value>
+  </data>
+</root>

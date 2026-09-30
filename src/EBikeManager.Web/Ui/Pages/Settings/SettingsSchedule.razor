@@ -1,0 +1,54 @@
+@inject SettingsStateService Settings
+@inject SyncRunService SyncRun
+@inject SyncStatusStateService SyncStatus
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<div class="d-flex flex-column gap-4">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Schedule" Title="@WebStrings.ScheduleTitle" FullHeight="false"
+                 Description="@WebStrings.ScheduleDescription">
+        <SchedulePicker @bind-Cron="_cron" />
+        <div class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!Dirty || !ScheduleSettings.IsValid(_cron))" OnClick="SaveAsync">
+                @WebStrings.ScheduleSave
+            </MudButton>
+        </div>
+    </SurfaceCard>
+
+    <SurfaceCard Icon="@Icons.Material.Rounded.Sync" Title="@WebStrings.ScheduleSyncNowTitle" FullHeight="false"
+                 Description="@WebStrings.ScheduleSyncNowDescription">
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Sync"
+                   Disabled="SyncStatus.Status.IsRunning" OnClick="SyncNowAsync">
+            @(SyncStatus.Status.IsRunning ? SyncStatus.Status.Progress ?? WebStrings.Syncing : WebStrings.SyncNow)
+        </MudButton>
+    </SurfaceCard>
+</div>
+
+@code {
+    private string _cron = ScheduleSettings.Hourly;
+
+    private bool Dirty => _cron != Settings.Current.Schedule.Cron;
+
+    protected override void OnInitialized()
+    {
+        _cron = Settings.Current.Schedule.Cron;
+        SyncStatus.OnChange += OnSyncChanged;
+    }
+
+    private async Task SaveAsync()
+    {
+        var result = await Settings.SaveAsync((SettingDefinitions.SyncCron, _cron));
+        if (result.Succeeded) Snackbar.Add(WebStrings.ScheduleSaved, Severity.Success);
+        else Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+    }
+
+    private async Task SyncNowAsync()
+    {
+        var result = await SyncRun.StartManualSyncAsync();
+        if (!result.Succeeded) Snackbar.Add(result.Message ?? WebStrings.SyncStartFailed, Severity.Warning);
+    }
+
+    private void OnSyncChanged() => InvokeAsync(StateHasChanged);
+
+    public void Dispose() => SyncStatus.OnChange -= OnSyncChanged;
+}

@@ -1,0 +1,67 @@
+@inject PreferencesService Preferences
+
+<div class="em-option-list mb-3">
+    @foreach (var preset in Presets)
+    {
+        <OptionCard Title="@preset.Title" Description="@preset.Description" Icon="@preset.Icon"
+                    Active="@(_mode == preset.Cron)" OnClick="@(() => SelectAsync(preset.Cron))" />
+    }
+    <OptionCard Title="@WebStrings.Custom" Description="@WebStrings.ScheduleCustomDescription" Icon="@Icons.Material.Rounded.Code"
+                Active="@(_mode == CustomMode)" OnClick="@(() => SelectAsync(CustomMode))" />
+</div>
+
+@if (_mode == CustomMode)
+{
+    <MudTextField T="string" Value="@_custom" ValueChanged="CustomChangedAsync" Label="@WebStrings.ScheduleCronExpression" Placeholder="@ScheduleSettings.Hourly"
+                  Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                  Error="@(NextRun == null)" ErrorText="@WebStrings.ScheduleCronInvalid" Class="mb-2" />
+}
+
+@if (NextRun is { } next)
+{
+    <MudText Typo="Typo.caption" Class="em-muted d-block">@WebStrings.Format(WebStrings.ScheduleNextSync, DisplayFormat.DateTime(Preferences.ToLocal(next)))</MudText>
+}
+
+@code {
+    private const string CustomMode = "custom";
+
+    private static (string Cron, string Title, string Description, string Icon)[] Presets =>
+    [
+        ("*/30 * * * *", WebStrings.ScheduleEvery30Minutes, WebStrings.ScheduleEvery30MinutesDescription, Icons.Material.Rounded.Bolt),
+        (ScheduleSettings.Hourly, WebStrings.ScheduleEveryHour, WebStrings.ScheduleEveryHourDescription, Icons.Material.Rounded.Schedule),
+        ("0 */3 * * *", WebStrings.ScheduleEvery3Hours, WebStrings.ScheduleEvery3HoursDescription, Icons.Material.Rounded.Timer),
+        ("0 */6 * * *", WebStrings.ScheduleEvery6Hours, WebStrings.ScheduleEvery6HoursDescription, Icons.Material.Rounded.HourglassBottom),
+        ("0 3 * * *", WebStrings.ScheduleDaily, WebStrings.ScheduleDailyDescription, Icons.Material.Rounded.Bedtime)
+    ];
+
+    [Parameter] public string Cron { get; set; } = ScheduleSettings.Hourly;
+    [Parameter] public EventCallback<string> CronChanged { get; set; }
+
+    private string _mode = ScheduleSettings.Hourly;
+    private string _custom = ScheduleSettings.Hourly;
+    private bool _initialised;
+
+    private DateTime? NextRun => ScheduleSettings.IsValid(Cron) ? new ScheduleSettings(Cron).NextRunAfter(DateTime.UtcNow) : null;
+
+    protected override void OnParametersSet()
+    {
+        if (_initialised) return;
+
+        _mode = Presets.Any(preset => preset.Cron == Cron) ? Cron : CustomMode;
+        _custom = Cron;
+        _initialised = true;
+    }
+
+    private Task SelectAsync(string mode)
+    {
+        _mode = mode;
+        if (mode != CustomMode) _custom = mode;
+        return CronChanged.InvokeAsync(_custom.Trim());
+    }
+
+    private Task CustomChangedAsync(string value)
+    {
+        _custom = value;
+        return CronChanged.InvokeAsync(value.Trim());
+    }
+}

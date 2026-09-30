@@ -1,0 +1,41 @@
+<MudTooltip Text="@Tooltip" Disabled="@(Tooltip == null)">
+    <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="@ChipColor" Icon="@ChipIcon">@Label</MudChip>
+</MudTooltip>
+
+@code {
+    [Parameter, EditorRequired] public RideDto Ride { get; set; } = null!;
+
+    private string Label => Ride.FitStatus switch
+    {
+        FitBackupStatus.Saved => WebStrings.FitStatusSaved,
+        FitBackupStatus.Unavailable => WebStrings.FitStatusUnavailable,
+        FitBackupStatus.Failed => WebStrings.FitStatusFailed,
+        FitBackupStatus.Processing => WebStrings.FitStatusProcessing,
+        _ => WebStrings.FitStatusPending
+    };
+
+    private Color ChipColor => Ride.FitStatus switch
+    {
+        FitBackupStatus.Saved => Color.Success,
+        FitBackupStatus.Failed => Color.Error,
+        FitBackupStatus.Pending => Color.Info,
+        _ => Color.Default
+    };
+
+    private string ChipIcon => Ride.FitStatus switch
+    {
+        FitBackupStatus.Saved => Icons.Material.Rounded.CheckCircle,
+        FitBackupStatus.Unavailable => Icons.Material.Rounded.Block,
+        FitBackupStatus.Failed => Icons.Material.Rounded.ErrorOutline,
+        FitBackupStatus.Processing => Icons.Material.Rounded.HourglassEmpty,
+        _ => Icons.Material.Rounded.Schedule
+    };
+
+    private string? Tooltip => Ride.FitStatus switch
+    {
+        FitBackupStatus.Saved => Ride.FitPath,
+        FitBackupStatus.Unavailable or FitBackupStatus.Failed => Ride.FitProblem,
+        FitBackupStatus.Processing => WebStrings.FitStatusProcessingTooltip,
+        _ => WebStrings.FitStatusPendingTooltip
+    };
+}

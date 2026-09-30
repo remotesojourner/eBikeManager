@@ -1,0 +1,96 @@
+using System.Data.Common;
+using EBikeManager.Application.Exceptions;
+using EBikeManager.Application.Models;
+using EBikeManager.Application.Repositories.Interfaces;
+using EBikeManager.Application.Resources;
+using EBikeManager.Application.Services.Interfaces;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
+
+namespace EBikeManager.Application.Services;
+
+public sealed partial class SyncRunService
+{
+    private readonly SyncStateService _state;
+    private readonly IServiceScopeFactory _scopes;
+    private readonly IHostApplicationLifetime _lifetime;
+    private readonly ISettingsRepository _settings;
+    private readonly ICurrentAccessService _access;
+    private readonly ILogger<SyncRunService> _logger;
+
+    public SyncRunService(
+        SyncStateService state,
+        IServiceScopeFactory scopes,
+        IHostApplicationLifetime lifetime,
+        ISettingsRepository settings,
+        ICurrentAccessService access,
+        ILogger<SyncRunService> logger)
+    {
+        _state = state;
+        _scopes = scopes;
+        _lifetime = lifetime;
+        _settings = settings;
+        _access = access;
+        _logger = logger;
+    }
+
+    public async Task<OperationResult> StartManualSyncAsync(CancellationToken cancellationToken = default)
+    {
+        if (!_access.HasFullAccess) return OperationResult.Denied();
+        if (!(await _settings.GetAsync(cancellationToken)).SetupCompleted) return OperationResult.Invalid(ApplicationStrings.SyncNotSetUp);
+        if (!_state.TryStart(ApplicationStrings.SyncProgressStarting)) return OperationResult.Conflict(ApplicationStrings.SyncAlreadyRunning);
+
+        var stopping = _lifetime.ApplicationStopping;
+        _ = Task.Run(async () =>
+        {
+            using var scope = _scopes.CreateScope();
+            await scope.ServiceProvider.GetRequiredService<SyncRunService>().RunLockedAsync(stopping);
+        }, CancellationToken.None);
+        return OperationResult.Ok();
+    }
+
+    public async Task RunScheduledAsync(CancellationToken cancellationToken = default)
+    {
+        if (!(await _settings.GetAsync(cancellationToken)).SetupCompleted) return;
+        if (!_state.TryStart(ApplicationStrings.SyncProgressStarting))
+        {
+            LogScheduledSyncSkipped();
+            return;
+        }
+
+        await RunLockedAsync(cancellationToken);
+    }
+
+    private async Task RunLockedAsync(CancellationToken cancellationToken)
+    {
+        SyncRunResult? result = null;
+        string? error = null;
+        try
+        {
+            using var scope = _scopes.CreateScope();
+            result = await scope.ServiceProvider.GetRequiredService<RideSyncService>().RunAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            error = ApplicationStrings.SyncStoppedByShutdown;
+        }
+        catch (BoschReauthRequiredException)
+        {
+            error = ApplicationStrings.BoschReconnectNeeded;
+        }
+        catch (Exception ex) when (ex is HttpRequestException or IOException or InvalidOperationException or DbException)
+        {
+            LogSyncFailed(ex);
+            error = ex.Message;
+        }
+
+        _state.Finish(result, error);
+    }
+
+    [LoggerMessage(Level = LogLevel.Error, Message = "The sync failed")]
+    private partial void LogSyncFailed(Exception exception);
+
+    [LoggerMessage(Level = LogLevel.Information, Message = "Skipped a scheduled sync because another one is still running")]
+    private partial void LogScheduledSyncSkipped();
+}
