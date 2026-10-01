@@ -18,7 +18,7 @@ public class DisplayFormatTests
             Assert.Equal("1 h 32 min", DisplayFormat.Duration(5_520));
             Assert.Equal("1 min", DisplayFormat.Duration(20));
             Assert.Equal("41 kcal", DisplayFormat.Calories(41.4));
-            Assert.Equal("62 %", DisplayFormat.Percent(62));
+            Assert.Equal("62%", DisplayFormat.Percent(62));
             Assert.Equal(DisplayFormat.Missing, DisplayFormat.Distance(null));
         }
         finally

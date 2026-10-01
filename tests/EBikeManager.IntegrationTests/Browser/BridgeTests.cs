@@ -50,7 +50,7 @@ public sealed class BridgeTests : BrowserTest, IClassFixture<BrowserAppWithRides
 
             await bridge.SetAsync(FakeEsphomeBridge.Connected, false);
             await Expect(live).ToHaveCountAsync(0);
-            await Expect(page.GetByText(new System.Text.RegularExpressions.Regex(@"^50 % \(read "))).ToBeVisibleAsync();
+            await Expect(page.GetByText(new System.Text.RegularExpressions.Regex(@"^50% \(read "))).ToBeVisibleAsync();
             AssertNoBrowserErrors();
         }
         finally

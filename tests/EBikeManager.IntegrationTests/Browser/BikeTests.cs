@@ -45,7 +45,7 @@ public sealed class BikeTests : BrowserTest, IClassFixture<BrowserAppWithRides>
         var mileage = page.Locator(".em-mileage");
         await Expect(mileage).ToContainTextAsync("SPORT");
         await Expect(mileage).ToContainTextAsync("18.6 km");
-        await Expect(mileage).ToContainTextAsync("51 %");
+        await Expect(mileage).ToContainTextAsync("51%");
         await Expect(mileage).ToContainTextAsync("142 Wh");
         await Expect(page.GetByRole(AriaRole.Img, new() { Name = "ECO 0.0 km, AUTO 14.0 km, SPORT 18.6 km, TURBO 3.8 km" })).ToBeVisibleAsync();
 

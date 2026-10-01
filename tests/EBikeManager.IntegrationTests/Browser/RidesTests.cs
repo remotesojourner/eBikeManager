@@ -49,7 +49,7 @@ public sealed class RidesTests : BrowserTest, IClassFixture<BrowserAppWithRides>
         var page = await browser.NewPageAsync();
 
         await page.GotoAsync("/rides");
-        await Row(page, "Ride ride-02").GetByText("62 %").ClickAsync();
+        await Row(page, "Ride ride-02").GetByText("62%").ClickAsync();
 
         await Expect(page).ToHaveURLAsync(new Regex("/rides/ride-02$"));
         AssertNoBrowserErrors();

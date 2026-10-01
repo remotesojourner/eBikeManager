@@ -84,7 +84,7 @@
     <value>{0} kcal</value>
   </data>
   <data name="UnitPercent" xml:space="preserve">
-    <value>{0} %</value>
+    <value>{0}%</value>
   </data>
   <data name="StateViewNothingToShow" xml:space="preserve">
     <value>There's nothing to show yet.</value>
@@ -678,7 +678,7 @@
     <value>Moving</value>
   </data>
   <data name="BikeChargeTo80" xml:space="preserve">
-    <value>Until 80 % charged</value>
+    <value>Until 80% charged</value>
   </data>
   <data name="BikeChargeTo100" xml:space="preserve">
     <value>Until fully charged</value>

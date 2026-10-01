@@ -29,7 +29,7 @@ public sealed class RideDetailTests : BrowserTest, IClassFixture<BrowserAppWithR
         await Expect(page.Locator(".em-map .maplibregl-canvas")).ToBeVisibleAsync();
         await Expect(page.Locator(".em-ride-chart .uplot")).ToHaveCountAsync(4);
         await Expect(page.Locator(".mud-table-body .mud-table-row")).ToHaveCountAsync(13);
-        await Expect(page.GetByText("You did 62 % of the work")).ToBeVisibleAsync();
+        await Expect(page.GetByText("You did 62% of the work")).ToBeVisibleAsync();
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Download GPX file" })).ToBeVisibleAsync();
 
         await page.SetViewportSizeAsync(DesktopWidth, 2400);
