@@ -21,6 +21,8 @@ public static class AccessPolicy
 
     public static string SignInPathFor(string returnUrl) => $"{SignInPath}?returnUrl={Uri.EscapeDataString(LocalReturnUrl(returnUrl))}";
 
+    public static bool IsApi(PathString path) => path.StartsWithSegments("/api");
+
     public static bool AnswersWithStatus(PathString path) =>
-        path.StartsWithSegments("/_blazor") || (path.StartsWithSegments("/bikes", out var media) && media.Value?.Length > 1);
+        IsApi(path) || path.StartsWithSegments("/_blazor") || (path.StartsWithSegments("/bikes", out var media) && media.Value?.Length > 1);
 }

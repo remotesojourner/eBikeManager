@@ -61,6 +61,23 @@
             </MudButton>
         </div>
     </SurfaceCard>
+
+    @if (Auth.IsActive && _apiToken != null)
+    {
+        <SurfaceCard Icon="@Icons.Material.Rounded.Key" Title="@WebStrings.SecurityApiTokenTitle" FullHeight="false"
+                     Description="@WebStrings.Format(WebStrings.SecurityApiTokenDescription, StatisticsUri)">
+            <MudTextField T="string" Value="@_apiToken" Label="@WebStrings.SecurityApiToken" Variant="Variant.Outlined" Margin="Margin.Dense" ReadOnly="true"
+                          Class="em-api-token" Adornment="Adornment.End" AdornmentIcon="@Icons.Material.Rounded.ContentCopy"
+                          AdornmentAriaLabel="@WebStrings.SecurityCopyApiToken" OnAdornmentClick="CopyApiTokenAsync"
+                          HelperText="@WebStrings.SecurityApiTokenHelp" />
+            <div class="mt-4">
+                <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Autorenew"
+                           Disabled="@_regenerating" OnClick="RegenerateApiTokenAsync">
+                    @WebStrings.SecurityRegenerateApiToken
+                </MudButton>
+            </div>
+        </SurfaceCard>
+    }
 </div>
 
 @code {
@@ -73,10 +90,14 @@
     private bool _clearSecret;
     private bool _showSecret;
     private bool _saving;
+    private string? _apiToken;
+    private bool _regenerating;
 
     private SignInSettings Saved => Settings.Current.SignIn;
 
     private string RedirectUri => $"{Navigation.BaseUri}signin-oidc";
+
+    private string StatisticsUri => $"{Navigation.BaseUri}api/statistics";
 
     private bool PlainHttp => Uri.TryCreate(Navigation.BaseUri, UriKind.Absolute, out var address) && address.Scheme == Uri.UriSchemeHttp && !address.IsLoopback;
 
@@ -103,7 +124,11 @@
         _clientId = Saved.ClientId ?? "";
         _scopes = Saved.Scopes;
         _hasSecret = await SignIn.HasClientSecretAsync();
+        await LoadApiTokenAsync();
     }
+
+    private async Task LoadApiTokenAsync() =>
+        _apiToken = Auth.IsActive ? (await SignIn.GetApiTokenAsync()).Value : null;
 
     private async Task SaveAsync()
     {
@@ -128,7 +153,28 @@
         _clearSecret = false;
         _scopes = NormalisedScopes;
         _hasSecret = await SignIn.HasClientSecretAsync();
+        await LoadApiTokenAsync();
         Snackbar.Add(WebStrings.SecuritySaved, Severity.Success);
+    }
+
+    private async Task RegenerateApiTokenAsync()
+    {
+        _regenerating = true;
+        var result = await SignIn.RegenerateApiTokenAsync();
+        _regenerating = false;
+        if (!result.Succeeded)
+        {
+            Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+            return;
+        }
+
+        _apiToken = result.Value;
+        Snackbar.Add(WebStrings.SecurityApiTokenRegenerated, Severity.Success);
+    }
+
+    private async Task CopyApiTokenAsync()
+    {
+        if (_apiToken != null && await Browser.CopyTextAsync(_apiToken)) Snackbar.Add(WebStrings.SecurityCopied, Severity.Info);
     }
 
     private async Task CopyRedirectUriAsync()

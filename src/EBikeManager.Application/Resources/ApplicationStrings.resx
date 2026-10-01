@@ -101,6 +101,9 @@
   <data name="BikesNoneChosen" xml:space="preserve">
     <value>Choose at least one bike.</value>
   </data>
+  <data name="ApiTokenNeedsSignIn" xml:space="preserve">
+    <value>The API token is only used while sign-in is on.</value>
+  </data>
   <data name="BikeNameRequired" xml:space="preserve">
     <value>Give every bike a name.</value>
   </data>

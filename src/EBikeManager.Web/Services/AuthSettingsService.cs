@@ -1,6 +1,7 @@
 using EBikeManager.Application.Configuration;
 using EBikeManager.Application.Services;
 using EBikeManager.Application.Services.Interfaces;
+using EBikeManager.Application.Utils;
 using EBikeManager.Web.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.OpenIdConnect;
@@ -24,7 +25,7 @@ public sealed class AuthSettingsService : ISignInStateService, IDisposable
         _schemes = schemes;
         _oidcOptions = oidcOptions;
         _disabledByEnvironment = options.Value.DisableAuth;
-        Current = new AuthSnapshot(AppSettings.Defaults.SignIn, null, _disabledByEnvironment);
+        Current = new AuthSnapshot(AppSettings.Defaults.SignIn, null, null, _disabledByEnvironment);
     }
 
     public AuthSnapshot Current { get; private set; }
@@ -42,8 +43,10 @@ public sealed class AuthSettingsService : ISignInStateService, IDisposable
         {
             using var scope = _scopes.CreateScope();
             var signIn = (await scope.ServiceProvider.GetRequiredService<SettingsService>().GetAsync(cancellationToken)).SignIn;
-            var clientSecret = await scope.ServiceProvider.GetRequiredService<SecretStoreService>().GetAsync(SecretStoreService.OidcClientSecret, cancellationToken);
-            Current = new AuthSnapshot(signIn, clientSecret, _disabledByEnvironment);
+            var secrets = scope.ServiceProvider.GetRequiredService<SecretStoreService>();
+            var clientSecret = await secrets.GetAsync(SecretStoreService.OidcClientSecret, cancellationToken);
+            var apiToken = await secrets.GetAsync(SecretStoreService.ApiTokenSecret, cancellationToken);
+            Current = new AuthSnapshot(signIn, clientSecret, apiToken is { } token ? ApiToken.Hash(token) : null, _disabledByEnvironment);
 
             _oidcOptions.TryRemove(OidcScheme);
             var registered = await _schemes.GetSchemeAsync(OidcScheme) != null;

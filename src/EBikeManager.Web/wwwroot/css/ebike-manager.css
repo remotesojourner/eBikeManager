@@ -405,6 +405,10 @@
     max-width: 24rem;
 }
 
+.em-api-token .mud-input-root {
+    font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
+}
+
 .em-carousel-dot {
     position: relative;
     width: 20px;

@@ -3,6 +3,7 @@ using EBikeManager.Application.Models;
 using EBikeManager.Application.Repositories.Interfaces;
 using EBikeManager.Application.Resources;
 using EBikeManager.Application.Services.Interfaces;
+using EBikeManager.Application.Utils;
 
 namespace EBikeManager.Application.Services;
 
@@ -59,6 +60,30 @@ public sealed class SignInService
 
         await _signInState.ReloadAsync(cancellationToken);
         return OperationResult.Ok(_signInState.IsActive);
+    }
+
+    public async Task<OperationResult<string>> GetApiTokenAsync(CancellationToken cancellationToken = default)
+    {
+        if (!_access.HasFullAccess) return OperationResult.Denied();
+        if (!_signInState.IsActive) return OperationResult.Invalid(ApplicationStrings.ApiTokenNeedsSignIn);
+
+        return OperationResult.Ok(await _secrets.GetAsync(SecretStoreService.ApiTokenSecret, cancellationToken) ?? await CreateApiTokenAsync(cancellationToken));
+    }
+
+    public async Task<OperationResult<string>> RegenerateApiTokenAsync(CancellationToken cancellationToken = default)
+    {
+        if (!_access.HasFullAccess) return OperationResult.Denied();
+        if (!_signInState.IsActive) return OperationResult.Invalid(ApplicationStrings.ApiTokenNeedsSignIn);
+
+        return OperationResult.Ok(await CreateApiTokenAsync(cancellationToken));
+    }
+
+    private async Task<string> CreateApiTokenAsync(CancellationToken cancellationToken)
+    {
+        var token = ApiToken.Generate();
+        await _secrets.SetAsync(SecretStoreService.ApiTokenSecret, token, cancellationToken);
+        await _signInState.ReloadAsync(cancellationToken);
+        return token;
     }
 
     private static string? Clean(string? value) =>

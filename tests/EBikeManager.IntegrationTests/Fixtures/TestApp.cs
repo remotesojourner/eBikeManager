@@ -1,3 +1,4 @@
+using System.Net;
 using System.Reflection;
 using EBikeManager.Application.Installers;
 using EBikeManager.Application.Services.Interfaces;
@@ -49,6 +50,17 @@ public abstract class TestApp : WebApplicationFactory<Program>, IAsyncLifetime
         SqliteConnection.ClearAllPools();
         if (Directory.Exists(_root)) Directory.Delete(_root, recursive: true);
         GC.SuppressFinalize(this);
+    }
+
+    public async Task<HttpClient> CreateSignedInClientAsync(CancellationToken cancellationToken)
+    {
+        var client = CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
+        using var login = await client.GetAsync(new Uri("/auth/login?returnUrl=%2Frides", UriKind.Relative), cancellationToken);
+        using var provider = await client.GetAsync(login.Headers.Location, cancellationToken);
+        using var signedIn = await client.GetAsync(provider.Headers.Location, cancellationToken);
+        Assert.Equal(HttpStatusCode.Redirect, signedIn.StatusCode);
+        Assert.Equal("/rides", signedIn.Headers.Location?.OriginalString);
+        return client;
     }
 
     protected abstract Task SeedAsync(IServiceProvider services, CancellationToken cancellationToken);

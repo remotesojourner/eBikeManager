@@ -31,6 +31,7 @@ public static class ApplicationInstaller
         services.AddScoped<BoschAccountService>();
         services.AddScoped<BikeService>();
         services.AddScoped<RideService>();
+        services.AddScoped<StatisticsService>();
         services.AddScoped<RideSyncService>();
         services.AddScoped<BikeDetailsSyncService>();
         services.AddScoped<SyncRunService>();

@@ -9,6 +9,7 @@ public sealed class SecretStoreService
     public const string GoogleHealthRefreshToken = "googleHealthRefreshToken";
     public const string GoogleHealthClientSecret = "googleHealthClientSecret";
     public const string OidcClientSecret = "oidcClientSecret";
+    public const string ApiTokenSecret = "apiToken";
 
     private readonly ISecretRepository _secrets;
     private readonly ISecretProtectionService _protection;

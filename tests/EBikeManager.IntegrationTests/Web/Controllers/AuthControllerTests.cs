@@ -131,16 +131,7 @@ public sealed class AuthControllerTests : IClassFixture<SignInRequiredApp>, ICla
         Assert.Equal("/rides", login.Headers.Location?.OriginalString);
     }
 
-    private async Task<HttpClient> SignInAsync(CancellationToken cancellationToken)
-    {
-        var client = Client(_app);
-        using var login = await client.GetAsync(new Uri("/auth/login?returnUrl=%2Frides", UriKind.Relative), cancellationToken);
-        using var provider = await client.GetAsync(login.Headers.Location, cancellationToken);
-        using var signedIn = await client.GetAsync(provider.Headers.Location, cancellationToken);
-        Assert.Equal(HttpStatusCode.Redirect, signedIn.StatusCode);
-        Assert.Equal("/rides", signedIn.Headers.Location?.OriginalString);
-        return client;
-    }
+    private Task<HttpClient> SignInAsync(CancellationToken cancellationToken) => _app.CreateSignedInClientAsync(cancellationToken);
 
     private static HttpClient Client(TestApp app) => app.CreateClient(new WebApplicationFactoryClientOptions { AllowAutoRedirect = false });
 }

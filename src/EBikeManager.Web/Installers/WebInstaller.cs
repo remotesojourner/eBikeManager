@@ -68,8 +68,13 @@ public static class WebInstaller
         services.AddScoped<CircuitAccessService>();
         services.AddScoped<ICurrentAccessService, CurrentAccessService>();
 
-        services.AddAuthorization(options => options.FallbackPolicy = new AuthorizationPolicyBuilder().AddRequirements(new FullAccessRequirement()).Build());
+        services.AddAuthorization(options =>
+        {
+            options.FallbackPolicy = new AuthorizationPolicyBuilder().AddRequirements(new FullAccessRequirement()).Build();
+            options.AddPolicy(AccessPolicies.Statistics, policy => policy.AddRequirements(new StatisticsAccessRequirement()));
+        });
         services.AddSingleton<IAuthorizationHandler, FullAccessRequirementHandler>();
+        services.AddSingleton<IAuthorizationHandler, StatisticsAccessRequirementHandler>();
         services.AddSingleton<IAuthorizationMiddlewareResultHandler, AccessDeniedResponder>();
         services.AddCascadingAuthenticationState();
         services.AddControllers();

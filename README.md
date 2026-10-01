@@ -24,10 +24,11 @@ A self-hosted Blazor Server app for Bosch eBike Flow riders. It keeps a copy of 
 - **Rides** — every ride with its distance, moving time, Bosch's calories, your share of the effort, and download buttons for its FIT and GPX files. Click a ride anywhere to open it
 - **Ride details** — the route on a map, the ride's figures, how far you rode in each assistance mode, charts of elevation, speed, cadence and power along the ride, and a split for every kilometre. Point at a chart to read the values there and see the spot on the map
 - **Maps your way** — OpenStreetMap by default, OpenFreeMap with a dark version for the dark theme, or a MapLibre style from your own map server
-- **Bike** — the bike's picture, frame number and where to find it, mileage with the distance and energy in each assistance mode, motor hours, battery (capacity, charge cycles, energy delivered), range in each assistance mode, every component with its software version and serial number, and the photos and invoices from your eBike Pass. With a ConnectModule it adds the live battery state and the last known location
+- **Bikes** — each bike's picture, frame number and where to find it, mileage with the distance and energy in each assistance mode, motor hours, battery (capacity, charge cycles, energy delivered), range in each assistance mode, every component with its software version and serial number, and the photos and invoices from your eBike Pass. With a ConnectModule it adds the live battery state and the last known location
 - **Google Health integration** — uploads each ride as an electric bike workout with Bosch's calories, which count only your own effort, not the motor's. It lists every upload with its result. A ride your watch also recorded isn't uploaded, because Google Health only shows the watch's version (see the [FAQ](#what-happens-when-my-watch-recorded-the-same-ride)). Any ride can also be uploaded on its own from the Rides list or its ride page, even one from before your start date
 - **Local by design** — every page is built from what's stored on your server. eBike Manager contacts Bosch only while syncing, and serves its own copy of your bike's picture, eBike Pass documents, fonts and map code. The one exception is the map itself, which your browser loads from the map server you choose; with your own map server, nothing leaves your network
 - **Sign-in** — optional sign-in with your own OpenID Connect provider, such as Authentik, Authelia, Keycloak or Pocket ID. When it's on, nothing is shown until you've signed in
+- **Statistics API** — `GET /api/statistics` returns your number of bikes, rides, total distance, moving time, elevation gain and calories as JSON, for Home Assistant or your own scripts. With sign-in on, it takes an API token from the Security tab
 - **Docker-ready** — one container, one data folder, and a `/healthz` endpoint for Docker's health check
 
 ---
@@ -38,7 +39,7 @@ A self-hosted Blazor Server app for Bosch eBike Flow riders. It keeps a copy of 
 
 ![Dashboard showing distance, rides, moving time, calories and elevation for four periods, recent rides, the bike and the sync status](docs/screenshots/dashboard.png)
 
-### Bike
+### Bikes
 
 ![Bikes page showing the bike, its mileage per assistance mode, battery, range, components and eBike Pass documents](docs/screenshots/bike.png)
 
@@ -215,6 +216,29 @@ Sign-in uses your own OpenID Connect provider. Create an application for eBike M
 | **Redirect URI** | The address to register with your provider, `https://<your address>/signin-oidc` |
 
 Turning sign-in on takes you to your provider straight away. Changing the provider or client signs everyone out. **Sign out** in the header ends your eBike Manager session; your provider may still have you signed in there. If the settings ever lock you out, start eBike Manager with `DISABLE_AUTH=true`, correct them, then remove the variable.
+
+While sign-in is on, this tab also shows an **API token**, created the first time you open it. It only opens the statistics API below; every other page still needs signing in. It's stored encrypted, and **Generate a new token** replaces it, so the old one stops working straight away. Changing the provider doesn't change the token.
+
+#### Statistics API
+
+`GET /api/statistics` adds up every synced ride. It's open to anyone while sign-in is off. With sign-in on, send the API token, or call it from a browser where you're signed in.
+
+```bash
+curl -H "Authorization: Bearer ebm_…" https://ebike.example.com/api/statistics
+```
+
+```json
+{
+  "bikes": 1,
+  "rides": 31,
+  "mileageKm": 620.4,
+  "movingTimeSeconds": 102300,
+  "elevationGainMeters": 3720,
+  "caloriesKcal": 12710
+}
+```
+
+`bikes` counts the bikes you sync. The totals include every ride eBike Manager has, also those of a bike you no longer sync, and match the dashboard's **All time**. A missing or wrong token gets `401 Unauthorized`.
 
 ### Tab: About
 

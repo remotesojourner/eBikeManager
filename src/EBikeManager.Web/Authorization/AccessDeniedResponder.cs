@@ -20,6 +20,7 @@ public sealed class AccessDeniedResponder : IAuthorizationMiddlewareResultHandle
         {
             if (context.Features.Get<IStatusCodePagesFeature>() is { } statusCodePages) statusCodePages.Enabled = false;
             context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+            if (AccessPolicy.IsApi(request.Path)) context.Response.Headers.WWWAuthenticate = "Bearer";
             return;
         }
 

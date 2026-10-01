@@ -1190,6 +1190,27 @@
   <data name="SecurityCopied" xml:space="preserve">
     <value>Copied.</value>
   </data>
+  <data name="SecurityApiTokenTitle" xml:space="preserve">
+    <value>API token</value>
+  </data>
+  <data name="SecurityApiTokenDescription" xml:space="preserve">
+    <value>Scripts and dashboards can read your totals from {0} by sending this token as "Authorization: Bearer" followed by the token. It works only there; everything else still needs signing in.</value>
+  </data>
+  <data name="SecurityApiToken" xml:space="preserve">
+    <value>API token</value>
+  </data>
+  <data name="SecurityApiTokenHelp" xml:space="preserve">
+    <value>Anyone with this token can read your totals. Generate a new one if it leaks.</value>
+  </data>
+  <data name="SecurityCopyApiToken" xml:space="preserve">
+    <value>Copy the API token</value>
+  </data>
+  <data name="SecurityRegenerateApiToken" xml:space="preserve">
+    <value>Generate a new token</value>
+  </data>
+  <data name="SecurityApiTokenRegenerated" xml:space="preserve">
+    <value>New token generated. The old one no longer works.</value>
+  </data>
   <data name="AuthSignedOutTitle" xml:space="preserve">
     <value>You've signed out</value>
   </data>
