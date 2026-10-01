@@ -51,6 +51,7 @@ internal class EBikeManagerDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.Name).HasColumnName("name").IsRequired();
+            entity.Property(e => e.Model).HasColumnName("model").IsRequired();
             entity.Property(e => e.AddedAt).HasColumnName("addedAt");
             entity.Property(e => e.ProfileJson).HasColumnName("profileJson");
             entity.Property(e => e.StateOfChargeJson).HasColumnName("stateOfChargeJson");
@@ -93,6 +94,8 @@ internal class EBikeManagerDbContext : DbContext
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Id).HasColumnName("id");
             entity.Property(e => e.BikeId).HasColumnName("bikeId").IsRequired();
+            entity.Property(e => e.BikeName).HasColumnName("bikeName");
+            entity.Property(e => e.BikeModel).HasColumnName("bikeModel");
             entity.Property(e => e.Title).HasColumnName("title");
             entity.Property(e => e.StartTime).HasColumnName("startTime");
             entity.Property(e => e.EndTime).HasColumnName("endTime");

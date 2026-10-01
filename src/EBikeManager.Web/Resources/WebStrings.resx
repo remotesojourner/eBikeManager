@@ -206,6 +206,15 @@
   <data name="RidesLoadFailed" xml:space="preserve">
     <value>Your rides couldn't be loaded.</value>
   </data>
+  <data name="RidesBike" xml:space="preserve">
+    <value>Bike</value>
+  </data>
+  <data name="RidesAllBikes" xml:space="preserve">
+    <value>All bikes</value>
+  </data>
+  <data name="RidesUnknownBike" xml:space="preserve">
+    <value>Unknown bike</value>
+  </data>
   <data name="RidesProblems" xml:space="preserve">
     <value>{0} files couldn't be backed up during the last sync. They're tried again on the next sync. Hover over a file for details.</value>
   </data>
@@ -262,6 +271,12 @@
   </data>
   <data name="BikesLoadFailed" xml:space="preserve">
     <value>Your bikes couldn't be loaded from Bosch.</value>
+  </data>
+  <data name="BikesRefresh" xml:space="preserve">
+    <value>Refresh bikes</value>
+  </data>
+  <data name="BikesRefreshed" xml:space="preserve">
+    <value>Bikes read from your Bosch account.</value>
   </data>
   <data name="ScheduleCustomDescription" xml:space="preserve">
     <value>Your own cron expression, evaluated in UTC</value>
@@ -393,13 +408,37 @@
     <value>Bikes</value>
   </data>
   <data name="SettingsBoschBikesDescription" xml:space="preserve">
-    <value>Only rides of the chosen bikes are synced. Adding a bike reads its whole ride history on the next sync.</value>
+    <value>Only rides of the chosen bikes are synced. To add a bike, click Refresh bikes to read the bikes on your Bosch account. Adding a bike reads its whole ride history on the next sync.</value>
   </data>
   <data name="SettingsBoschSaveBikes" xml:space="preserve">
     <value>Save bikes</value>
   </data>
   <data name="SettingsBoschBikesSaved" xml:space="preserve">
     <value>Bikes saved.</value>
+  </data>
+  <data name="SettingsBikeNamesTitle" xml:space="preserve">
+    <value>Bike names</value>
+  </data>
+  <data name="SettingsBikeNamesDescription" xml:space="preserve">
+    <value>The name eBike Manager shows for each bike and its rides. Bosch doesn't keep your bike's name, so it starts as the model. The model comes from Bosch and is what Google Health shows as the device.</value>
+  </data>
+  <data name="BikeNamesName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="BikeNamesNameRequired" xml:space="preserve">
+    <value>Enter a name.</value>
+  </data>
+  <data name="BikeNamesModelFromBosch" xml:space="preserve">
+    <value>Model, from Bosch</value>
+  </data>
+  <data name="BikeNamesSave" xml:space="preserve">
+    <value>Save names</value>
+  </data>
+  <data name="BikeNamesSaved" xml:space="preserve">
+    <value>Names saved.</value>
+  </data>
+  <data name="BikeNamesNone" xml:space="preserve">
+    <value>Choose a bike above first.</value>
   </data>
   <data name="SecurityDisabledByEnvironment" xml:space="preserve">
     <value>Sign-in is switched off by the DISABLE_AUTH environment variable, so anyone who can reach this app can use it. Correct the settings below, then remove the variable and restart.</value>
@@ -455,11 +494,11 @@
   <data name="UnitKilometresPerHour" xml:space="preserve">
     <value>{0} km/h</value>
   </data>
-  <data name="BikeTitle" xml:space="preserve">
-    <value>Bike</value>
+  <data name="BikesTitle" xml:space="preserve">
+    <value>Bikes</value>
   </data>
-  <data name="BikeSubtitle" xml:space="preserve">
-    <value>Everything Bosch knows about your bike</value>
+  <data name="BikesSubtitle" xml:space="preserve">
+    <value>Everything Bosch knows about your bikes</value>
   </data>
   <data name="BikeUpdated" xml:space="preserve">
     <value>Updated {0}</value>
@@ -484,6 +523,12 @@
   </data>
   <data name="BikeNoDetailsYet" xml:space="preserve">
     <value>The details of {0} are fetched on the next sync. Click Refresh to get them now.</value>
+  </data>
+  <data name="BikeModel" xml:space="preserve">
+    <value>Model</value>
+  </data>
+  <data name="BikeNameWithModel" xml:space="preserve">
+    <value>{0} · {1}</value>
   </data>
   <data name="BikeFrameNumber" xml:space="preserve">
     <value>Frame number</value>
@@ -693,7 +738,7 @@
     <value>Point at a chart to read its values.</value>
   </data>
   <data name="RideChartTitle" xml:space="preserve">
-    <value>{0} ({1})</value>
+    <value>{0} · {1}</value>
   </data>
   <data name="RideElevation" xml:space="preserve">
     <value>Elevation</value>
@@ -778,6 +823,9 @@
   </data>
   <data name="MapPreviewDescription" xml:space="preserve">
     <value>Your latest ride on the chosen map. It changes before you save, so you can try a map first.</value>
+  </data>
+  <data name="MapPreviewSampleDescription" xml:space="preserve">
+    <value>A sample ride along the Victoria Embankment in London, shown until you have a ride with a route. It changes before you save, so you can try a map first.</value>
   </data>
   <data name="GoogleHealthDescription" xml:space="preserve">
     <value>Uploads every ride as an electric bike workout with Bosch's calories. Bosch counts only your own effort, not the motor's, so your daily calories stay right.</value>
@@ -1036,6 +1084,18 @@
   </data>
   <data name="BikeDocumentAdded" xml:space="preserve">
     <value>Added {0}</value>
+  </data>
+  <data name="BikeCarouselRole" xml:space="preserve">
+    <value>carousel</value>
+  </data>
+  <data name="BikeCarouselPrevious" xml:space="preserve">
+    <value>Previous bike</value>
+  </data>
+  <data name="BikeCarouselNext" xml:space="preserve">
+    <value>Next bike</value>
+  </data>
+  <data name="BikeCarouselShow" xml:space="preserve">
+    <value>Show {0}</value>
   </data>
   <data name="DashboardBikeDetails" xml:space="preserve">
     <value>Bike details</value>

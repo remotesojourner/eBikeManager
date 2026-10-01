@@ -5,6 +5,8 @@ namespace EBikeManager.TestSupport;
 
 internal sealed class FakeBoschApi : IBoschApiService
 {
+    private int _bikeListReads;
+
     public List<BoschBikeInfo> Bikes { get; } = [];
 
     public List<BoschActivity> Activities { get; } = [];
@@ -43,8 +45,13 @@ internal sealed class FakeBoschApi : IBoschApiService
 
     public List<string> DownloadedGpx { get; } = [];
 
-    public Task<IReadOnlyList<BoschBikeInfo>> GetBikesAsync(CancellationToken cancellationToken = default) =>
-        Task.FromResult<IReadOnlyList<BoschBikeInfo>>([.. Bikes]);
+    public int BikeListReads => Volatile.Read(ref _bikeListReads);
+
+    public Task<IReadOnlyList<BoschBikeInfo>> GetBikesAsync(CancellationToken cancellationToken = default)
+    {
+        Interlocked.Increment(ref _bikeListReads);
+        return Task.FromResult<IReadOnlyList<BoschBikeInfo>>([.. Bikes]);
+    }
 
     public Task<BoschActivityPage> GetActivitiesAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {

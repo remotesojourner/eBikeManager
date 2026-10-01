@@ -397,6 +397,41 @@
     font-weight: 600;
 }
 
+.em-bike-filter {
+    min-width: 16rem;
+}
+
+.em-bike-name-field {
+    max-width: 24rem;
+}
+
+.em-carousel-dot {
+    position: relative;
+    width: 20px;
+    height: 20px;
+    padding: 0;
+    border: 0;
+    background: none;
+    cursor: pointer;
+}
+
+.em-carousel-dot::before {
+    content: "";
+    position: absolute;
+    inset: 6px;
+    border-radius: 50%;
+    background: var(--mud-palette-lines-default);
+}
+
+.em-carousel-dot-active::before {
+    background: var(--mud-palette-primary);
+}
+
+.em-carousel-dot:focus-visible {
+    outline: 2px solid var(--mud-palette-primary);
+    border-radius: 50%;
+}
+
 .em-fit-column {
     width: 1%;
     white-space: nowrap;

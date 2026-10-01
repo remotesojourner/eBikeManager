@@ -1,46 +1,81 @@
 @inject BoschAccountService Bosch
 @inject BikeService Bikes
+@inject ISnackbar Snackbar
 
-<StateView Loading="_loading" ErrorMessage="@_error" OnRetry="LoadAsync" Compact="true"
+<StateView Loading="_loading" ErrorMessage="@_error" OnRetry="RefreshAsync" Compact="true"
            Empty="@(_available.Count == 0)" EmptyMessage="@WebStrings.BikesNoneOnAccount">
     <div class="d-flex flex-column">
         @foreach (var bike in _available)
         {
             <MudCheckBox T="bool" Value="@IsSelected(bike)" ValueChanged="@(selected => ToggleAsync(bike, selected))"
-                         Label="@bike.Name" Color="Color.Primary" />
+                         Label="@Label(bike)" Color="Color.Primary" />
         }
     </div>
 </StateView>
 
+@if (!_loading && _error == null)
+{
+    <div class="d-flex flex-wrap gap-2 mt-3">
+        @Actions
+        <MudButton Variant="Variant.Outlined" Color="Color.Primary" StartIcon="@Icons.Material.Rounded.Refresh"
+                   Disabled="@_refreshing" OnClick="RefreshAsync">
+            @(_refreshing ? WebStrings.BikeRefreshing : WebStrings.BikesRefresh)
+        </MudButton>
+    </div>
+}
+
 @code {
     [Parameter] public IReadOnlyList<BoschBikeInfo> Selected { get; set; } = [];
     [Parameter] public EventCallback<IReadOnlyList<BoschBikeInfo>> SelectedChanged { get; set; }
+    [Parameter] public RenderFragment? Actions { get; set; }
 
     private bool _loading = true;
+    private bool _refreshing;
     private string? _error;
     private IReadOnlyList<BoschBikeInfo> _available = [];
+    private IReadOnlyDictionary<string, string> _savedNames = new Dictionary<string, string>();
 
-    protected override Task OnInitializedAsync() => LoadAsync();
-
-    private async Task LoadAsync()
+    protected override async Task OnInitializedAsync()
     {
-        _loading = true;
+        var saved = await Bikes.GetBikesAsync();
+        _savedNames = saved.ToDictionary(bike => bike.Id, bike => bike.Name);
+        _available = [.. saved.Select(bike => new BoschBikeInfo(bike.Id, bike.Model))];
+        if (_available.Count == 0)
+        {
+            await RefreshAsync();
+            return;
+        }
+
+        _loading = false;
+        if (Selected.Count == 0) await SelectedChanged.InvokeAsync(_available);
+    }
+
+    private async Task RefreshAsync()
+    {
+        var firstRead = _available.Count == 0;
+        _loading = firstRead;
+        _refreshing = true;
         _error = null;
         var result = await Bosch.GetBikesAsync();
         _loading = false;
+        _refreshing = false;
+
         if (!result.Succeeded)
         {
-            _error = result.Message ?? WebStrings.BikesLoadFailed;
+            var message = result.Message ?? WebStrings.BikesLoadFailed;
+            if (firstRead) _error = message;
+            else Snackbar.Add(message, Severity.Error);
             return;
         }
 
         _available = result.Value ?? [];
-        if (Selected.Count > 0) return;
-
-        var saved = (await Bikes.GetBikesAsync()).Select(bike => bike.Id).ToHashSet();
-        var initial = _available.Where(bike => saved.Count == 0 || saved.Contains(bike.Id)).ToList();
-        await SelectedChanged.InvokeAsync(initial);
+        IReadOnlyList<BoschBikeInfo> chosen = firstRead && Selected.Count == 0 ? _available : [.. _available.Where(IsSelected)];
+        await SelectedChanged.InvokeAsync(chosen);
+        if (!firstRead) Snackbar.Add(WebStrings.BikesRefreshed, Severity.Success);
     }
+
+    private string Label(BoschBikeInfo bike) =>
+        _savedNames.TryGetValue(bike.Id, out var name) ? BikeText.WithModel(name, bike.Name) : bike.Name;
 
     private bool IsSelected(BoschBikeInfo bike) => Selected.Any(chosen => chosen.Id == bike.Id);
 

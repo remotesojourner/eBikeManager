@@ -6,6 +6,8 @@ public class Bike
 
     public string Name { get; set; } = string.Empty;
 
+    public string Model { get; set; } = string.Empty;
+
     public DateTime AddedAt { get; set; }
 
     public string? ProfileJson { get; set; }

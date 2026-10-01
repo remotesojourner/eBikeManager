@@ -12,14 +12,12 @@ public sealed class RideService
     private const int RoutePreviewCandidates = 10;
 
     private readonly IRideRepository _rides;
-    private readonly IBikeRepository _bikes;
     private readonly IRideExportRepository _exports;
     private readonly FitArchiveService _archive;
 
-    public RideService(IRideRepository rides, IBikeRepository bikes, IRideExportRepository exports, FitArchiveService archive)
+    public RideService(IRideRepository rides, IRideExportRepository exports, FitArchiveService archive)
     {
         _rides = rides;
-        _bikes = bikes;
         _exports = exports;
         _archive = archive;
     }
@@ -34,10 +32,9 @@ public sealed class RideService
     {
         if (await _rides.FindAsync(id, cancellationToken) is not { } ride) return OperationResult.NotFound(ApplicationStrings.RideNotFound);
 
-        var bike = (await _bikes.GetAllAsync(cancellationToken)).FirstOrDefault(bike => bike.Id == ride.BikeId);
         var (track, problem) = await ReadTrackAsync(ride, cancellationToken);
         var exports = await _exports.GetForRideAsync(ride.Id, cancellationToken);
-        return OperationResult.Ok(RideDetailParser.Parse(ride, bike?.Name, track, problem) with { Exports = exports });
+        return OperationResult.Ok(RideDetailParser.Parse(ride, track, problem) with { Exports = exports });
     }
 
     public Task<IReadOnlyList<RideExportDto>> GetExportsAsync(string id, CancellationToken cancellationToken = default) =>

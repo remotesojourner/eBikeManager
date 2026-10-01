@@ -4,6 +4,7 @@ public sealed record RideDetailDto(
     string Id,
     string? Title,
     string? BikeName,
+    string? BikeModel,
     DateTime LocalStartTime,
     double? DistanceMeters,
     double? MovingSeconds,

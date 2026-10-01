@@ -40,7 +40,7 @@ A self-hosted Blazor Server app for Bosch eBike Flow riders. It keeps a copy of 
 
 ### Bike
 
-![Bike page showing the bike, its mileage per assistance mode, battery, range, components and eBike Pass documents](docs/screenshots/bike.png)
+![Bikes page showing the bike, its mileage per assistance mode, battery, range, components and eBike Pass documents](docs/screenshots/bike.png)
 
 ### Rides
 

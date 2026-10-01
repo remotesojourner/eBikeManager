@@ -7,7 +7,7 @@ namespace EBikeManager.Application.Utils;
 
 public static class RideDetailParser
 {
-    public static RideDetailDto Parse(Ride ride, string? bikeName, RideTrackDto? track, string? trackProblem)
+    public static RideDetailDto Parse(Ride ride, RideTrackDto? track, string? trackProblem)
     {
         using var document = Read(ride.SummaryJson);
         var summary = document?.RootElement ?? default;
@@ -15,7 +15,8 @@ public static class RideDetailParser
         return new RideDetailDto(
             ride.Id,
             ride.Title,
-            bikeName,
+            ride.BikeName,
+            ride.BikeModel,
             TimeZones.ToRideLocal(ride.StartTime, ride.TimeZone),
             ride.DistanceMeters ?? summary.Number("distance"),
             ride.MovingSeconds ?? summary.Number("durationWithoutStops"),

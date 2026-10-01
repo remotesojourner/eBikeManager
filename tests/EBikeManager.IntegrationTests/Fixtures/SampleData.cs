@@ -28,7 +28,7 @@ internal static class SampleData
     public static async Task CompleteSetupAsync(IServiceProvider services, CancellationToken cancellationToken)
     {
         await services.GetRequiredService<SecretStoreService>().SetAsync(SecretStoreService.BoschRefreshToken, "refresh", cancellationToken);
-        await services.GetRequiredService<IBikeRepository>().ReplaceAsync([new Bike { Id = BikeId, Name = "TENWAYS (Performance Line)", AddedAt = DateTime.UtcNow }], cancellationToken);
+        await services.GetRequiredService<IBikeRepository>().ReplaceAsync([new Bike { Id = BikeId, Name = "TENWAYS (Performance Line)", Model = "TENWAYS (Performance Line)", AddedAt = DateTime.UtcNow }], cancellationToken);
         await services.GetRequiredService<ISettingsRepository>().SaveAsync(new Dictionary<string, string>
         {
             [SettingDefinitions.SetupCompleted] = "true",

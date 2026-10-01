@@ -12,6 +12,8 @@ namespace EBikeManager.Application.Services;
 
 public sealed class BikeService
 {
+    public const int MaxNameLength = 64;
+
     private const int RecentRidesForModeNames = 20;
 
     private readonly IBikeRepository _bikes;
@@ -93,9 +95,28 @@ public sealed class BikeService
 
         var before = (await _bikes.GetAllAsync(cancellationToken)).Select(bike => bike.Id).ToHashSet();
         var now = _time.GetUtcNow().UtcDateTime;
-        await _bikes.ReplaceAsync(chosen.Select(bike => new Bike { Id = bike.Id, Name = bike.Name, AddedAt = now }).ToList(), cancellationToken);
+        await _bikes.ReplaceAsync(chosen.Select(bike => new Bike { Id = bike.Id, Name = bike.Name, Model = bike.Name, AddedAt = now }).ToList(), cancellationToken);
+        foreach (var bike in await _bikes.GetAllAsync(cancellationToken)) await _rides.RenameBikeAsync(bike.Id, bike.Name, bike.Model, cancellationToken);
 
         if (before.SetEquals(chosen.Select(bike => bike.Id))) return OperationResult.Ok();
         return await _settings.SaveAsync(new Dictionary<string, string> { [SettingDefinitions.BoschFullScan] = "true" }, cancellationToken);
+    }
+
+    public async Task<OperationResult> SaveNamesAsync(IReadOnlyDictionary<string, string> names, CancellationToken cancellationToken = default)
+    {
+        if (!_access.HasFullAccess) return OperationResult.Denied();
+        if (names.Values.Any(string.IsNullOrWhiteSpace)) return OperationResult.Invalid(ApplicationStrings.BikeNameRequired);
+        if (names.Values.Any(name => name.Trim().Length > MaxNameLength)) return OperationResult.Invalid(ApplicationStrings.Format(ApplicationStrings.BikeNameTooLong, MaxNameLength));
+
+        var saved = (await _bikes.GetAllAsync(cancellationToken)).ToDictionary(bike => bike.Id);
+        if (names.Keys.Any(id => !saved.ContainsKey(id))) return OperationResult.NotFound(ApplicationStrings.BikeNotChosen);
+
+        foreach (var (id, name) in names)
+        {
+            await _bikes.RenameAsync(id, name.Trim(), cancellationToken);
+            await _rides.RenameBikeAsync(id, name.Trim(), saved[id].Model, cancellationToken);
+        }
+
+        return OperationResult.Ok();
     }
 }

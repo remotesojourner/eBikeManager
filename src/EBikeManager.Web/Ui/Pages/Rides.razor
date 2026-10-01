@@ -10,7 +10,21 @@
 
 <PageTitle>@ProjectInfo.Name - @WebStrings.RidesTitle</PageTitle>
 
-<PageHeader Title="@WebStrings.RidesTitle" Subtitle="@WebStrings.RidesSubtitle" />
+<PageHeader Title="@WebStrings.RidesTitle" Subtitle="@WebStrings.RidesSubtitle">
+    <Actions>
+        @if (_bikes.Count > 1)
+        {
+            <MudSelect T="string" Value="@ChosenBike" ValueChanged="ChooseBike" ToStringFunc="BikeLabel" Label="@WebStrings.RidesBike"
+                       Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true" Class="em-bike-filter">
+                <MudSelectItem T="string" Value="@AllBikes">@WebStrings.RidesAllBikes</MudSelectItem>
+                @foreach (var bike in _bikes)
+                {
+                    <MudSelectItem T="string" Value="@bike.Id">@bike.Name</MudSelectItem>
+                }
+            </MudSelect>
+        }
+    </Actions>
+</PageHeader>
 
 @if (SyncStatus.Status.IsRunning)
 {
@@ -26,7 +40,7 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
 }
 
 <StateView Loading="_loading" ErrorMessage="@_error" OnRetry="LoadAsync" Empty="@(_rides.Count == 0)" EmptyMessage="@WebStrings.RidesNone">
-    <MudTable Items="_rides" T="RideDto" Hover="true" Dense="true" Elevation="0" Class="em-card em-rides-table" Breakpoint="Breakpoint.Sm" RowsPerPage="25"
+    <MudTable @key="ChosenBike" Items="_shown" T="RideDto" Hover="true" Dense="true" Elevation="0" Class="em-card em-rides-table" Breakpoint="Breakpoint.Sm" RowsPerPage="25"
               RowClass="em-row-link" OnRowClick="OpenRide">
         <HeaderContent>
             <MudTh>@WebStrings.RidesRide</MudTh>
@@ -44,7 +58,7 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
             <MudTd DataLabel="@WebStrings.RidesRide">
                 <div class="em-ride-cell" @onclick:stopPropagation="true">
                     <MudLink Href="@RideLinks.For(context.Id)" Typo="Typo.body2">@(context.Title ?? WebStrings.RideUntitled)</MudLink>
-                    <MudText Typo="Typo.caption" Class="em-muted">@DisplayFormat.DateTime(context.LocalStartTime)</MudText>
+                    <MudText Typo="Typo.caption" Class="em-muted">@RideText.StartAndBike(context.LocalStartTime, _bikes.Count > 1 ? BikeLabel(context.BikeId) : null)</MudText>
                 </div>
             </MudTd>
             <MudTd DataLabel="@WebStrings.Distance" Style="text-align:right">@DisplayFormat.Distance(context.DistanceMeters)</MudTd>
@@ -76,11 +90,21 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
 </StateView>
 
 @code {
+    private const string AllBikes = "";
+
+    private sealed record BikeOption(string Id, string Name);
+
     private bool _loading = true;
     private string? _error;
     private IReadOnlyList<RideDto> _rides = [];
+    private IReadOnlyList<RideDto> _shown = [];
+    private IReadOnlyList<BikeOption> _bikes = [];
     private bool _googleConnected;
     private IReadOnlyDictionary<string, RideExportDto> _uploads = new Dictionary<string, RideExportDto>();
+
+    [SupplyParameterFromQuery(Name = BikeLinks.BikeParameter)] public string? SelectedBike { get; set; }
+
+    private string ChosenBike => _bikes.Any(bike => bike.Id == SelectedBike) ? SelectedBike! : AllBikes;
 
     protected override async Task OnInitializedAsync()
     {
@@ -89,6 +113,8 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
         await LoadAsync();
     }
 
+    protected override void OnParametersSet() => ShowChosenBike();
+
     private async Task LoadAsync()
     {
         _loading = true;
@@ -96,6 +122,9 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
         try
         {
             _rides = await RideService.GetRidesAsync();
+            _bikes = [.. BikeText.Labels(_rides.Select(ride => (ride.BikeId, ride.BikeName ?? WebStrings.RidesUnknownBike, ride.BikeModel)))
+                .Select(bike => new BikeOption(bike.Key, bike.Value))
+                .OrderBy(bike => bike.Name, StringComparer.CurrentCultureIgnoreCase)];
             _googleConnected = await Google.IsConnectedAsync();
             if (_googleConnected) await ReloadUploadsAsync();
         }
@@ -104,8 +133,18 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
             _error = WebStrings.RidesLoadFailed;
         }
 
+        ShowChosenBike();
         _loading = false;
     }
+
+    private void ShowChosenBike() =>
+        _shown = ChosenBike == AllBikes ? _rides : [.. _rides.Where(ride => ride.BikeId == ChosenBike)];
+
+    private void ChooseBike(string bikeId) =>
+        Navigation.NavigateTo(Navigation.GetUriWithQueryParameter(BikeLinks.BikeParameter, bikeId == AllBikes ? null : bikeId), replace: true);
+
+    private string BikeLabel(string bikeId) =>
+        _bikes.FirstOrDefault(bike => bike.Id == bikeId)?.Name ?? WebStrings.RidesAllBikes;
 
     private async Task ReloadUploadsAsync() => _uploads = await Google.GetUploadsByRideAsync();
 

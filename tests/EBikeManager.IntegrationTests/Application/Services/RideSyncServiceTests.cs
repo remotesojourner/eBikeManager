@@ -53,6 +53,7 @@ public sealed class RideSyncServiceTests : IDisposable
         Assert.Equal(35, rides.Count);
         Assert.All(rides, ride =>
         {
+            Assert.Equal(("bike-a", "bike-a model"), (ride.BikeName, ride.BikeModel));
             Assert.Equal(410, ride.CaloriesKcal);
             Assert.True(File.Exists(_archive.FullPath(ride.FitPath!)));
             Assert.True(File.Exists(Path.ChangeExtension(_archive.FullPath(ride.FitPath!), ".json")));
@@ -259,7 +260,7 @@ public sealed class RideSyncServiceTests : IDisposable
     private async Task ChooseBikesAsync(params string[] bikeIds)
     {
         await using var db = _database.NewContext();
-        await new BikeRepository(db).ReplaceAsync(bikeIds.Select(id => new Bike { Id = id, Name = id, AddedAt = _now }).ToList());
+        await new BikeRepository(db).ReplaceAsync(bikeIds.Select(id => new Bike { Id = id, Name = id, Model = $"{id} model", AddedAt = _now }).ToList());
     }
 
     private async Task<List<Ride>> RidesAsync()

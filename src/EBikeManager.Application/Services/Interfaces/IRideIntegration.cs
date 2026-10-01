@@ -11,5 +11,5 @@ public interface IRideIntegration
 
     Task<ExportWindow?> GetExportWindowAsync(CancellationToken cancellationToken = default);
 
-    Task<RideExportOutcome> ExportAsync(Ride ride, string? bikeName, CancellationToken cancellationToken = default);
+    Task<RideExportOutcome> ExportAsync(Ride ride, CancellationToken cancellationToken = default);
 }

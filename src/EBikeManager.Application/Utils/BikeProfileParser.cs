@@ -38,7 +38,7 @@ public static class BikeProfileParser
         return new BikeDetailsDto(
             bike.Id,
             bike.Name,
-            profile.Text("brandName"),
+            bike.Model,
             pictureSavedAt,
             pass.Text("frameNumber") ?? profile.Text("frameNumber"),
             pass.Text("frameNumberPosition"),

@@ -17,8 +17,9 @@ public static partial class GoogleHealthExercise
         return id.Length > MaxIdLength ? id[..MaxIdLength] : id;
     }
 
-    public static ExerciseUpload For(Ride ride, string? bikeName)
+    public static ExerciseUpload For(Ride ride)
     {
+        var bike = ride.BikeModel ?? ride.BikeName;
         var end = ride.EndTime ?? ride.StartTime.AddSeconds(ride.MovingSeconds ?? 0);
         return new ExerciseUpload(
             DataPointId(ride.Id),
@@ -33,8 +34,8 @@ public static partial class GoogleHealthExercise
             ride.AverageSpeedKmh,
             AverageHeartRate(ride.SummaryJson),
             ride.FitHasGps == true,
-            ApplicationStrings.Format(ApplicationStrings.GoogleHealthExerciseNotes, ride.Title ?? ApplicationStrings.GoogleHealthUntitledRide, bikeName ?? ApplicationStrings.GoogleHealthUnnamedBike),
-            bikeName);
+            ApplicationStrings.Format(ApplicationStrings.GoogleHealthExerciseNotes, ride.Title ?? ApplicationStrings.GoogleHealthUntitledRide, bike ?? ApplicationStrings.GoogleHealthUnnamedBike),
+            bike);
     }
 
     private static TimeSpan Offset(string? timeZone, DateTime utc) =>

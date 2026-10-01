@@ -1,0 +1,68 @@
+@inject PreferencesService Preferences
+
+@if (Current is { } bike)
+{
+    <section aria-roledescription="@WebStrings.BikeCarouselRole" aria-label="@WebStrings.BikesTitle">
+        <SurfaceCard Icon="@Icons.Material.Rounded.ElectricBike" Title="@_labels[bike.Id]" FullHeight="false">
+            <ChildContent>
+                @if (bike.PictureSavedAt is { } pictureSavedAt)
+                {
+                    <img src="@BikeMediaEndpoint.PicturePath(bike.Id, pictureSavedAt)" alt="" class="em-bike-thumbnail mb-3" loading="lazy" onerror="this.style.display='none'" />
+                }
+                <DataRow Label="@WebStrings.BikeMileage" Value="@DisplayFormat.Number(bike.OdometerMeters / 1000, "#,0 km")" />
+                <DataRow Label="@WebStrings.BikeMotorHours" Value="@DisplayFormat.Number(bike.MotorHours, "#,0 h")" />
+                @foreach (var battery in bike.Batteries)
+                {
+                    <DataRow Label="@(battery.ProductName ?? WebStrings.BikeBattery)" Value="@BatteryText(bike, battery)" />
+                }
+                @if (bike.ServiceDue is { } service)
+                {
+                    <DataRow Label="@WebStrings.BikeServiceDue" Value="@ServiceDueText(service)" />
+                }
+            </ChildContent>
+            <Actions>
+                <MudButton Href="@BikeLinks.For(bike.Id)" Variant="Variant.Text" Color="Color.Primary" EndIcon="@Icons.Material.Rounded.ArrowForward">@WebStrings.DashboardBikeDetails</MudButton>
+                @if (Bikes.Count > 1)
+                {
+                    <div class="d-flex align-center ml-auto">
+                        <MudIconButton Icon="@Icons.Material.Rounded.ChevronLeft" Size="Size.Small" aria-label="@WebStrings.BikeCarouselPrevious" OnClick="@(() => Show(_index - 1))" />
+                        @for (var index = 0; index < Bikes.Count; index++)
+                        {
+                            var target = index;
+                            <button type="button" class="em-carousel-dot @(target == _index ? "em-carousel-dot-active" : null)" aria-current="@(target == _index ? "true" : null)"
+                                    aria-label="@WebStrings.Format(WebStrings.BikeCarouselShow, _labels[Bikes[target].Id])" @onclick="@(() => Show(target))"></button>
+                        }
+                        <MudIconButton Icon="@Icons.Material.Rounded.ChevronRight" Size="Size.Small" aria-label="@WebStrings.BikeCarouselNext" OnClick="@(() => Show(_index + 1))" />
+                    </div>
+                }
+            </Actions>
+        </SurfaceCard>
+    </section>
+}
+
+@code {
+    [Parameter] public IReadOnlyList<BikeDetailsDto> Bikes { get; set; } = [];
+
+    private int _index;
+    private IReadOnlyDictionary<string, string> _labels = new Dictionary<string, string>();
+
+    private BikeDetailsDto? Current => Bikes.Count > 0 ? Bikes[_index] : null;
+
+    protected override void OnParametersSet()
+    {
+        _labels = BikeText.Labels(Bikes.Select(bike => (bike.Id, bike.Name, (string?)bike.Model)));
+        if (_index >= Bikes.Count) _index = 0;
+    }
+
+    private void Show(int index) => _index = (index % Bikes.Count + Bikes.Count) % Bikes.Count;
+
+    private static string BatteryText(BikeDetailsDto bike, BikeBatteryDto battery) =>
+        (bike.LiveState?.ChargePercent ?? battery.LevelPercent) is { } level
+            ? WebStrings.Format(WebStrings.DashboardBatteryLevelAndCycles, DisplayFormat.Percent(level), DisplayFormat.Number(battery.ChargeCycles, "0.#"))
+            : WebStrings.Format(WebStrings.DashboardBatteryCycles, DisplayFormat.Number(battery.ChargeCycles, "0.#"));
+
+    private string ServiceDueText(ServiceDueDto service) =>
+        service.Date is { } date ? DisplayFormat.Date(Preferences.ToLocal(date))
+        : service.OdometerMeters is { } meters ? WebStrings.Format(WebStrings.BikeServiceDueDistance, DisplayFormat.Number(meters / 1000, "#,0"))
+        : DisplayFormat.Missing;
+}

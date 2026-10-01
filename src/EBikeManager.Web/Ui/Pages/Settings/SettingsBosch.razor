@@ -9,25 +9,39 @@
 
     <SurfaceCard Icon="@Icons.Material.Rounded.DirectionsBike" Title="@WebStrings.SettingsBoschBikesTitle" FullHeight="false"
                  Description="@WebStrings.SettingsBoschBikesDescription">
-        <BikeChooser @bind-Selected="_bikes" />
-        <div class="mt-3">
-            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_bikes.Count == 0 || _saving)" OnClick="SaveAsync">
-                @WebStrings.SettingsBoschSaveBikes
-            </MudButton>
-        </div>
+        <BikeChooser @key="_chooserVersion" @bind-Selected="_bikes">
+            <Actions>
+                <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(_bikes.Count == 0 || _saving)" OnClick="SaveAsync">
+                    @WebStrings.SettingsBoschSaveBikes
+                </MudButton>
+            </Actions>
+        </BikeChooser>
+    </SurfaceCard>
+
+    <SurfaceCard Icon="@Icons.Material.Rounded.Edit" Title="@WebStrings.SettingsBikeNamesTitle" FullHeight="false"
+                 Description="@WebStrings.SettingsBikeNamesDescription">
+        <BikeNamesEditor @key="_namesVersion" OnSaved="@(() => _chooserVersion++)" />
     </SurfaceCard>
 </div>
 
 @code {
     private IReadOnlyList<BoschBikeInfo> _bikes = [];
     private bool _saving;
+    private int _chooserVersion;
+    private int _namesVersion;
 
     private async Task SaveAsync()
     {
         _saving = true;
         var result = await Bikes.SaveSelectionAsync(_bikes);
         _saving = false;
-        if (result.Succeeded) Snackbar.Add(WebStrings.SettingsBoschBikesSaved, Severity.Success);
-        else Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+        if (!result.Succeeded)
+        {
+            Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+            return;
+        }
+
+        Snackbar.Add(WebStrings.SettingsBoschBikesSaved, Severity.Success);
+        _namesVersion++;
     }
 }

@@ -101,6 +101,15 @@
   <data name="BikesNoneChosen" xml:space="preserve">
     <value>Choose at least one bike.</value>
   </data>
+  <data name="BikeNameRequired" xml:space="preserve">
+    <value>Give every bike a name.</value>
+  </data>
+  <data name="BikeNameTooLong" xml:space="preserve">
+    <value>Bike names can be at most {0} characters long.</value>
+  </data>
+  <data name="BikeNotChosen" xml:space="preserve">
+    <value>That bike isn't one of your chosen bikes any more.</value>
+  </data>
   <data name="SyncAlreadyRunning" xml:space="preserve">
     <value>A sync is already running.</value>
   </data>

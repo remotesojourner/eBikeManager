@@ -48,4 +48,19 @@ public static class BikeText
 
     public static string Coordinates(double latitude, double longitude) =>
         string.Create(CultureInfo.InvariantCulture, $"{latitude:0.#####}, {longitude:0.#####}");
+
+    public static string WithModel(string name, string? model) =>
+        string.IsNullOrWhiteSpace(model) || string.Equals(name, model, StringComparison.OrdinalIgnoreCase)
+            ? name
+            : WebStrings.Format(WebStrings.BikeNameWithModel, name, model);
+
+    public static IReadOnlyDictionary<string, string> Labels(IEnumerable<(string Id, string Name, string? Model)> bikes)
+    {
+        var distinct = bikes.DistinctBy(bike => bike.Id).ToList();
+        return distinct.ToDictionary(
+            bike => bike.Id,
+            bike => distinct.Count(other => string.Equals(other.Name, bike.Name, StringComparison.OrdinalIgnoreCase)) > 1
+                ? WithModel(bike.Name, bike.Model)
+                : bike.Name);
+    }
 }

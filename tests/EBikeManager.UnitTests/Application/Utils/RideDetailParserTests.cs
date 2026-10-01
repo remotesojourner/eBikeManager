@@ -15,6 +15,8 @@ public class RideDetailParserTests
         {
             Id = "ride-1",
             Title = "London roundtrip",
+            BikeName = "Commuter",
+            BikeModel = "TENWAYS (Performance Line)",
             StartTime = _start,
             EndTime = _start.AddMinutes(57),
             TimeZone = "Europe/London",
@@ -32,8 +34,9 @@ public class RideDetailParserTests
                 """
         };
 
-        var detail = RideDetailParser.Parse(ride, "TENWAYS (Performance Line)", null, "No track");
+        var detail = RideDetailParser.Parse(ride, null, "No track");
 
+        Assert.Equal(("Commuter", "TENWAYS (Performance Line)"), (detail.BikeName, detail.BikeModel));
         Assert.Equal(new DateTime(2026, 9, 6, 17, 12, 0, DateTimeKind.Unspecified), detail.LocalStartTime);
         Assert.Equal((3_064.0, 666.0, 3_420.0), (detail.DistanceMeters, detail.MovingSeconds, detail.ElapsedSeconds));
         Assert.Equal((32.9, 76.0, 106.0), (detail.MaximumSpeedKmh, detail.AverageCadence, detail.MaximumCadence));
@@ -51,7 +54,7 @@ public class RideDetailParserTests
     {
         var ride = new Ride { Id = "ride-1", StartTime = _start, SummaryJson = BoschSamples.RideSummary("Ride") };
 
-        var modes = RideDetailParser.Parse(ride, null, null, null).AssistModes;
+        var modes = RideDetailParser.Parse(ride, null, null).AssistModes;
 
         Assert.Equal(["TURBO", "ECO"], modes.Select(mode => mode.Name));
         Assert.Equal(("#E20015", 1_656.0, 93.2), (modes[0].Color, modes[0].Meters, modes[0].Percent));
@@ -63,7 +66,7 @@ public class RideDetailParserTests
     {
         var ride = new Ride { Id = "ride-1", StartTime = _start, DistanceMeters = 1_000, SummaryJson = "not json" };
 
-        var detail = RideDetailParser.Parse(ride, null, null, null);
+        var detail = RideDetailParser.Parse(ride, null, null);
 
         Assert.Equal(1_000, detail.DistanceMeters);
         Assert.Null(detail.MaximumSpeedKmh);

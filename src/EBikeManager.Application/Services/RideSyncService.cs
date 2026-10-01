@@ -48,19 +48,19 @@ public sealed partial class RideSyncService
 
     public async Task<SyncRunResult> RunAsync(CancellationToken cancellationToken = default)
     {
-        var bikeIds = (await _bikes.GetAllAsync(cancellationToken)).Select(bike => bike.Id).ToHashSet();
-        if (bikeIds.Count == 0) throw new InvalidOperationException(ApplicationStrings.SyncNotSetUp);
+        var bikes = (await _bikes.GetAllAsync(cancellationToken)).ToDictionary(bike => bike.Id);
+        if (bikes.Count == 0) throw new InvalidOperationException(ApplicationStrings.SyncNotSetUp);
 
         var fullScanRequested = (await _settings.GetAsync(cancellationToken)).Bosch.FullScanRequested;
         var rides = await _rides.GetAllForUpdateAsync(cancellationToken);
         var fullScan = rides.Count == 0 || fullScanRequested;
 
-        var (ridesChecked, newRides) = await ReadRideListAsync(rides, bikeIds, fullScan, cancellationToken);
+        var (ridesChecked, newRides) = await ReadRideListAsync(rides, bikes, fullScan, cancellationToken);
         await _rides.SaveChangesAsync(cancellationToken);
         if (fullScanRequested) await _settings.SaveAsync(new Dictionary<string, string> { [SettingDefinitions.BoschFullScan] = "false" }, cancellationToken);
 
         var pending = rides.Values
-            .Where(ride => bikeIds.Contains(ride.BikeId) && ride.EndTime != null && (NeedsFit(ride) || NeedsGpx(ride)))
+            .Where(ride => bikes.ContainsKey(ride.BikeId) && ride.EndTime != null && (NeedsFit(ride) || NeedsGpx(ride)))
             .OrderByDescending(ride => ride.StartTime)
             .ToList();
 
@@ -108,7 +108,7 @@ public sealed partial class RideSyncService
         return new SyncRunResult(ridesChecked, newRides, saved, problems);
     }
 
-    private async Task<(int Checked, int New)> ReadRideListAsync(Dictionary<string, Ride> rides, HashSet<string> bikeIds, bool fullScan, CancellationToken cancellationToken)
+    private async Task<(int Checked, int New)> ReadRideListAsync(Dictionary<string, Ride> rides, Dictionary<string, Bike> bikes, bool fullScan, CancellationToken cancellationToken)
     {
         var now = _time.GetUtcNow().UtcDateTime;
         var recheckFrom = now - RecheckWindow;
@@ -121,7 +121,7 @@ public sealed partial class RideSyncService
             var result = await _bosch.GetActivitiesAsync(page, PageSize, cancellationToken);
 
             var nothingNew = true;
-            foreach (var activity in result.Activities.Where(activity => activity.BikeId != null && bikeIds.Contains(activity.BikeId)))
+            foreach (var activity in result.Activities.Where(activity => activity.BikeId != null && bikes.ContainsKey(activity.BikeId)))
             {
                 ridesChecked++;
                 if (!rides.TryGetValue(activity.Id, out var ride))
@@ -137,7 +137,7 @@ public sealed partial class RideSyncService
                     nothingNew = false;
                 }
 
-                Apply(ride, activity);
+                Apply(ride, activity, bikes[activity.BikeId!]);
             }
 
             if (result.Activities.Count == 0 || page + 1 >= result.TotalPages || (!fullScan && nothingNew)) return (ridesChecked, newRides);
@@ -190,9 +190,11 @@ public sealed partial class RideSyncService
         return true;
     }
 
-    private static void Apply(Ride ride, BoschActivity activity)
+    private static void Apply(Ride ride, BoschActivity activity, Bike bike)
     {
         ride.BikeId = activity.BikeId ?? ride.BikeId;
+        ride.BikeName = bike.Name;
+        ride.BikeModel = bike.Model;
         ride.Title = activity.Title;
         ride.StartTime = activity.StartTime;
         ride.EndTime = activity.EndTime;

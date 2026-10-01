@@ -14,6 +14,8 @@ public class GoogleHealthExerciseTests
         var ride = new Ride
         {
             Id = "c4e78500-aa0d-11f1-bd38-a40dbc94029f",
+            BikeName = "Commuter",
+            BikeModel = "TENWAYS (Performance Line)",
             Title = "London roundtrip",
             StartTime = _start,
             EndTime = _start.AddMinutes(57),
@@ -27,7 +29,7 @@ public class GoogleHealthExerciseTests
             SummaryJson = """{"averageHeartRate":121.4}"""
         };
 
-        var dataPoint = GoogleHealthJson.ExerciseDataPoint(GoogleHealthExercise.For(ride, "TENWAYS (Performance Line)"));
+        var dataPoint = GoogleHealthJson.ExerciseDataPoint(GoogleHealthExercise.For(ride));
 
         Assert.Equal("users/me/dataTypes/exercise/dataPoints/ebike-c4e78500-aa0d-11f1-bd38-a40dbc94029f", (string?)dataPoint["name"]);
         var exercise = dataPoint["exercise"]!;
@@ -43,7 +45,8 @@ public class GoogleHealthExerciseTests
         Assert.Equal(12_000, (double?)metrics["elevationGainMillimeters"]);
         Assert.Equal(4_611, (double?)metrics["averageSpeedMillimetersPerSecond"]);
         Assert.Equal("121", (string?)metrics["averageHeartRateBeatsPerMinute"]);
-        Assert.Contains("London roundtrip", (string?)exercise["notes"], StringComparison.Ordinal);
+        Assert.Contains("London roundtrip on TENWAYS (Performance Line)", (string?)exercise["notes"], StringComparison.Ordinal);
+        Assert.DoesNotContain("Commuter", (string?)exercise["notes"], StringComparison.Ordinal);
         Assert.Equal("TENWAYS (Performance Line)", (string?)dataPoint["dataSource"]!["device"]!["displayName"]);
     }
 
@@ -52,7 +55,7 @@ public class GoogleHealthExerciseTests
     {
         var ride = new Ride { Id = "ride-1", StartTime = _start, MovingSeconds = 600, TimeZone = "Not/AZone", SummaryJson = "{}" };
 
-        var dataPoint = GoogleHealthJson.ExerciseDataPoint(GoogleHealthExercise.For(ride, null));
+        var dataPoint = GoogleHealthJson.ExerciseDataPoint(GoogleHealthExercise.For(ride));
 
         var exercise = dataPoint["exercise"]!.AsObject();
         Assert.Empty(exercise["metricsSummary"]!.AsObject());

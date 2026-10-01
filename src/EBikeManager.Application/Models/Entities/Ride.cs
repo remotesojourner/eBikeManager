@@ -6,6 +6,10 @@ public class Ride
 
     public string BikeId { get; set; } = string.Empty;
 
+    public string? BikeName { get; set; }
+
+    public string? BikeModel { get; set; }
+
     public string? Title { get; set; }
 
     public DateTime StartTime { get; set; }

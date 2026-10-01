@@ -29,7 +29,7 @@ public sealed class BikeTests : BrowserTest, IClassFixture<BrowserAppWithRides>
         await Expect(card.GetByText("0.9 charge cycles")).ToBeVisibleAsync();
         await card.GetByRole(AriaRole.Link, new() { Name = "Bike details" }).ClickAsync();
 
-        await Expect(page).ToHaveURLAsync(new Regex("/bikes$"));
+        await Expect(page).ToHaveURLAsync(new Regex($@"/bikes\?bike={SampleData.BikeId}$"));
         AssertNoBrowserErrors();
     }
 

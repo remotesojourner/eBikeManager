@@ -53,6 +53,11 @@ internal sealed class RideRepository : IRideRepository
     public Task<Dictionary<string, Ride>> GetAllForUpdateAsync(CancellationToken cancellationToken = default) =>
         _db.Rides.ToDictionaryAsync(ride => ride.Id, cancellationToken);
 
+    public Task RenameBikeAsync(string bikeId, string bikeName, string? bikeModel, CancellationToken cancellationToken = default) =>
+        _db.Rides
+            .Where(ride => ride.BikeId == bikeId && (ride.BikeName != bikeName || ride.BikeModel != bikeModel))
+            .ExecuteUpdateAsync(setters => setters.SetProperty(ride => ride.BikeName, bikeName).SetProperty(ride => ride.BikeModel, bikeModel), cancellationToken);
+
     public void Add(Ride ride) => _db.Rides.Add(ride);
 
     public Task SaveChangesAsync(CancellationToken cancellationToken = default) => _db.SaveChangesAsync(cancellationToken);

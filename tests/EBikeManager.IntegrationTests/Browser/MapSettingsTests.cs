@@ -7,15 +7,17 @@ namespace EBikeManager.IntegrationTests.Browser;
 
 [Collection(BrowserTestGroup.Name)]
 [Trait("Category", "Browser")]
-public sealed class MapSettingsTests : BrowserTest, IClassFixture<BrowserAppWithRides>
+public sealed class MapSettingsTests : BrowserTest, IClassFixture<BrowserAppWithRides>, IClassFixture<BrowserAppWithoutRides>
 {
     private const string OwnStyle = "https://maps.example.test/styles/liberty";
 
     private readonly BrowserAppWithRides _app;
+    private readonly BrowserAppWithoutRides _appWithoutRides;
 
-    public MapSettingsTests(BrowserAppWithRides app, Chromium chromium) : base(chromium)
+    public MapSettingsTests(BrowserAppWithRides app, BrowserAppWithoutRides appWithoutRides, Chromium chromium) : base(chromium)
     {
         _app = app;
+        _appWithoutRides = appWithoutRides;
     }
 
     [Fact]
@@ -49,6 +51,18 @@ public sealed class MapSettingsTests : BrowserTest, IClassFixture<BrowserAppWith
         await Expect(page.GetByText("Map saved.").Last).ToBeVisibleAsync();
 
         Assert.Equal(new MapSettings(MapProvider.Custom, OwnStyle, null), (await _app.SettingsAsync(cancellationToken)).Map);
+        AssertNoBrowserErrors();
+    }
+
+    [Fact]
+    public async Task WithoutARideThePreviewShowsASampleRideInLondon()
+    {
+        await using var browser = await OpenBrowserAsync(_appWithoutRides);
+        var page = await browser.NewPageAsync();
+
+        await page.GotoAsync("/settings/map");
+        await Expect(page.GetByText("A sample ride along the Victoria Embankment in London")).ToBeVisibleAsync();
+        await Expect(page.Locator(".em-map .maplibregl-canvas")).ToBeVisibleAsync();
         AssertNoBrowserErrors();
     }
 }

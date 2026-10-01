@@ -51,9 +51,9 @@ public sealed partial class GoogleHealthIntegration : IRideIntegration
         return new ExportWindow(google.UploadsAllRides ? null : google.UploadFromUtc);
     }
 
-    public async Task<RideExportOutcome> ExportAsync(Ride ride, string? bikeName, CancellationToken cancellationToken = default)
+    public async Task<RideExportOutcome> ExportAsync(Ride ride, CancellationToken cancellationToken = default)
     {
-        var upload = GoogleHealthExercise.For(ride, bikeName);
+        var upload = GoogleHealthExercise.For(ride);
         var watchRides = await FindWatchRidesAsync(ride, upload, cancellationToken);
         if (watchRides is { Count: > 0 })
         {

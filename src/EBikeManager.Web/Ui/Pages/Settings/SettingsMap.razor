@@ -31,7 +31,8 @@
         </MudButton>
     </SurfaceCard>
 
-    <SurfaceCard Icon="@Icons.Material.Rounded.Preview" Title="@WebStrings.MapPreviewTitle" FullHeight="false" Description="@WebStrings.MapPreviewDescription">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Preview" Title="@WebStrings.MapPreviewTitle" FullHeight="false"
+                 Description="@(_sampleRoute ? WebStrings.MapPreviewSampleDescription : WebStrings.MapPreviewDescription)">
         <div class="em-map em-map-preview" @ref="_map" role="region" aria-label="@WebStrings.MapPreviewTitle"></div>
     </SurfaceCard>
 </div>
@@ -44,6 +45,7 @@
     private string? _styleUrl;
     private string? _darkStyleUrl;
     private IReadOnlyList<double[]>? _route;
+    private bool _sampleRoute;
     private bool _shown;
     private MapSource? _shownSource;
 
@@ -63,7 +65,9 @@
         _provider = saved.Provider;
         _styleUrl = saved.StyleUrl;
         _darkStyleUrl = saved.DarkStyleUrl;
-        _route = await RideService.GetLatestRouteAsync();
+        var route = await RideService.GetLatestRouteAsync();
+        _sampleRoute = route.Count < 2;
+        _route = _sampleRoute ? SampleRoute.Positions : route;
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)

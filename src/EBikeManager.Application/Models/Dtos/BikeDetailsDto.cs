@@ -3,7 +3,7 @@ namespace EBikeManager.Application.Models.Dtos;
 public sealed record BikeDetailsDto(
     string Id,
     string Name,
-    string? Brand,
+    string Model,
     DateTime? PictureSavedAt,
     string? FrameNumber,
     string? FrameNumberPosition,

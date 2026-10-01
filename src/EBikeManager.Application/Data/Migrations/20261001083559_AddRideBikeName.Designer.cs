@@ -3,6 +3,7 @@ using System;
 using EBikeManager.Application.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EBikeManager.Application.Data.Migrations
 {
     [DbContext(typeof(EBikeManagerDbContext))]
-    partial class EBikeManagerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20261001083559_AddRideBikeName")]
+    partial class AddRideBikeName
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder.HasAnnotation("ProductVersion", "10.0.12");
@@ -38,11 +41,6 @@ namespace EBikeManager.Application.Data.Migrations
                     b.Property<string>("LocationJson")
                         .HasColumnType("TEXT")
                         .HasColumnName("locationJson");
-
-                    b.Property<string>("Model")
-                        .IsRequired()
-                        .HasColumnType("TEXT")
-                        .HasColumnName("model");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -172,10 +170,6 @@ namespace EBikeManager.Application.Data.Migrations
                         .IsRequired()
                         .HasColumnType("TEXT")
                         .HasColumnName("bikeId");
-
-                    b.Property<string>("BikeModel")
-                        .HasColumnType("TEXT")
-                        .HasColumnName("bikeModel");
 
                     b.Property<string>("BikeName")
                         .HasColumnType("TEXT")

@@ -26,12 +26,17 @@ internal sealed class BikeRepository : IBikeRepository
         _db.Bikes.RemoveRange(stored.Values.Where(bike => !kept.Contains(bike.Id)));
         foreach (var bike in bikes)
         {
-            if (stored.TryGetValue(bike.Id, out var existing)) existing.Name = bike.Name;
+            if (stored.TryGetValue(bike.Id, out var existing)) existing.Model = bike.Model;
             else _db.Bikes.Add(bike);
         }
 
         await _db.SaveChangesAsync(cancellationToken);
     }
+
+    public Task RenameAsync(string bikeId, string name, CancellationToken cancellationToken = default) =>
+        _db.Bikes
+            .Where(bike => bike.Id == bikeId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(bike => bike.Name, name), cancellationToken);
 
     public async Task SaveSnapshotAsync(string bikeId, BikeSnapshot snapshot, DateTime updatedAt, CancellationToken cancellationToken = default)
     {

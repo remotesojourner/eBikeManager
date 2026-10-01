@@ -184,9 +184,9 @@
 
     private string PageTitleText => _ride is { } ride ? ride.Title ?? WebStrings.RideUntitled : WebStrings.RideTitle;
 
-    private string? Subtitle => _ride is not { } ride ? null
-        : ride.BikeName is { } bike ? WebStrings.Format(WebStrings.RideSubtitle, DisplayFormat.DateTime(ride.LocalStartTime), bike)
-        : DisplayFormat.DateTime(ride.LocalStartTime);
+    private string? Subtitle => _ride is { } ride
+        ? RideText.StartAndBike(ride.LocalStartTime, ride.BikeName is { } bike ? BikeText.WithModel(bike, ride.BikeModel) : ride.BikeModel)
+        : null;
 
     protected override async Task OnParametersSetAsync()
     {

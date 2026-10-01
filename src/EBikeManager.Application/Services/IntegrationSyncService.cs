@@ -18,7 +18,6 @@ public sealed partial class IntegrationSyncService
     private readonly IEnumerable<IRideIntegration> _integrations;
     private readonly IRideExportRepository _exports;
     private readonly IRideRepository _rides;
-    private readonly IBikeRepository _bikes;
     private readonly SyncStateService _state;
     private readonly TimeProvider _time;
     private readonly ILogger<IntegrationSyncService> _logger;
@@ -27,7 +26,6 @@ public sealed partial class IntegrationSyncService
         IEnumerable<IRideIntegration> integrations,
         IRideExportRepository exports,
         IRideRepository rides,
-        IBikeRepository bikes,
         SyncStateService state,
         TimeProvider time,
         ILogger<IntegrationSyncService> logger)
@@ -35,7 +33,6 @@ public sealed partial class IntegrationSyncService
         _integrations = integrations;
         _exports = exports;
         _rides = rides;
-        _bikes = bikes;
         _state = state;
         _time = time;
         _logger = logger;
@@ -68,7 +65,6 @@ public sealed partial class IntegrationSyncService
         var rides = await _exports.GetRidesToExportAsync(integration.Key, window.FromUtc, MaxRidesPerRun, cancellationToken);
         if (rides.Count == 0) return 0;
 
-        var bikeNames = await BikeNamesAsync(cancellationToken);
         var uploaded = 0;
         var failed = 0;
         var watchRecorded = 0;
@@ -76,7 +72,7 @@ public sealed partial class IntegrationSyncService
         foreach (var (ride, index) in rides.Select((ride, index) => (ride, index)))
         {
             _state.ReportProgress(ApplicationStrings.Format(ApplicationStrings.SyncProgressUploading, integration.DisplayName, index + 1, rides.Count));
-            switch ((await ExportRideAsync(integration, ride, bikeNames.GetValueOrDefault(ride.BikeId), cancellationToken)).Status)
+            switch ((await ExportRideAsync(integration, ride, cancellationToken)).Status)
             {
                 case RideExportStatus.Uploaded:
                     uploaded++;
@@ -112,7 +108,7 @@ public sealed partial class IntegrationSyncService
             if (await integration.GetExportWindowAsync(cancellationToken) == null)
                 return OperationResult.Invalid(ApplicationStrings.Format(ApplicationStrings.IntegrationNotConnected, integration.DisplayName));
 
-            var export = await ExportRideAsync(integration, ride, (await BikeNamesAsync(cancellationToken)).GetValueOrDefault(ride.BikeId), cancellationToken);
+            var export = await ExportRideAsync(integration, ride, cancellationToken);
             return export.Status == RideExportStatus.Uploaded ? OperationResult.Ok() : OperationResult.Invalid(export.Problem ?? ApplicationStrings.IntegrationUploadFailed);
         }
         catch (IntegrationSignInRequiredException ex)
@@ -122,7 +118,7 @@ public sealed partial class IntegrationSyncService
         }
     }
 
-    private async Task<RideExport> ExportRideAsync(IRideIntegration integration, Ride ride, string? bikeName, CancellationToken cancellationToken)
+    private async Task<RideExport> ExportRideAsync(IRideIntegration integration, Ride ride, CancellationToken cancellationToken)
     {
         var now = _time.GetUtcNow().UtcDateTime;
         var export = await _exports.FindAsync(ride.Id, integration.Key, cancellationToken) ?? new RideExport { RideId = ride.Id, Integration = integration.Key };
@@ -131,7 +127,7 @@ public sealed partial class IntegrationSyncService
 
         try
         {
-            var outcome = await integration.ExportAsync(ride, bikeName, cancellationToken);
+            var outcome = await integration.ExportAsync(ride, cancellationToken);
             var uploaded = outcome.Status == RideExportStatus.Uploaded;
             export.Status = outcome.Status;
             export.RemoteId = outcome.RemoteId;
@@ -149,9 +145,6 @@ public sealed partial class IntegrationSyncService
         await _exports.SaveAsync(export, cancellationToken);
         return export;
     }
-
-    private async Task<Dictionary<string, string>> BikeNamesAsync(CancellationToken cancellationToken) =>
-        (await _bikes.GetAllAsync(cancellationToken)).ToDictionary(bike => bike.Id, bike => bike.Name);
 
     [LoggerMessage(Level = LogLevel.Warning, Message = "Could not send ride {RideId} to {Integration}")]
     private partial void LogExportFailed(Exception exception, string integration, string rideId);

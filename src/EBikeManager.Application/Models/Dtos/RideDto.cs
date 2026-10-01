@@ -7,6 +7,8 @@ namespace EBikeManager.Application.Models.Dtos;
 public sealed record RideDto(
     string Id,
     string BikeId,
+    string? BikeName,
+    string? BikeModel,
     string? Title,
     DateTime StartTime,
     DateTime LocalStartTime,
@@ -28,6 +30,8 @@ public sealed record RideDto(
     public static RideDto From(Ride ride) => new(
         ride.Id,
         ride.BikeId,
+        ride.BikeName,
+        ride.BikeModel,
         ride.Title,
         ride.StartTime,
         TimeZones.ToRideLocal(ride.StartTime, ride.TimeZone),

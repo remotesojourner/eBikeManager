@@ -21,7 +21,7 @@ public class BikeProfileParserTests
         var details = BikeProfileParser.Parse(bike, names, _updated, [document]);
 
         Assert.True(details.HasDetails);
-        Assert.Equal("TENWAYS", details.Brand);
+        Assert.Equal(("Commuter", "TENWAYS (Performance Line)"), (details.Name, details.Model));
         Assert.Equal(_updated, details.PictureSavedAt);
         Assert.Equal("WTEN123456789", details.FrameNumber);
         Assert.Equal("Seat stem", details.FrameNumberPosition);
@@ -126,7 +126,8 @@ public class BikeProfileParserTests
     private static Bike NewBike(string profile) => new()
     {
         Id = "bike-1",
-        Name = "TENWAYS (Performance Line)",
+        Name = "Commuter",
+        Model = "TENWAYS (Performance Line)",
         ProfileJson = profile,
         PassJson = BoschSamples.BikePass("bike-1"),
         HasFlowPlus = false,

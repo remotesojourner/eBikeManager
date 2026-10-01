@@ -31,6 +31,12 @@ public abstract class BrowserApp : TestApp
         return await scope.ServiceProvider.GetRequiredService<ISettingsRepository>().GetAsync(cancellationToken);
     }
 
+    public async Task<IReadOnlyList<BikeDto>> BikesAsync(CancellationToken cancellationToken)
+    {
+        using var scope = Services.CreateScope();
+        return await scope.ServiceProvider.GetRequiredService<BikeService>().GetBikesAsync(cancellationToken);
+    }
+
     public async Task<IReadOnlyList<RideDto>> RidesAsync(CancellationToken cancellationToken)
     {
         using var scope = Services.CreateScope();
