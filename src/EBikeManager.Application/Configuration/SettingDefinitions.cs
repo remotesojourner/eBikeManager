@@ -24,6 +24,9 @@ public static class SettingDefinitions
     public const string GoogleHealthClientId = "googleHealthClientId";
     public const string GoogleHealthAccount = "googleHealthAccount";
     public const string GoogleHealthUploadFrom = "googleHealthUploadFrom";
+    public const string BridgeAddress = "bridgeAddress";
+    public const string BridgeFirstBike = "bridgeFirstBike";
+    public const string BridgeSecondBike = "bridgeSecondBike";
 
     public static IReadOnlyList<SettingDefinition> All { get; } =
     [
@@ -41,7 +44,10 @@ public static class SettingDefinitions
         new(MapDarkStyleUrl, Unset, SettingVisibility.Everyone, StyleUrl),
         new(GoogleHealthClientId, Unset, SettingVisibility.Everyone, GoogleClientId),
         new(GoogleHealthAccount, Unset, SettingVisibility.Everyone),
-        new(GoogleHealthUploadFrom, Unset, SettingVisibility.Everyone, UploadFrom)
+        new(GoogleHealthUploadFrom, Unset, SettingVisibility.Everyone, UploadFrom),
+        new(BridgeAddress, Unset, SettingVisibility.Everyone, BridgeAddressValue),
+        new(BridgeFirstBike, Unset, SettingVisibility.Everyone),
+        new(BridgeSecondBike, Unset, SettingVisibility.Everyone)
     ];
 
     public static IReadOnlyList<string> ObsoleteKeys { get; } = ["authPasswordHash"];
@@ -67,6 +73,9 @@ public static class SettingDefinitions
 
     private static string? UploadFrom(string value) =>
         value == Unset || GoogleHealthSettings.IsValidUploadFrom(value) ? null : ApplicationStrings.GoogleHealthUploadChoiceInvalid;
+
+    private static string? BridgeAddressValue(string value) =>
+        value == Unset || BridgeSettings.IsValidAddress(value) ? null : ApplicationStrings.BridgeAddressInvalid;
 
     private static string? Cron(string value)
     {

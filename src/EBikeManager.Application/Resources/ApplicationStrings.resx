@@ -101,6 +101,45 @@
   <data name="BikesNoneChosen" xml:space="preserve">
     <value>Choose at least one bike.</value>
   </data>
+  <data name="BridgeAddressInvalid" xml:space="preserve">
+    <value>Enter the bridge's IP address or host name, optionally followed by a colon and the port.</value>
+  </data>
+  <data name="BridgeKeyInvalid" xml:space="preserve">
+    <value>The encryption key must be the 44-character key from the api: encryption setting of the bridge's YAML.</value>
+  </data>
+  <data name="BridgeUnreachable" xml:space="preserve">
+    <value>Can't reach the bridge at {0}: {1}</value>
+  </data>
+  <data name="BridgeNeedsKey" xml:space="preserve">
+    <value>The bridge is encrypted. Enter its encryption key.</value>
+  </data>
+  <data name="BridgeNotEncrypted" xml:space="preserve">
+    <value>The bridge closed the encrypted connection. If it isn't encrypted, remove the encryption key.</value>
+  </data>
+  <data name="BridgeWrongKey" xml:space="preserve">
+    <value>The encryption key doesn't match the bridge's.</value>
+  </data>
+  <data name="BridgeHandshakeFailed" xml:space="preserve">
+    <value>The bridge refused the encrypted connection: {0}</value>
+  </data>
+  <data name="BridgeNoAnswer" xml:space="preserve">
+    <value>The bridge didn't answer in time.</value>
+  </data>
+  <data name="BridgeStoppedAnswering" xml:space="preserve">
+    <value>The bridge stopped answering.</value>
+  </data>
+  <data name="BridgeClosed" xml:space="preserve">
+    <value>The bridge closed the connection.</value>
+  </data>
+  <data name="BridgeLost" xml:space="preserve">
+    <value>The connection to the bridge was lost: {0}</value>
+  </data>
+  <data name="BridgeNotUnderstood" xml:space="preserve">
+    <value>The bridge sent something eBike Manager doesn't understand.</value>
+  </data>
+  <data name="BridgeNoSensors" xml:space="preserve">
+    <value>This device has none of the Bosch eBike bridge's sensors.</value>
+  </data>
   <data name="ApiTokenNeedsSignIn" xml:space="preserve">
     <value>The API token is only used while sign-in is on.</value>
   </data>

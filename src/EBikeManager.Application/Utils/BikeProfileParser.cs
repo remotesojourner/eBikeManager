@@ -34,6 +34,8 @@ public static class BikeProfileParser
         var wheel = driveUnit.Property("rearWheelCircumference");
         var charge = chargeDocument?.RootElement;
         var pass = passDocument?.RootElement ?? default;
+        var boschOdometer = charge?.Number("odometer") ?? driveUnit.Number("totalDistanceTraveled");
+        var bridgeOdometer = bike.BridgeOdometerKm * 1000;
 
         return new BikeDetailsDto(
             bike.Id,
@@ -42,7 +44,8 @@ public static class BikeProfileParser
             pictureSavedAt,
             pass.Text("frameNumber") ?? profile.Text("frameNumber"),
             pass.Text("frameNumberPosition"),
-            charge?.Number("odometer") ?? driveUnit.Number("totalDistanceTraveled"),
+            boschOdometer is { } bosch && bridgeOdometer is { } bridge ? Math.Max(bosch, bridge) : boschOdometer ?? bridgeOdometer,
+            boschOdometer,
             driveUnit.Property("powerOnTime").Number("total"),
             driveUnit.Property("powerOnTime").Number("withMotorSupport"),
             driveUnit.Number("maxAssistanceSpeed") ?? driveUnit.Property("maximumAssistance").Number("speed"),
@@ -56,6 +59,8 @@ public static class BikeProfileParser
             [.. driveUnit.Items("driveUnitAssistModes").Select(mode => AssistMode(mode, modeNames)).OfType<AssistModeDto>().OrderByDescending(mode => mode.ReachableRangeKm ?? 0)],
             ModeMileage(driveUnit, modeNames),
             charge is { } live ? LiveState(live) : null,
+            bike.BridgeBatteryPercent,
+            bike.BridgeBatteryAt,
             locationDocument?.RootElement is { } location ? Location(location) : null,
             documents,
             bike.HasFlowPlus,

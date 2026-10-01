@@ -20,6 +20,7 @@ public static class ApplicationInstaller
     {
         services.AddSingleton<IAppEventService, AppEventService>();
         services.AddSingleton<SyncStateService>();
+        services.AddSingleton<BridgeStateService>();
         services.AddSingleton<PkceLoginService>();
         services.AddSingleton<BoschConnectionService>();
         services.AddSingleton<GoogleHealthConnectionService>();
@@ -32,6 +33,7 @@ public static class ApplicationInstaller
         services.AddScoped<BikeService>();
         services.AddScoped<RideService>();
         services.AddScoped<StatisticsService>();
+        services.AddScoped<BridgeService>();
         services.AddScoped<RideSyncService>();
         services.AddScoped<BikeDetailsSyncService>();
         services.AddScoped<SyncRunService>();
@@ -102,6 +104,7 @@ public static class ApplicationInstaller
         services.AddSingleton<IReleaseService, GitHubReleaseService>();
 
         services.AddHostedService<SyncSchedulerService>();
+        services.AddHostedService<BridgeListenerService>();
         return services;
     }
 

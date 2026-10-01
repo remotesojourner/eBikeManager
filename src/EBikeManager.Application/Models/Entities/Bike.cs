@@ -21,4 +21,12 @@ public class Bike
     public bool? HasFlowPlus { get; set; }
 
     public DateTime? DetailsUpdatedAt { get; set; }
+
+    public double? BridgeBatteryPercent { get; set; }
+
+    public DateTime? BridgeBatteryAt { get; set; }
+
+    public double? BridgeOdometerKm { get; set; }
+
+    public DateTime? BridgeOdometerAt { get; set; }
 }

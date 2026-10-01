@@ -28,6 +28,7 @@ A self-hosted Blazor Server app for Bosch eBike Flow riders. It keeps a copy of 
 - **Google Health integration** — uploads each ride as an electric bike workout with Bosch's calories, which count only your own effort, not the motor's. It lists every upload with its result. A ride your watch also recorded isn't uploaded, because Google Health only shows the watch's version (see the [FAQ](#what-happens-when-my-watch-recorded-the-same-ride)). Any ride can also be uploaded on its own from the Rides list or its ride page, even one from before your start date
 - **Local by design** — every page is built from what's stored on your server. eBike Manager contacts Bosch only while syncing, and serves its own copy of your bike's picture, eBike Pass documents, fonts and map code. The one exception is the map itself, which your browser loads from the map server you choose; with your own map server, nothing leaves your network
 - **Sign-in** — optional sign-in with your own OpenID Connect provider, such as Authentik, Authelia, Keycloak or Pocket ID. When it's on, nothing is shown until you've signed in
+- **eBike bridge** — reads the live battery level and bike values from [Xunil99's Bosch eBike LDI bridge](https://xunil99.github.io/ha-bosch-ebike/), an ESP32 board you flash from that page, over ESPHome's own API, encrypted or not, with no Home Assistant needed. It keeps the battery level and the odometer, and shows speed, cadence, power, charging, lock and light while the bike is connected. A dual bridge feeds two bikes
 - **Statistics API** — `GET /api/statistics` returns your number of bikes, rides, total distance, moving time, elevation gain and calories as JSON, for Home Assistant or your own scripts. With sign-in on, it takes an API token from the Security tab
 - **Docker-ready** — one container, one data folder, and a `/healthz` endpoint for Docker's health check
 
@@ -168,6 +169,21 @@ eBike Manager keeps the Google login encrypted in the data folder and renews it 
 |---|---|
 | **Bosch eBike Flow account** | Which account is connected, and **Sign in again** if Bosch stopped accepting the login |
 | **Bikes** | The bikes whose rides are synced. Adding a bike reads its whole ride history on the next sync |
+
+### Tab: Bridge
+
+Connects eBike Manager to [Xunil99's Bosch eBike LDI bridge](https://xunil99.github.io/ha-bosch-ebike/), an ESP32 board that connects to your bike over Bluetooth. Follow the instructions on [its page](https://xunil99.github.io/ha-bosch-ebike/): it lists what you need (an ESP32 dev board and a USB data cable), flashes the firmware straight from Chrome or Edge (the single bridge for one bike, the dual bridge for two), puts the bridge on your Wi-Fi and pairs it with your bike. eBike Manager then talks to it over ESPHome's API on your network, so you don't need Home Assistant, and Home Assistant can stay connected at the same time. The **Bridge** tab links to the same page.
+
+| Field | Description |
+|---|---|
+| **Address** | The bridge's IP address, or its name if your network resolves it, with `:port` if it isn't 6053. Leave it empty to stop using the bridge |
+| **Encryption key** | The key under `api: encryption: key:` in the bridge's YAML, if it has one. It's stored encrypted |
+| **Bike** | The bike the bridge is paired with. With one bike it's chosen for you |
+| **The bridge's eBike 1 / eBike 2** | For a dual bridge: which of your bikes each half is paired with. The bridge itself doesn't say, so each picker shows that half's odometer and warns when it's lower than Bosch's odometer for the chosen bike, which means the two are swapped |
+
+The status line says whether eBike Manager is connected, and why not: a missing, unneeded or wrong encryption key, or a bridge it can't reach. It keeps trying in the background, from every 5 seconds up to every 5 minutes.
+
+eBike Manager keeps only the battery level and the odometer, each with the time it was read. The Bikes page and the dashboard show that battery level, and the bike's mileage is the higher of Bosch's odometer and the bridge's. Speed, cadence, your power, charging, the time until charged, lock, light and the rest appear on the Bikes page only while the bike is connected to the bridge, because they mean nothing once it isn't.
 
 ### Tab: Google Health
 
@@ -310,6 +326,7 @@ docker compose up -d --build
 | Charts | [uPlot](https://github.com/leeoniya/uPlot) |
 | FIT files | [Garmin FIT SDK](https://developer.garmin.com/fit/) |
 | Bosch sign-in | Based on [ha-bosch-ebike-flow](https://github.com/marq24/ha-bosch-ebike-flow) |
+| eBike bridge | [ESPHome](https://esphome.io)'s native API, with Noise encryption through [BouncyCastle](https://www.bouncycastle.org/) for X25519; made for [Xunil99's Bosch eBike LDI bridge](https://github.com/Xunil99/ha-bosch-ebike) |
 | Tests | xUnit v3, FakeItEasy, Playwright for the browser tests |
 | Containers | Docker + Docker Compose |
 
@@ -361,11 +378,15 @@ If you wear a Fitbit or Pixel Watch, turn off automatic recognition of bike ride
 
 ---
 
+### Why can't eBike Manager find my bridge by its `.local` name?
+
+Names like `ebike-bridge-1a2b3c.local` are announced with mDNS, which doesn't cross into Docker's default bridge network. Use the bridge's IP address instead, ideally with a DHCP reservation in your router so it doesn't change, or run the container with `network_mode: host`.
+
 ### Some bike details are missing. Why?
 
 Bosch only reports what your bike has. The live battery state and the last known location come from a ConnectModule, and some figures only update after the bike has synced with the eBike Flow app.
 
-Without a ConnectModule, Bosch's cloud doesn't know your battery's charge level at all. The eBike Flow app shows it because it reads it from the bike over Bluetooth, which eBike Manager can't do.
+Without a ConnectModule, Bosch's cloud doesn't know your battery's charge level at all. The eBike Flow app shows it because it reads it from the bike over Bluetooth. eBike Manager can't do that itself, but it can read it from an [eBike bridge](#tab-bridge).
 
 The same goes for software updates and for the Bluetooth devices you paired with the bike, such as an eShift, a Mini Remote or a heart rate monitor: the Flow app learns about them from the bike itself, and they never reach Bosch's cloud.
 

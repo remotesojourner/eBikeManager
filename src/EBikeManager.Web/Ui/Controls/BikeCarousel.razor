@@ -1,4 +1,6 @@
 @inject PreferencesService Preferences
+@inject BridgeLiveStateService BridgeLive
+@implements IDisposable
 
 @if (Current is { } bike)
 {
@@ -9,7 +11,7 @@
                 {
                     <img src="@BikeMediaEndpoint.PicturePath(bike.Id, pictureSavedAt)" alt="" class="em-bike-thumbnail mb-3" loading="lazy" onerror="this.style.display='none'" />
                 }
-                <DataRow Label="@WebStrings.BikeMileage" Value="@DisplayFormat.Number(bike.OdometerMeters / 1000, "#,0 km")" />
+                <DataRow Label="@WebStrings.BikeMileage" Value="@DisplayFormat.Number(BikeText.OdometerMeters(bike, BridgeLive.Snapshot.LiveFor(bike.Id)) / 1000, "#,0 km")" />
                 <DataRow Label="@WebStrings.BikeMotorHours" Value="@DisplayFormat.Number(bike.MotorHours, "#,0 h")" />
                 @foreach (var battery in bike.Batteries)
                 {
@@ -48,6 +50,12 @@
 
     private BikeDetailsDto? Current => Bikes.Count > 0 ? Bikes[_index] : null;
 
+    protected override void OnInitialized() => BridgeLive.OnChange += OnBridgeChanged;
+
+    public void Dispose() => BridgeLive.OnChange -= OnBridgeChanged;
+
+    private void OnBridgeChanged() => InvokeAsync(StateHasChanged);
+
     protected override void OnParametersSet()
     {
         _labels = BikeText.Labels(Bikes.Select(bike => (bike.Id, bike.Name, (string?)bike.Model)));
@@ -56,8 +64,8 @@
 
     private void Show(int index) => _index = (index % Bikes.Count + Bikes.Count) % Bikes.Count;
 
-    private static string BatteryText(BikeDetailsDto bike, BikeBatteryDto battery) =>
-        (bike.LiveState?.ChargePercent ?? battery.LevelPercent) is { } level
+    private string BatteryText(BikeDetailsDto bike, BikeBatteryDto battery) =>
+        BikeText.ChargeLevel(bike, battery, BridgeLive.Snapshot.LiveFor(bike.Id)) is { } level
             ? WebStrings.Format(WebStrings.DashboardBatteryLevelAndCycles, DisplayFormat.Percent(level), DisplayFormat.Number(battery.ChargeCycles, "0.#"))
             : WebStrings.Format(WebStrings.DashboardBatteryCycles, DisplayFormat.Number(battery.ChargeCycles, "0.#"));
 

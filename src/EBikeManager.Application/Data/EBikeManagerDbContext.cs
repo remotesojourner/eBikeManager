@@ -59,6 +59,10 @@ internal class EBikeManagerDbContext : DbContext
             entity.Property(e => e.LocationJson).HasColumnName("locationJson");
             entity.Property(e => e.HasFlowPlus).HasColumnName("hasFlowPlus");
             entity.Property(e => e.DetailsUpdatedAt).HasColumnName("detailsUpdatedAt");
+            entity.Property(e => e.BridgeBatteryPercent).HasColumnName("bridgeBatteryPercent");
+            entity.Property(e => e.BridgeBatteryAt).HasColumnName("bridgeBatteryAt");
+            entity.Property(e => e.BridgeOdometerKm).HasColumnName("bridgeOdometerKm");
+            entity.Property(e => e.BridgeOdometerAt).HasColumnName("bridgeOdometerAt");
         });
 
         modelBuilder.Entity<BikePicture>(entity =>

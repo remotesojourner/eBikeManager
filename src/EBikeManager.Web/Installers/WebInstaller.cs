@@ -91,6 +91,7 @@ public static class WebInstaller
         services.AddScoped<PreferencesService>();
         services.AddScoped<SettingsStateService>();
         services.AddScoped<SyncStatusStateService>();
+        services.AddScoped<BridgeLiveStateService>();
         services.AddScoped<LiveUpdatesService>();
         return services;
     }

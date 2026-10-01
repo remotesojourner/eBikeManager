@@ -1,5 +1,6 @@
 using System.Globalization;
 using EBikeManager.Application.Enums;
+using EBikeManager.Application.Models.Dtos;
 using EBikeManager.Web.Resources;
 
 namespace EBikeManager.Web.Utils;
@@ -63,4 +64,13 @@ public static class BikeText
                 ? WithModel(bike.Name, bike.Model)
                 : bike.Name);
     }
+
+    public static double? ChargeLevel(BikeDetailsDto bike, BikeBatteryDto battery, BridgeReadingsDto? live) =>
+        bike.LiveState?.ChargePercent ?? live?.BatteryPercent ?? bike.BridgeBatteryPercent ?? battery.LevelPercent;
+
+    public static bool ChargeLevelIsStored(BikeDetailsDto bike, BridgeReadingsDto? live) =>
+        bike.LiveState?.ChargePercent == null && live?.BatteryPercent == null && bike.BridgeBatteryPercent != null;
+
+    public static double? OdometerMeters(BikeDetailsDto bike, BridgeReadingsDto? live) =>
+        live?.OdometerKm * 1000 is { } liveMeters && !(bike.OdometerMeters >= liveMeters) ? liveMeters : bike.OdometerMeters;
 }

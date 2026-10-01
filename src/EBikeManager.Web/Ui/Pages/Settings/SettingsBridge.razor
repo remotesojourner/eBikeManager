@@ -1,0 +1,175 @@
+@inject BridgeService Bridge
+@inject BikeService Bikes
+@inject SettingsStateService Settings
+@inject BridgeLiveStateService BridgeLive
+@inject ISnackbar Snackbar
+@implements IDisposable
+
+<div class="d-flex flex-column gap-4">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Bluetooth" Title="@WebStrings.BridgeTitle" FullHeight="false" Description="@WebStrings.BridgeDescription">
+        <MudLink Href="@BridgeSettings.SetupUrl" Target="_blank" Typo="Typo.body2" Class="d-inline-flex align-center gap-1 mb-4">
+            @WebStrings.BridgeSetUp
+            <MudIcon Icon="@Icons.Material.Rounded.OpenInNew" Size="Size.Small" />
+        </MudLink>
+        <MudAlert Severity="@StatusSeverity" Variant="Variant.Outlined" Dense="true" Class="mb-4">@StatusText</MudAlert>
+
+        <div class="d-flex flex-column gap-3">
+            <MudTextField T="string" @bind-Value="_address" Label="@WebStrings.BridgeAddress" Placeholder="192.168.1.50"
+                          Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                          Error="@(!AddressValid)" ErrorText="@WebStrings.BridgeAddressInvalid" HelperText="@WebStrings.BridgeAddressHelp" />
+            <div>
+                <MudTextField T="string" @bind-Value="_key" Label="@WebStrings.BridgeKey" Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                              InputType="@(_showKey ? InputType.Text : InputType.Password)"
+                              Adornment="Adornment.End" AdornmentIcon="@(_showKey ? Icons.Material.Rounded.VisibilityOff : Icons.Material.Rounded.Visibility)"
+                              AdornmentAriaLabel="@WebStrings.BridgeShowKey" OnAdornmentClick="@(() => _showKey = !_showKey)"
+                              Placeholder="@(_hasKey ? WebStrings.SecuritySecretSavedPlaceholder : null)"
+                              Error="@(!KeyValid)" ErrorText="@WebStrings.BridgeKeyInvalid"
+                              HelperText="@(_hasKey ? WebStrings.BridgeKeySaved : WebStrings.BridgeKeyHelp)" />
+                @if (_hasKey)
+                {
+                    <MudCheckBox T="bool" @bind-Value="_clearKey" Dense="true" Color="Color.Primary" Label="@WebStrings.BridgeRemoveKey" />
+                }
+            </div>
+            <MudSelect T="string" @bind-Value="_firstBike" Label="@(IsDual ? WebStrings.BridgeFirstBike : WebStrings.BridgeBike)"
+                       Variant="Variant.Outlined" Margin="Margin.Dense" ToStringFunc="BikeLabel" HelperText="@SlotHelp(1)">
+                <MudSelectItem T="string" Value="@NoBike">@WebStrings.BridgeNoBike</MudSelectItem>
+                @foreach (var bike in _bikes)
+                {
+                    <MudSelectItem T="string" Value="@bike.Id">@BikeText.WithModel(bike.Name, bike.Model)</MudSelectItem>
+                }
+            </MudSelect>
+            @if (Mismatch(1, _firstBike) is { } firstWarning)
+            {
+                <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">@firstWarning</MudAlert>
+            }
+            @if (IsDual)
+            {
+                <MudSelect T="string" @bind-Value="_secondBike" Label="@WebStrings.BridgeSecondBike"
+                           Variant="Variant.Outlined" Margin="Margin.Dense" ToStringFunc="BikeLabel" HelperText="@SlotHelp(2)">
+                    <MudSelectItem T="string" Value="@NoBike">@WebStrings.BridgeNoBike</MudSelectItem>
+                    @foreach (var bike in _bikes)
+                    {
+                        <MudSelectItem T="string" Value="@bike.Id">@BikeText.WithModel(bike.Name, bike.Model)</MudSelectItem>
+                    }
+                </MudSelect>
+                @if (Mismatch(2, _secondBike) is { } secondWarning)
+                {
+                    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">@secondWarning</MudAlert>
+                }
+            }
+        </div>
+
+        <div class="mt-4">
+            <MudButton Variant="Variant.Filled" Color="Color.Primary" Disabled="@(!CanSave)" OnClick="SaveAsync">@WebStrings.BridgeSave</MudButton>
+        </div>
+    </SurfaceCard>
+</div>
+
+@code {
+    private const string NoBike = "";
+
+    private string _address = "";
+    private string _key = "";
+    private string _firstBike = NoBike;
+    private string _secondBike = NoBike;
+    private bool _hasKey;
+    private bool _clearKey;
+    private bool _showKey;
+    private bool _saving;
+    private IReadOnlyList<BikeDetailsDto> _bikes = [];
+
+    private BridgeSettings Saved => Settings.Current.Bridge;
+
+    private BridgeStatus Status => BridgeLive.Snapshot.Status;
+
+    private bool IsDual => Status.IsDual || Saved.SecondBikeId != null;
+
+    private bool AddressValid => string.IsNullOrWhiteSpace(_address) || BridgeSettings.IsValidAddress(_address);
+
+    private bool KeyValid => string.IsNullOrWhiteSpace(_key) || BridgeSettings.TryReadKey(_key, out _);
+
+    private string SavedFirstBike => Saved.FirstBikeId ?? (_bikes.Count == 1 ? _bikes[0].Id : NoBike);
+
+    private bool Dirty =>
+        _address.Trim() != (Saved.Address ?? "")
+        || _firstBike != SavedFirstBike
+        || _secondBike != (Saved.SecondBikeId ?? NoBike)
+        || !string.IsNullOrWhiteSpace(_key)
+        || _clearKey;
+
+    private bool CanSave => !_saving && Dirty && AddressValid && KeyValid;
+
+    private Severity StatusSeverity => Status.State switch
+    {
+        BridgeConnectionState.Connected => Severity.Success,
+        BridgeConnectionState.Failed => Severity.Warning,
+        _ => Severity.Info
+    };
+
+    private string StatusText => Status.State switch
+    {
+        BridgeConnectionState.Connecting => WebStrings.Format(WebStrings.BridgeConnecting, Status.Address),
+        BridgeConnectionState.Connected => WebStrings.Format(
+            Status.IsDual ? WebStrings.BridgeConnectedDual : WebStrings.BridgeConnected,
+            Status.Device?.FriendlyName ?? Status.Device?.Name,
+            Status.Address,
+            Status.Device?.EsphomeVersion ?? DisplayFormat.Missing),
+        BridgeConnectionState.Failed => WebStrings.Format(WebStrings.BridgeFailed, Status.Problem),
+        _ => WebStrings.BridgeOff
+    };
+
+    protected override async Task OnInitializedAsync()
+    {
+        BridgeLive.OnChange += OnBridgeChanged;
+        _bikes = await Bikes.GetDetailsAsync();
+        _hasKey = await Bridge.HasEncryptionKeyAsync();
+        ShowSaved();
+    }
+
+    public void Dispose() => BridgeLive.OnChange -= OnBridgeChanged;
+
+    private void ShowSaved()
+    {
+        _address = Saved.Address ?? "";
+        _firstBike = SavedFirstBike;
+        _secondBike = Saved.SecondBikeId ?? NoBike;
+        _key = "";
+        _clearKey = false;
+    }
+
+    private string BikeLabel(string bikeId) =>
+        _bikes.FirstOrDefault(bike => bike.Id == bikeId) is { } bike ? BikeText.WithModel(bike.Name, bike.Model) : WebStrings.BridgeNoBike;
+
+    private string? SlotHelp(int slot) =>
+        BridgeLive.Snapshot.Slot(slot)?.OdometerKm is { } kilometres
+            ? WebStrings.Format(WebStrings.BridgeSlotOdometer, DisplayFormat.Distance(kilometres * 1000))
+            : null;
+
+    private string? Mismatch(int slot, string bikeId)
+    {
+        if (BridgeLive.Snapshot.Slot(slot)?.OdometerKm is not { } bridgeKilometres) return null;
+        if (_bikes.FirstOrDefault(bike => bike.Id == bikeId) is not { BoschOdometerMeters: { } boschMeters } bike) return null;
+        if (bridgeKilometres * 1000 >= boschMeters - 1000) return null;
+
+        return WebStrings.Format(WebStrings.BridgeSwapped, DisplayFormat.Distance(bridgeKilometres * 1000), DisplayFormat.Distance(boschMeters), bike.Name);
+    }
+
+    private async Task SaveAsync()
+    {
+        _saving = true;
+        var result = await Bridge.SaveAsync(new BridgeRequest(_address, _firstBike, IsDual ? _secondBike : null, _key, _clearKey));
+        _saving = false;
+        if (!result.Succeeded)
+        {
+            Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+            return;
+        }
+
+        await Settings.LoadAsync();
+        _hasKey = await Bridge.HasEncryptionKeyAsync();
+        ShowSaved();
+        Snackbar.Add(WebStrings.BridgeSaved, Severity.Success);
+    }
+
+    private void OnBridgeChanged() => InvokeAsync(StateHasChanged);
+}

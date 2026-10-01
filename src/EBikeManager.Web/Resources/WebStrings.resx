@@ -384,7 +384,7 @@
     <value>Settings</value>
   </data>
   <data name="SettingsSubtitle" xml:space="preserve">
-    <value>Your Bosch connection, Google Health, sync schedule, map and sign-in</value>
+    <value>Your Bosch connection, eBike bridge, Google Health, sync schedule, map and sign-in</value>
   </data>
   <data name="SettingsTabBosch" xml:space="preserve">
     <value>Bosch</value>
@@ -397,6 +397,84 @@
   </data>
   <data name="SettingsTabAbout" xml:space="preserve">
     <value>About</value>
+  </data>
+  <data name="SettingsTabBridge" xml:space="preserve">
+    <value>Bridge</value>
+  </data>
+  <data name="BridgeTitle" xml:space="preserve">
+    <value>eBike bridge</value>
+  </data>
+  <data name="BridgeDescription" xml:space="preserve">
+    <value>Live battery level and bike values from Xunil99's Bosch eBike LDI bridge, an ESP32 board that connects to your bike over Bluetooth. eBike Manager talks to it on your network through ESPHome's API, so you don't need Home Assistant, and Home Assistant can stay connected too. Only the battery level and the odometer are kept; everything else shows while the bike is connected.</value>
+  </data>
+  <data name="BridgeSetUp" xml:space="preserve">
+    <value>What you need and how to flash the bridge</value>
+  </data>
+  <data name="BridgeAddress" xml:space="preserve">
+    <value>Address</value>
+  </data>
+  <data name="BridgeAddressHelp" xml:space="preserve">
+    <value>The bridge's IP address, or its name if your network resolves it. Add :port if it isn't 6053. Leave empty to stop using the bridge.</value>
+  </data>
+  <data name="BridgeAddressInvalid" xml:space="preserve">
+    <value>Enter an IP address or host name, optionally followed by :port</value>
+  </data>
+  <data name="BridgeKey" xml:space="preserve">
+    <value>Encryption key</value>
+  </data>
+  <data name="BridgeKeyHelp" xml:space="preserve">
+    <value>The key under api: encryption: in the bridge's YAML. Leave empty if it has none.</value>
+  </data>
+  <data name="BridgeKeySaved" xml:space="preserve">
+    <value>A key is saved. Leave this empty to keep it.</value>
+  </data>
+  <data name="BridgeKeyInvalid" xml:space="preserve">
+    <value>That isn't an ESPHome encryption key (44 characters ending in =)</value>
+  </data>
+  <data name="BridgeShowKey" xml:space="preserve">
+    <value>Show the encryption key</value>
+  </data>
+  <data name="BridgeRemoveKey" xml:space="preserve">
+    <value>Remove the saved key</value>
+  </data>
+  <data name="BridgeBike" xml:space="preserve">
+    <value>Bike</value>
+  </data>
+  <data name="BridgeFirstBike" xml:space="preserve">
+    <value>The bridge's eBike 1</value>
+  </data>
+  <data name="BridgeSecondBike" xml:space="preserve">
+    <value>The bridge's eBike 2</value>
+  </data>
+  <data name="BridgeNoBike" xml:space="preserve">
+    <value>None</value>
+  </data>
+  <data name="BridgeSlotOdometer" xml:space="preserve">
+    <value>The bridge reads {0} on this bike's odometer.</value>
+  </data>
+  <data name="BridgeSwapped" xml:space="preserve">
+    <value>The bridge reads {0}, but Bosch has {1} for {2}, and an odometer never goes down. Are the bikes the other way round?</value>
+  </data>
+  <data name="BridgeSave" xml:space="preserve">
+    <value>Save bridge</value>
+  </data>
+  <data name="BridgeSaved" xml:space="preserve">
+    <value>Bridge settings saved.</value>
+  </data>
+  <data name="BridgeOff" xml:space="preserve">
+    <value>Not in use. Enter the bridge's address to connect.</value>
+  </data>
+  <data name="BridgeConnecting" xml:space="preserve">
+    <value>Connecting to {0}…</value>
+  </data>
+  <data name="BridgeConnected" xml:space="preserve">
+    <value>Connected to {0} at {1}, ESPHome {2}.</value>
+  </data>
+  <data name="BridgeConnectedDual" xml:space="preserve">
+    <value>Connected to {0} at {1}, ESPHome {2}. It's a dual bridge for two bikes.</value>
+  </data>
+  <data name="BridgeFailed" xml:space="preserve">
+    <value>{0} Trying again shortly.</value>
   </data>
   <data name="SettingsBoschAccountTitle" xml:space="preserve">
     <value>Bosch eBike Flow account</value>
@@ -580,6 +658,48 @@
   </data>
   <data name="BikeRangeDescription" xml:space="preserve">
     <value>How far the battery would take you in each assistance mode</value>
+  </data>
+  <data name="BikeBridgeTitle" xml:space="preserve">
+    <value>Live from the bridge</value>
+  </data>
+  <data name="BikeBridgeDescription" xml:space="preserve">
+    <value>Shown while the bike is connected to your eBike bridge</value>
+  </data>
+  <data name="BikeSpeed" xml:space="preserve">
+    <value>Speed</value>
+  </data>
+  <data name="BikeCadence" xml:space="preserve">
+    <value>Cadence</value>
+  </data>
+  <data name="BikeRiderPower" xml:space="preserve">
+    <value>Your power</value>
+  </data>
+  <data name="BikeMoving" xml:space="preserve">
+    <value>Moving</value>
+  </data>
+  <data name="BikeChargeTo80" xml:space="preserve">
+    <value>Until 80 % charged</value>
+  </data>
+  <data name="BikeChargeTo100" xml:space="preserve">
+    <value>Until fully charged</value>
+  </data>
+  <data name="BikeLocked" xml:space="preserve">
+    <value>Locked</value>
+  </data>
+  <data name="BikeLight" xml:space="preserve">
+    <value>Light</value>
+  </data>
+  <data name="BikeLightReserve" xml:space="preserve">
+    <value>Light reserve active</value>
+  </data>
+  <data name="BikeDiagnosis" xml:space="preserve">
+    <value>Diagnosis running</value>
+  </data>
+  <data name="BikeAmbientLight" xml:space="preserve">
+    <value>Ambient light</value>
+  </data>
+  <data name="BikeChargeLevelRead" xml:space="preserve">
+    <value>{0} (read {1})</value>
   </data>
   <data name="BikeLiveTitle" xml:space="preserve">
     <value>Live battery</value>

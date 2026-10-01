@@ -38,6 +38,16 @@ internal sealed class BikeRepository : IBikeRepository
             .Where(bike => bike.Id == bikeId)
             .ExecuteUpdateAsync(setters => setters.SetProperty(bike => bike.Name, name), cancellationToken);
 
+    public Task SaveBridgeBatteryAsync(string bikeId, double percent, DateTime readAt, CancellationToken cancellationToken = default) =>
+        _db.Bikes
+            .Where(bike => bike.Id == bikeId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(bike => bike.BridgeBatteryPercent, percent).SetProperty(bike => bike.BridgeBatteryAt, readAt), cancellationToken);
+
+    public Task SaveBridgeOdometerAsync(string bikeId, double kilometres, DateTime readAt, CancellationToken cancellationToken = default) =>
+        _db.Bikes
+            .Where(bike => bike.Id == bikeId)
+            .ExecuteUpdateAsync(setters => setters.SetProperty(bike => bike.BridgeOdometerKm, kilometres).SetProperty(bike => bike.BridgeOdometerAt, readAt), cancellationToken);
+
     public async Task SaveSnapshotAsync(string bikeId, BikeSnapshot snapshot, DateTime updatedAt, CancellationToken cancellationToken = default)
     {
         if (await _db.Bikes.SingleOrDefaultAsync(bike => bike.Id == bikeId, cancellationToken) is not { } bike) return;

@@ -1,4 +1,6 @@
 @inject PreferencesService Preferences
+@inject BridgeLiveStateService BridgeLive
+@implements IDisposable
 
 @if (!Bike.HasDetails)
 {
@@ -51,7 +53,7 @@ else
                         <div class="d-flex flex-wrap justify-space-between align-end gap-4">
                             <div>
                                 <div class="em-stat-value">
-                                    <MudText Typo="Typo.h4" Class="em-hero-value font-weight-bold">@DisplayFormat.Number(Bike.OdometerMeters / 1000, "#,0")</MudText>
+                                    <MudText Typo="Typo.h4" Class="em-hero-value font-weight-bold">@DisplayFormat.Number(BikeText.OdometerMeters(Bike, Live) / 1000, "#,0")</MudText>
                                     <MudText Typo="Typo.body1" Class="em-muted">km</MudText>
                                 </div>
                                 <MudText Typo="Typo.caption" Class="em-muted d-block">@WebStrings.BikeMileageLabel</MudText>
@@ -95,9 +97,9 @@ else
                         <StatTile Icon="@Icons.Material.Rounded.BatteryChargingFull" Title="@(battery.ProductName ?? WebStrings.BikeBattery)"
                                   Value="@DisplayFormat.Number(battery.ChargeCycles, "0.#")" Label="@WebStrings.BikeChargeCycles">
                             <DataRow Label="@WebStrings.BikeCapacity" Value="@DisplayFormat.WattHours(battery.CapacityWh)" />
-                            @if ((Bike.LiveState?.ChargePercent ?? battery.LevelPercent) is { } level)
+                            @if (BikeText.ChargeLevel(Bike, battery, Live) is { } level)
                             {
-                                <DataRow Label="@WebStrings.BikeChargeLevel" Value="@DisplayFormat.Percent(level)" />
+                                <DataRow Label="@WebStrings.BikeChargeLevel" Value="@ChargeLevelText(level)" />
                             }
                             <DataRow Label="@WebStrings.BikeLifetimeEnergy" Value="@DisplayFormat.KilowattHours(battery.LifetimeDeliveredWh)" />
                             <DataRow Label="@WebStrings.BikeCyclesOnOffBike" Value="@($"{DisplayFormat.Number(battery.ChargeCyclesOnBike, "0.#")} / {DisplayFormat.Number(battery.ChargeCyclesOffBike, "0.#")}")" />
@@ -127,6 +129,33 @@ else
                 }
             </MudGrid>
         </MudItem>
+
+        @if (Live is { } bridge)
+        {
+            <MudItem xs="12" md="6">
+                <SurfaceCard Icon="@Icons.Material.Rounded.Bluetooth" Title="@WebStrings.BikeBridgeTitle" Description="@WebStrings.BikeBridgeDescription">
+                    <DataRow Label="@WebStrings.BikeChargeLevel" Value="@DisplayFormat.Percent(bridge.BatteryPercent)" />
+                    <DataRow Label="@WebStrings.BikeSpeed" Value="@DisplayFormat.Speed(bridge.SpeedKmh)" />
+                    <DataRow Label="@WebStrings.BikeCadence" Value="@DisplayFormat.Number(bridge.CadenceRpm, "0 'rpm'")" />
+                    <DataRow Label="@WebStrings.BikeRiderPower" Value="@DisplayFormat.Number(bridge.RiderPowerWatts, "0 'W'")" />
+                    <DataRow Label="@WebStrings.BikeMoving" Value="@BikeText.YesNo(bridge.InMotion)" />
+                    <DataRow Label="@WebStrings.BikeChargerConnected" Value="@BikeText.YesNo(bridge.ChargerConnected)" />
+                    @if (bridge.ChargeTimeTo80Minutes is { } to80)
+                    {
+                        <DataRow Label="@WebStrings.BikeChargeTo80" Value="@DisplayFormat.Duration(to80 * 60)" />
+                    }
+                    @if (bridge.ChargeTimeTo100Minutes is { } to100)
+                    {
+                        <DataRow Label="@WebStrings.BikeChargeTo100" Value="@DisplayFormat.Duration(to100 * 60)" />
+                    }
+                    <DataRow Label="@WebStrings.BikeLocked" Value="@BikeText.YesNo(bridge.Locked)" />
+                    <DataRow Label="@WebStrings.BikeLight" Value="@BikeText.OnOff(bridge.LightOn)" />
+                    <DataRow Label="@WebStrings.BikeLightReserve" Value="@BikeText.YesNo(bridge.LightReserveActive)" />
+                    <DataRow Label="@WebStrings.BikeDiagnosis" Value="@BikeText.YesNo(bridge.DiagnosisActive)" />
+                    <DataRow Label="@WebStrings.BikeAmbientLight" Value="@DisplayFormat.Number(bridge.AmbientBrightnessLux, "0.# 'lx'")" />
+                </SurfaceCard>
+            </MudItem>
+        }
 
         @if (Bike.LiveState is { } live)
         {
@@ -224,6 +253,19 @@ else
     private sealed record ComponentRow(string Name, string? Product, string? Software, string? Serial);
 
     [Parameter, EditorRequired] public BikeDetailsDto Bike { get; set; } = default!;
+
+    private BridgeReadingsDto? Live => BridgeLive.Snapshot.LiveFor(Bike.Id);
+
+    protected override void OnInitialized() => BridgeLive.OnChange += OnBridgeChanged;
+
+    public void Dispose() => BridgeLive.OnChange -= OnBridgeChanged;
+
+    private void OnBridgeChanged() => InvokeAsync(StateHasChanged);
+
+    private string ChargeLevelText(double level) =>
+        BikeText.ChargeLevelIsStored(Bike, Live) && Bike.BridgeBatteryReadAt is { } readAt
+            ? WebStrings.Format(WebStrings.BikeChargeLevelRead, DisplayFormat.Percent(level), DisplayFormat.DateTime(Preferences.ToLocal(readAt)))
+            : DisplayFormat.Percent(level);
 
     private static List<ComponentRow> ComponentRows(BikeDetailsDto bike) =>
     [

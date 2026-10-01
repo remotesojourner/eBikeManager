@@ -13,6 +13,7 @@ public sealed class PageLayoutTests : BrowserTest, IClassFixture<BrowserAppWithR
         ("/rides", "rides", "FIT and GPX backup"),
         ("/rides/ride-00", "ride", "Splits"),
         ("/settings/bosch", "bosch", "Bosch eBike Flow account"),
+        ("/settings/bridge", "bridge", "eBike bridge"),
         ("/settings/google-health", "google-health", "Create your own Google sign-in"),
         ("/settings/schedule", "schedule", "Sync schedule"),
         ("/settings/map", "map", "Your own map server"),
