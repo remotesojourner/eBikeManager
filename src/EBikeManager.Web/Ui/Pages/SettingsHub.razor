@@ -10,29 +10,29 @@
 <MudBreakpointProvider OnBreakpointChanged="OnBreakpointChanged">
     <MudTabs Position="@_tabPosition" Rounded="true" ApplyEffectsToContainer="true"
              Class="em-settings-tabs" TabPanelsClass="em-settings-panels"
-             ActivePanelIndex="_activeIndex" ActivePanelIndexChanged="OnTabChanged">
-        <MudTabPanel Text="@WebStrings.SettingsTabBosch" Icon="@Icons.Material.Rounded.ElectricBike">
+             ActivePanelIndex="_activeIndex">
+        <MudTabPanel Text="@WebStrings.SettingsTabBosch" Icon="@Icons.Material.Rounded.ElectricBike" OnClick="@(() => Open(0))">
             <SettingsBosch />
         </MudTabPanel>
-        <MudTabPanel Text="@WebStrings.SettingsTabBridge" Icon="@Icons.Material.Rounded.Bluetooth">
+        <MudTabPanel Text="@WebStrings.SettingsTabBridge" Icon="@Icons.Material.Rounded.Bluetooth" OnClick="@(() => Open(1))">
             <SettingsBridge />
         </MudTabPanel>
-        <MudTabPanel Text="@GoogleHealthIntegration.Name" Icon="@Icons.Material.Rounded.MonitorHeart">
+        <MudTabPanel Text="@GoogleHealthIntegration.Name" Icon="@Icons.Material.Rounded.MonitorHeart" OnClick="@(() => Open(2))">
             <SettingsGoogleHealth />
         </MudTabPanel>
-        <MudTabPanel Text="@WebStrings.SettingsTabNotifications" Icon="@Icons.Material.Rounded.Notifications">
+        <MudTabPanel Text="@WebStrings.SettingsTabNotifications" Icon="@Icons.Material.Rounded.Notifications" OnClick="@(() => Open(3))">
             <SettingsNotifications />
         </MudTabPanel>
-        <MudTabPanel Text="@WebStrings.SettingsTabSchedule" Icon="@Icons.Material.Rounded.Schedule">
+        <MudTabPanel Text="@WebStrings.SettingsTabSchedule" Icon="@Icons.Material.Rounded.Schedule" OnClick="@(() => Open(4))">
             <SettingsSchedule />
         </MudTabPanel>
-        <MudTabPanel Text="@WebStrings.SettingsTabDisplay" Icon="@Icons.Material.Rounded.DisplaySettings">
+        <MudTabPanel Text="@WebStrings.SettingsTabDisplay" Icon="@Icons.Material.Rounded.DisplaySettings" OnClick="@(() => Open(5))">
             <SettingsDisplay />
         </MudTabPanel>
-        <MudTabPanel Text="@WebStrings.SettingsTabSecurity" Icon="@Icons.Material.Rounded.Security">
+        <MudTabPanel Text="@WebStrings.SettingsTabSecurity" Icon="@Icons.Material.Rounded.Security" OnClick="@(() => Open(6))">
             <SettingsSecurity />
         </MudTabPanel>
-        <MudTabPanel Text="@WebStrings.SettingsTabAbout" Icon="@Icons.Material.Rounded.Info">
+        <MudTabPanel Text="@WebStrings.SettingsTabAbout" Icon="@Icons.Material.Rounded.Info" OnClick="@(() => Open(7))">
             <SettingsAbout />
         </MudTabPanel>
     </MudTabs>
@@ -55,9 +55,9 @@
     private void OnBreakpointChanged(Breakpoint breakpoint) =>
         _tabPosition = breakpoint is Breakpoint.Xs or Breakpoint.Sm ? Position.Top : Position.Left;
 
-    private void OnTabChanged(int index)
+    private void Open(int index)
     {
-        if (index < 0 || index >= _sections.Length) return;
+        if (index == _activeIndex) return;
 
         _activeIndex = index;
         Navigation.NavigateTo($"/settings/{_sections[index]}");

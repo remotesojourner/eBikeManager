@@ -275,8 +275,8 @@
     private async Task ChooseColourAsync(string colour)
     {
         _colour = colour;
-        await MapView.SetRouteColourAsync(_viewId, RouteColours.ForMap(colour));
         await Browser.SetLocalStorageAsync(RouteColours.StorageKey, colour);
+        await MapView.SetRouteColourAsync(_viewId, RouteColours.ForMap(colour));
     }
 
     private async Task ReloadExportsAsync()
