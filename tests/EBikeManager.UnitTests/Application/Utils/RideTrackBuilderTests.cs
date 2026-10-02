@@ -119,7 +119,7 @@ public class RideTrackBuilderTests
         Assert.All(values.Speed, speed => Assert.Equal(18, speed));
         Assert.All(values.Cadence, cadence => Assert.Equal(80, cadence));
         Assert.All(values.Power, power => Assert.InRange(power!.Value, 80, 120));
-        Assert.Equal(Enumerable.Range(10, 21).Select(metres => (double?)metres), values.Elevation);
+        Assert.All(values.Gradient, gradient => Assert.Equal(20, gradient));
         Assert.All(values.HeartRate, Assert.Null);
     }
 
@@ -127,13 +127,29 @@ public class RideTrackBuilderTests
     public void ThinningTheRouteKeepsEachPointsValuesWithIt()
     {
         var records = Enumerable.Range(0, 10_000).Select(second => new TrackRecord(
-            _start.AddSeconds(second), Latitude: 51 + second * 0.00001, Longitude: -0.12, AltitudeMeters: second, DistanceMeters: second)).ToList();
+            _start.AddSeconds(second), Latitude: 51 + second * 0.00001, Longitude: -0.12, SpeedMetresPerSecond: second / 1000.0, DistanceMeters: second)).ToList();
 
         var track = RideTrackBuilder.Build(records);
 
         Assert.Equal(RideTrackBuilder.MaxRoutePoints, track.Route.Count);
-        Assert.Equal(RideTrackBuilder.MaxRoutePoints, track.RouteValues.Elevation.Count);
-        Assert.All(track.Route.Zip(track.RouteValues.Elevation), pair => Assert.Equal(Math.Round((pair.First[1] - 51) / 0.00001), pair.Second));
+        Assert.Equal(RideTrackBuilder.MaxRoutePoints, track.RouteValues.Speed.Count);
+        var seconds = track.Route.Select(position => (int)Math.Round((position[1] - 51) / 0.00001)).ToList();
+        Assert.All(seconds.Zip(track.RouteValues.Speed).Where(pair => pair.First is > 2 and < 9_997),
+            pair => Assert.Equal(pair.First / 1000.0 * 3.6, pair.Second!.Value, 0.051));
+    }
+
+    [Fact]
+    public void TheGradientIsTheClimbOverTheSurroundingHundredMetres()
+    {
+        var records = Enumerable.Range(0, 81).Select(index => new TrackRecord(
+            _start.AddSeconds(index), Latitude: 51.5 + index * 0.0001, Longitude: -0.12,
+            AltitudeMeters: index <= 40 ? 10 + index * 0.5 : 30 - (index - 40) * 0.25, DistanceMeters: index * 5)).ToList();
+
+        var gradient = RideTrackBuilder.Build(records).RouteValues.Gradient;
+
+        Assert.Equal(10, gradient[15]);
+        Assert.Equal(-5, gradient[65]);
+        Assert.InRange(gradient[40]!.Value, -5, 10);
     }
 
     [Fact]

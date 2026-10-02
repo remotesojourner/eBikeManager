@@ -51,11 +51,14 @@ public sealed class RideDetailTests : BrowserTest, IClassFixture<BrowserAppWithR
         await page.GotoAsync("/rides/ride-00");
         await Expect(page.Locator(".em-map .maplibregl-canvas")).ToBeVisibleAsync();
         await Expect(legend).ToContainTextAsync("Speed · km/h");
+        await Expect(page.Locator(".em-map-legend-scale span")).ToHaveTextAsync(["0", "35"]);
 
         await page.GetByLabel("Route colour").ClickAsync();
         await Expect(page.GetByRole(AriaRole.Option, new() { Name = "Heart rate" })).ToHaveCountAsync(0);
+        await Expect(page.GetByRole(AriaRole.Option, new() { Name = "Gradient" })).ToBeVisibleAsync();
         await page.GetByRole(AriaRole.Option, new() { Name = "Power" }).ClickAsync();
         await Expect(legend).ToContainTextAsync("Power · W");
+        await Expect(page.Locator(".em-map-legend-scale span")).ToHaveTextAsync(["0", "300"]);
 
         await page.ReloadAsync();
         await Expect(legend).ToContainTextAsync("Power · W");

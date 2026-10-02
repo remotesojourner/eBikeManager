@@ -15,6 +15,7 @@ public sealed record MapTexts(string Hint, string MapFailed, string MapUnavailab
             ["speed"] = WebStrings.RideSpeed,
             ["cadence"] = WebStrings.RideCadence,
             ["power"] = WebStrings.RidePower,
-            ["heartRate"] = WebStrings.RideHeartRate
+            ["heartRate"] = WebStrings.RideHeartRate,
+            ["gradient"] = WebStrings.RideGradient
         });
 }

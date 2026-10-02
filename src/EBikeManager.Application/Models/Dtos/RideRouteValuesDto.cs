@@ -4,7 +4,7 @@ public sealed record RideRouteValuesDto(
     IReadOnlyList<double?> Speed,
     IReadOnlyList<double?> Power,
     IReadOnlyList<double?> Cadence,
-    IReadOnlyList<double?> Elevation,
+    IReadOnlyList<double?> Gradient,
     IReadOnlyList<double?> HeartRate)
 {
     public static RideRouteValuesDto Empty { get; } = new([], [], [], [], []);

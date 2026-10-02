@@ -13,6 +13,8 @@ public static class RideTrackBuilder
     private const double MetresPerSecondToKmh = 3.6;
     private const double SpeedSmoothingSeconds = 2;
     private const double EffortSmoothingSeconds = 5;
+    private const double GradientHalfWindowMetres = 50;
+    private const double ShortestGradientMetres = 20;
 
     public static RideTrackDto Build(IReadOnlyList<TrackRecord> records, double metresPerSplit = UnitConversion.MetresPerKilometre)
     {
@@ -55,6 +57,7 @@ public static class RideTrackBuilder
         var power = Smooth(points, point => point.PowerWatts, EffortSmoothingSeconds);
         var cadence = Smooth(points, point => point.Cadence, EffortSmoothingSeconds);
         var heartRate = Smooth(points, point => point.HeartRate, SpeedSmoothingSeconds);
+        var gradient = Gradients(points);
 
         var kept = new List<(double[] Position, int Index)>();
         for (var index = 0; index < points.Count; index++)
@@ -73,8 +76,31 @@ public static class RideTrackBuilder
                 [.. thinned.Select(point => Rounded(speed[point.Index], 1))],
                 [.. thinned.Select(point => Rounded(power[point.Index], 0))],
                 [.. thinned.Select(point => Rounded(cadence[point.Index], 0))],
-                [.. thinned.Select(point => Rounded(points[point.Index].AltitudeMeters, 1))],
+                [.. thinned.Select(point => Rounded(gradient[point.Index], 1))],
                 [.. thinned.Select(point => Rounded(heartRate[point.Index], 0))]));
+    }
+
+    private static double?[] Gradients(List<TrackRecord> points)
+    {
+        var gradients = new double?[points.Count];
+        var behind = 0;
+        var ahead = 0;
+        for (var index = 0; index < points.Count; index++)
+        {
+            if (points[index].DistanceMeters is not { } distance || points[index].AltitudeMeters == null) continue;
+
+            while (behind < index && !(points[behind + 1].DistanceMeters > distance - GradientHalfWindowMetres)) behind++;
+            ahead = Math.Max(ahead, index);
+            while (ahead < points.Count - 1 && points[ahead].DistanceMeters < distance + GradientHalfWindowMetres) ahead++;
+
+            if (points[behind] is { DistanceMeters: { } from, AltitudeMeters: { } startAltitude } && points[ahead] is { DistanceMeters: { } to, AltitudeMeters: { } endAltitude }
+                && to - from >= ShortestGradientMetres)
+            {
+                gradients[index] = (endAltitude - startAltitude) / (to - from) * 100;
+            }
+        }
+
+        return gradients;
     }
 
     private static double?[] Smooth(List<TrackRecord> points, Func<TrackRecord, double?> value, double halfWindowSeconds)

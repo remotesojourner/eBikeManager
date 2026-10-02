@@ -1,9 +1,9 @@
 window.ebikeManagerMaps = (() => {
     const views = new Map();
     const chartHeight = 180;
-    const digits = { distanceKm: 2, elevation: 0, speed: 1, cadence: 0, power: 0, heartRate: 0 };
-    const routeKeys = ['speed', 'power', 'cadence', 'elevation', 'heartRate'];
-    const heat = ['#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c'];
+    const digits = { distanceKm: 2, elevation: 0, speed: 1, cadence: 0, power: 0, heartRate: 0, gradient: 0 };
+    const routeKeys = ['speed', 'power', 'cadence', 'gradient', 'heartRate'];
+    const heat = ['#3b82f6', '#22d3ee', '#22c55e', '#fde047', '#fb923c', '#ef4444'];
     const heatCasing = '#1a1a19';
     const ridePadding = { top: 72, bottom: 96, left: 40, right: 56 };
     const emptyPoint = { type: 'FeatureCollection', features: [] };
@@ -63,19 +63,6 @@ window.ebikeManagerMaps = (() => {
         const result = { ...series };
         for (const [key, factor] of Object.entries(factors)) {
             if (series[key]) result[key] = series[key].map(value => value == null ? null : value * factor);
-        }
-        return result;
-    }
-
-    function ranges(values) {
-        const result = {};
-        for (const key of routeKeys) {
-            const sorted = (values?.[key] ?? []).filter(value => value != null).sort((a, b) => a - b);
-            if (sorted.length < 2) continue;
-
-            const low = sorted[Math.floor((sorted.length - 1) * 0.05)];
-            const high = sorted[Math.ceil((sorted.length - 1) * 0.95)];
-            result[key] = { low, high: high > low ? high : low + 1 };
         }
         return result;
     }
@@ -166,7 +153,7 @@ window.ebikeManagerMaps = (() => {
         if (!map?.getLayer('route-line')) return;
 
         const key = view.colourBy;
-        const range = key ? view.ranges?.[key] : undefined;
+        const range = key ? view.units?.scales?.[key] : undefined;
         if (map.getLayer('route-colour')) {
             map.setLayoutProperty('route-colour', 'visibility', range ? 'visible' : 'none');
             if (range) {
@@ -199,7 +186,7 @@ window.ebikeManagerMaps = (() => {
         scale.className = 'em-map-legend-scale';
         for (const value of [range.low, range.high]) {
             const label = document.createElement('span');
-            label.textContent = format(value, digits[key]);
+            label.textContent = format(value, 0);
             scale.appendChild(label);
         }
         view.legend.append(title, bar, scale);
@@ -359,7 +346,6 @@ window.ebikeManagerMaps = (() => {
             const view = {
                 id, mapElement, chartsElement, readoutElement, data, source, texts, units, colourBy, routeValues,
                 padding: ridePadding,
-                ranges: ranges(routeValues),
                 series: scaled(data.series, units.factors),
                 route: data.route ?? []
             };

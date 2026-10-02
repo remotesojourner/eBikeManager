@@ -899,6 +899,9 @@
   <data name="RideChartTitle" xml:space="preserve">
     <value>{0} · {1}</value>
   </data>
+  <data name="RideGradient" xml:space="preserve">
+    <value>Gradient</value>
+  </data>
   <data name="RideElevation" xml:space="preserve">
     <value>Elevation</value>
   </data>

@@ -42,6 +42,7 @@ public sealed class UnitsTests : BrowserTest, IClassFixture<BrowserAppWithRides>
         await Expect(page.GetByRole(AriaRole.Img, new() { Name = "Speed · mph" })).ToBeVisibleAsync();
         await Expect(page.GetByRole(AriaRole.Img, new() { Name = "Elevation · ft" })).ToBeVisibleAsync();
         await Expect(page.Locator(".em-map-legend")).ToContainTextAsync("Speed · mph");
+        await Expect(page.Locator(".em-map-legend-scale span")).ToHaveTextAsync(["0", "22"]);
         await Expect(page.GetByText("Top speed 20.4 mph")).ToBeVisibleAsync();
         await Expect(page.GetByText("394 ft up, 387 ft down")).ToBeVisibleAsync();
         await Expect(page.Locator(".mud-table-body .mud-table-row")).ToHaveCountAsync(8);

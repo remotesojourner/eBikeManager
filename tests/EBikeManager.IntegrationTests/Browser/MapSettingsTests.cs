@@ -48,7 +48,7 @@ public sealed class MapSettingsTests : BrowserTest, IClassFixture<BrowserAppWith
         await styleUrl.BlurAsync();
         await Expect(save).ToBeEnabledAsync();
         await save.ClickAsync();
-        await Expect(page.GetByText("Map saved.").Last).ToBeVisibleAsync();
+        await Expect(save).ToBeDisabledAsync();
 
         Assert.Equal(new MapSettings(MapProvider.Custom, OwnStyle, null), (await _app.SettingsAsync(cancellationToken)).Map);
         AssertNoBrowserErrors();
