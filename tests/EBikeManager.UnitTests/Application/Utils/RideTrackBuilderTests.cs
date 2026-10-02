@@ -106,6 +106,37 @@ public class RideTrackBuilderTests
     }
 
     [Fact]
+    public void EveryRoutePointCarriesItsValuesWithEffortSmoothedOverAFewSeconds()
+    {
+        var records = Enumerable.Range(0, 21).Select(second => new TrackRecord(
+            _start.AddSeconds(second), Latitude: 51.5 + second * 0.0001, Longitude: -0.12, AltitudeMeters: 10 + second,
+            SpeedMetresPerSecond: 5, Cadence: 80, PowerWatts: second % 2 == 0 ? 200 : 0, DistanceMeters: second * 5)).ToList();
+
+        var track = RideTrackBuilder.Build(records);
+
+        var values = track.RouteValues;
+        Assert.Equal(21, track.Route.Count);
+        Assert.All(values.Speed, speed => Assert.Equal(18, speed));
+        Assert.All(values.Cadence, cadence => Assert.Equal(80, cadence));
+        Assert.All(values.Power, power => Assert.InRange(power!.Value, 80, 120));
+        Assert.Equal(Enumerable.Range(10, 21).Select(metres => (double?)metres), values.Elevation);
+        Assert.All(values.HeartRate, Assert.Null);
+    }
+
+    [Fact]
+    public void ThinningTheRouteKeepsEachPointsValuesWithIt()
+    {
+        var records = Enumerable.Range(0, 10_000).Select(second => new TrackRecord(
+            _start.AddSeconds(second), Latitude: 51 + second * 0.00001, Longitude: -0.12, AltitudeMeters: second, DistanceMeters: second)).ToList();
+
+        var track = RideTrackBuilder.Build(records);
+
+        Assert.Equal(RideTrackBuilder.MaxRoutePoints, track.Route.Count);
+        Assert.Equal(RideTrackBuilder.MaxRoutePoints, track.RouteValues.Elevation.Count);
+        Assert.All(track.Route.Zip(track.RouteValues.Elevation), pair => Assert.Equal(Math.Round((pair.First[1] - 51) / 0.00001), pair.Second));
+    }
+
+    [Fact]
     public void ARideWithoutDistanceHasNoChartsOrSplits()
     {
         TrackRecord[] records = [new(_start, 51.5, -0.12), new(_start.AddSeconds(5), 51.51, -0.13)];

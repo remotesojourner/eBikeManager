@@ -11,11 +11,14 @@ public static class RideTrackBuilder
     private const double MinimumSplitFraction = 0.1;
     private const double LongestMovingGapSeconds = 30;
     private const double MetresPerSecondToKmh = 3.6;
+    private const double SpeedSmoothingSeconds = 2;
+    private const double EffortSmoothingSeconds = 5;
 
     public static RideTrackDto Build(IReadOnlyList<TrackRecord> records, double metresPerSplit = UnitConversion.MetresPerKilometre)
     {
         var points = Merge(records);
-        return new RideTrackDto(Route(points), Series(points), Splits(points, metresPerSplit));
+        var (route, values) = Route(points);
+        return new RideTrackDto(route, values, Series(points), Splits(points, metresPerSplit));
     }
 
     private static List<TrackRecord> Merge(IReadOnlyList<TrackRecord> records)
@@ -46,19 +49,70 @@ public static class RideTrackBuilder
             next.DistanceMeters ?? carried.DistanceMeters);
     }
 
-    private static List<double[]> Route(List<TrackRecord> points)
+    private static (List<double[]> Route, RideRouteValuesDto Values) Route(List<TrackRecord> points)
     {
-        var route = new List<double[]>();
-        foreach (var point in points)
+        var speed = Smooth(points, point => point.SpeedMetresPerSecond * MetresPerSecondToKmh, SpeedSmoothingSeconds);
+        var power = Smooth(points, point => point.PowerWatts, EffortSmoothingSeconds);
+        var cadence = Smooth(points, point => point.Cadence, EffortSmoothingSeconds);
+        var heartRate = Smooth(points, point => point.HeartRate, SpeedSmoothingSeconds);
+
+        var kept = new List<(double[] Position, int Index)>();
+        for (var index = 0; index < points.Count; index++)
         {
-            if (point.Latitude is not { } latitude || point.Longitude is not { } longitude) continue;
+            if (points[index].Latitude is not { } latitude || points[index].Longitude is not { } longitude) continue;
 
             var position = new[] { Math.Round(longitude, 6), Math.Round(latitude, 6) };
-            if (route.Count > 0 && route[^1].SequenceEqual(position)) continue;
-            route.Add(position);
+            if (kept.Count > 0 && kept[^1].Position.SequenceEqual(position)) continue;
+            kept.Add((position, index));
         }
 
-        return Thin(route, MaxRoutePoints);
+        var thinned = Thin(kept, MaxRoutePoints);
+        return (
+            [.. thinned.Select(point => point.Position)],
+            new RideRouteValuesDto(
+                [.. thinned.Select(point => Rounded(speed[point.Index], 1))],
+                [.. thinned.Select(point => Rounded(power[point.Index], 0))],
+                [.. thinned.Select(point => Rounded(cadence[point.Index], 0))],
+                [.. thinned.Select(point => Rounded(points[point.Index].AltitudeMeters, 1))],
+                [.. thinned.Select(point => Rounded(heartRate[point.Index], 0))]));
+    }
+
+    private static double?[] Smooth(List<TrackRecord> points, Func<TrackRecord, double?> value, double halfWindowSeconds)
+    {
+        var smoothed = new double?[points.Count];
+        var sum = 0.0;
+        var count = 0;
+        var first = 0;
+        var next = 0;
+        for (var index = 0; index < points.Count; index++)
+        {
+            var time = points[index].Time;
+            while (next < points.Count && (points[next].Time - time).TotalSeconds <= halfWindowSeconds)
+            {
+                if (value(points[next]) is { } added)
+                {
+                    sum += added;
+                    count++;
+                }
+
+                next++;
+            }
+
+            while ((time - points[first].Time).TotalSeconds > halfWindowSeconds)
+            {
+                if (value(points[first]) is { } removed)
+                {
+                    sum -= removed;
+                    count--;
+                }
+
+                first++;
+            }
+
+            smoothed[index] = value(points[index]) == null || count == 0 ? null : sum / count;
+        }
+
+        return smoothed;
     }
 
     private static RideSeriesDto Series(List<TrackRecord> points)

@@ -22,7 +22,7 @@ A self-hosted Blazor Server app for Bosch eBike Flow riders. It keeps a copy of 
 - **FIT and GPX backup** — downloads every ride's FIT file, checks it, and keeps it on your own disk next to Bosch's ride summary and the ride's GPX file, filed by date. The first sync backs up your whole history
 - **Dashboard** — distance, rides, moving time, calories and elevation for this week, this month, this year and all time, your latest rides, your bike's mileage and battery, and the state of the sync
 - **Rides** — every ride with its distance, moving time, Bosch's calories, your share of the effort, and download buttons for its FIT and GPX files. Click a ride anywhere to open it
-- **Ride details** — the route on a map, the ride's figures, how far you rode in each assistance mode, ABS interventions on bikes with ABS, charts of elevation, speed, cadence and power along the ride, and a split for every kilometre or mile. Point at a chart to read the values there and see the spot on the map
+- **Ride details** — the route on a map, coloured by speed, power, cadence, elevation or heart rate if you like, the ride's figures, how far you rode in each assistance mode, ABS interventions on bikes with ABS, charts of elevation, speed, cadence and power along the ride, and a split for every kilometre or mile. Point at a chart to read the values there and see the spot on the map
 - **Maps your way** — OpenStreetMap by default, OpenFreeMap with a dark version for the dark theme, or a MapLibre style from your own map server
 - **Miles or kilometres** — distances, speeds and heights in kilometres, km/h and metres, or in miles, mph and feet
 - **Bikes** — each bike's picture, frame number and where to find it, mileage with the distance, energy and Wh per km in each assistance mode, motor hours, whether Bosch detected tuning, battery (capacity, charge cycles, energy delivered), range in each assistance mode, every component with its software version and serial number, and the photos and invoices from your eBike Pass. With a ConnectModule it adds the live battery state, how long until it's full while charging, and the last known location
@@ -51,7 +51,7 @@ A self-hosted Blazor Server app for Bosch eBike Flow riders. It keeps a copy of 
 
 ### Ride details
 
-![A ride with its route on the map, figures, assistance modes, charts along the ride and kilometre splits](docs/screenshots/ride.png)
+![A ride with its route on the map coloured by speed, figures, assistance modes, charts along the ride and kilometre splits](docs/screenshots/ride.png)
 
 ### Google Health
 

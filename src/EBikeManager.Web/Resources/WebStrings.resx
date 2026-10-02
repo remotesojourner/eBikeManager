@@ -839,6 +839,12 @@
   <data name="RideClimbSummary" xml:space="preserve">
     <value>{0} up, {1} down</value>
   </data>
+  <data name="RideRouteColour" xml:space="preserve">
+    <value>Route colour</value>
+  </data>
+  <data name="RideRouteColourPlain" xml:space="preserve">
+    <value>One colour</value>
+  </data>
   <data name="RideMap" xml:space="preserve">
     <value>Route</value>
   </data>

@@ -42,6 +42,31 @@ public sealed class RideDetailTests : BrowserTest, IClassFixture<BrowserAppWithR
     }
 
     [Fact]
+    public async Task TheRouteIsColouredByTheChosenValueWithALegendAndTheChoiceIsRemembered()
+    {
+        await using var browser = await OpenBrowserAsync(_app);
+        var page = await browser.NewPageAsync();
+        var legend = page.Locator(".em-map-legend");
+
+        await page.GotoAsync("/rides/ride-00");
+        await Expect(page.Locator(".em-map .maplibregl-canvas")).ToBeVisibleAsync();
+        await Expect(legend).ToContainTextAsync("Speed · km/h");
+
+        await page.GetByLabel("Route colour").ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Option, new() { Name = "Heart rate" })).ToHaveCountAsync(0);
+        await page.GetByRole(AriaRole.Option, new() { Name = "Power" }).ClickAsync();
+        await Expect(legend).ToContainTextAsync("Power · W");
+
+        await page.ReloadAsync();
+        await Expect(legend).ToContainTextAsync("Power · W");
+
+        await page.GetByLabel("Route colour").ClickAsync();
+        await page.GetByRole(AriaRole.Option, new() { Name = "One colour" }).ClickAsync();
+        await Expect(legend).ToHaveCountAsync(0);
+        AssertNoBrowserErrors();
+    }
+
+    [Fact]
     public async Task ARideWithoutAFitFileExplainsWhyThereIsNoMap()
     {
         await using var browser = await OpenBrowserAsync(_app);

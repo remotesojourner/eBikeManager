@@ -57,6 +57,18 @@
                     {
                         <MudCard Elevation="0" Class="em-card em-fill em-map-card">
                             <div class="em-map" @ref="_map" role="region" aria-label="@WebStrings.RideMap"></div>
+                            @if (_colourOptions.Count > 1)
+                            {
+                                <div class="em-route-colour">
+                                    <MudSelect T="string" Value="@_colour" ValueChanged="ChooseColourAsync" ToStringFunc="RouteColours.Label" Label="@WebStrings.RideRouteColour"
+                                               Variant="Variant.Outlined" Margin="Margin.Dense" Dense="true">
+                                        @foreach (var option in _colourOptions)
+                                        {
+                                            <MudSelectItem T="string" Value="@option">@RouteColours.Label(option)</MudSelectItem>
+                                        }
+                                    </MudSelect>
+                                </div>
+                            }
                         </MudCard>
                     }
                     else
@@ -180,6 +192,8 @@
     private bool _shown;
     private MapSource? _shownSource;
     private UnitSystem? _loadedUnits;
+    private IReadOnlyList<string> _colourOptions = [];
+    private string _colour = RouteColours.Plain;
 
     [Parameter] public string Id { get; set; } = "";
 
@@ -216,6 +230,8 @@
         {
             _shown = true;
             _shownSource = source;
+            _colourOptions = RouteColours.For(track.Series);
+            _colour = RouteColours.Choose(await Browser.GetLocalStorageAsync(RouteColours.StorageKey), _colourOptions);
             await MapView.ShowRideAsync(
                 _viewId,
                 track.HasRoute ? _map : null,
@@ -223,7 +239,9 @@
                 track.HasCharts ? _readout : null,
                 track,
                 source,
-                ChartUnits.For(Units));
+                ChartUnits.For(Units),
+                RouteColours.ForMap(_colour));
+            StateHasChanged();
         }
         else if (source != _shownSource)
         {
@@ -252,6 +270,13 @@
         }
 
         _loading = false;
+    }
+
+    private async Task ChooseColourAsync(string colour)
+    {
+        _colour = colour;
+        await MapView.SetRouteColourAsync(_viewId, RouteColours.ForMap(colour));
+        await Browser.SetLocalStorageAsync(RouteColours.StorageKey, colour);
     }
 
     private async Task ReloadExportsAsync()

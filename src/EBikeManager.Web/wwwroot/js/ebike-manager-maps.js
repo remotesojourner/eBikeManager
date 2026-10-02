@@ -2,6 +2,10 @@ window.ebikeManagerMaps = (() => {
     const views = new Map();
     const chartHeight = 180;
     const digits = { distanceKm: 2, elevation: 0, speed: 1, cadence: 0, power: 0, heartRate: 0 };
+    const routeKeys = ['speed', 'power', 'cadence', 'elevation', 'heartRate'];
+    const heat = ['#fed976', '#feb24c', '#fd8d3c', '#fc4e2a', '#e31a1c'];
+    const heatCasing = '#1a1a19';
+    const ridePadding = { top: 72, bottom: 96, left: 40, right: 56 };
     const emptyPoint = { type: 'FeatureCollection', features: [] };
     let libraries;
 
@@ -63,6 +67,33 @@ window.ebikeManagerMaps = (() => {
         return result;
     }
 
+    function ranges(values) {
+        const result = {};
+        for (const key of routeKeys) {
+            const sorted = (values?.[key] ?? []).filter(value => value != null).sort((a, b) => a - b);
+            if (sorted.length < 2) continue;
+
+            const low = sorted[Math.floor((sorted.length - 1) * 0.05)];
+            const high = sorted[Math.ceil((sorted.length - 1) * 0.95)];
+            result[key] = { low, high: high > low ? high : low + 1 };
+        }
+        return result;
+    }
+
+    function segments(route, values) {
+        const features = [];
+        for (let index = 1; index < route.length; index++) {
+            const properties = {};
+            for (const key of routeKeys) {
+                const before = values[key]?.[index - 1];
+                const after = values[key]?.[index];
+                if (before != null && after != null) properties[key] = (before + after) / 2;
+            }
+            features.push({ type: 'Feature', geometry: { type: 'LineString', coordinates: [route[index - 1], route[index]] }, properties });
+        }
+        return { type: 'FeatureCollection', features };
+    }
+
     function decimalsOf(step) {
         return (String(+step.toFixed(6)).split('.')[1] ?? '').length;
     }
@@ -111,6 +142,10 @@ window.ebikeManagerMaps = (() => {
         map.addSource('route', { type: 'geojson', data: { type: 'Feature', geometry: { type: 'LineString', coordinates: route }, properties: {} } });
         map.addLayer({ id: 'route-casing', type: 'line', source: 'route', layout: lineLayout, paint: { 'line-color': colours.surface, 'line-width': 8, 'line-opacity': 0.9 } });
         map.addLayer({ id: 'route-line', type: 'line', source: 'route', layout: lineLayout, paint: { 'line-color': colours.primary, 'line-width': 4 } });
+        if (view.routeValues) {
+            map.addSource('route-colour', { type: 'geojson', data: segments(route, view.routeValues), tolerance: 0 });
+            map.addLayer({ id: 'route-colour', type: 'line', source: 'route-colour', layout: { ...lineLayout, visibility: 'none' }, paint: { 'line-color': heat[0], 'line-width': 4 } });
+        }
         map.addSource('ends', { type: 'geojson', data: { type: 'FeatureCollection', features: [point(route[0], 'start'), point(route[route.length - 1], 'end')] } });
         map.addLayer({
             id: 'ends', type: 'circle', source: 'ends',
@@ -123,6 +158,51 @@ window.ebikeManagerMaps = (() => {
         });
         map.addSource('cursor', { type: 'geojson', data: emptyPoint });
         map.addLayer({ id: 'cursor', type: 'circle', source: 'cursor', paint: { 'circle-radius': 7, 'circle-color': colours.primary, 'circle-stroke-width': 2, 'circle-stroke-color': colours.surface } });
+        applyColouring(view);
+    }
+
+    function applyColouring(view) {
+        const map = view.map;
+        if (!map?.getLayer('route-line')) return;
+
+        const key = view.colourBy;
+        const range = key ? view.ranges?.[key] : undefined;
+        if (map.getLayer('route-colour')) {
+            map.setLayoutProperty('route-colour', 'visibility', range ? 'visible' : 'none');
+            if (range) {
+                const stops = heat.flatMap((colour, index) => [range.low + (range.high - range.low) * index / (heat.length - 1), colour]);
+                map.setPaintProperty('route-colour', 'line-color', ['case', ['has', key], ['interpolate', ['linear'], ['get', key], ...stops], heat[0]]);
+            }
+        }
+        map.setLayoutProperty('route-line', 'visibility', range ? 'none' : 'visible');
+        map.setPaintProperty('route-casing', 'line-color', range ? heatCasing : palette().surface);
+        showLegend(view, key, range);
+    }
+
+    function showLegend(view, key, range) {
+        if (!range) {
+            view.legend?.remove();
+            view.legend = undefined;
+            return;
+        }
+
+        view.legend ??= view.mapElement.appendChild(document.createElement('div'));
+        view.legend.className = 'em-map-legend';
+        view.legend.replaceChildren();
+        const title = document.createElement('div');
+        title.className = 'em-map-legend-title';
+        title.textContent = `${view.texts.labels[key]} · ${view.units.labels[key]}`;
+        const bar = document.createElement('div');
+        bar.className = 'em-map-legend-bar';
+        bar.style.background = `linear-gradient(to right, ${heat.join(', ')})`;
+        const scale = document.createElement('div');
+        scale.className = 'em-map-legend-scale';
+        for (const value of [range.low, range.high]) {
+            const label = document.createElement('span');
+            label.textContent = format(value, digits[key]);
+            scale.appendChild(label);
+        }
+        view.legend.append(title, bar, scale);
     }
 
     function fit(view) {
@@ -133,7 +213,7 @@ window.ebikeManagerMaps = (() => {
         }
 
         const bounds = route.reduce((extent, position) => extent.extend(position), new maplibregl.LngLatBounds(route[0], route[0]));
-        view.map.fitBounds(bounds, { padding: 40, animate: false, maxZoom: 16 });
+        view.map.fitBounds(bounds, { padding: view.padding ?? 40, animate: false, maxZoom: 16 });
     }
 
     function createMap(view) {
@@ -266,15 +346,23 @@ window.ebikeManagerMaps = (() => {
 
         view.resize?.disconnect();
         view.charts?.forEach(chart => chart.destroy());
+        view.legend?.remove();
         view.map?.remove();
         views.delete(id);
     }
 
     return {
-        showRide: async function (id, mapElement, chartsElement, readoutElement, data, source, texts, units) {
+        showRide: async function (id, mapElement, chartsElement, readoutElement, data, source, texts, units, colourBy) {
             dispose(id);
             await ensureLibraries();
-            const view = { id, mapElement, chartsElement, readoutElement, data, source, texts, units, series: scaled(data.series, units.factors), route: data.route ?? [] };
+            const routeValues = scaled(data.routeValues, units.factors);
+            const view = {
+                id, mapElement, chartsElement, readoutElement, data, source, texts, units, colourBy, routeValues,
+                padding: ridePadding,
+                ranges: ranges(routeValues),
+                series: scaled(data.series, units.factors),
+                route: data.route ?? []
+            };
             views.set(id, view);
             if (mapElement) createMap(view);
             if (chartsElement && readoutElement) {
@@ -289,6 +377,14 @@ window.ebikeManagerMaps = (() => {
             const view = { id, mapElement, source, texts, route: route ?? [] };
             views.set(id, view);
             createMap(view);
+        },
+
+        setColour: function (id, colourBy) {
+            const view = views.get(id);
+            if (!view) return;
+
+            view.colourBy = colourBy;
+            if (view.styleReady) applyColouring(view);
         },
 
         setSource: function (id, source) {

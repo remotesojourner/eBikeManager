@@ -299,8 +299,50 @@
 }
 
 .em-map-card {
+    position: relative;
     overflow: hidden;
     min-height: 440px;
+}
+
+.em-route-colour {
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    z-index: 4;
+    width: 168px;
+    border-radius: 4px;
+    background: var(--mud-palette-surface);
+}
+
+.em-map-legend {
+    position: absolute;
+    left: 10px;
+    bottom: 10px;
+    z-index: 2;
+    min-width: 168px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    background: var(--mud-palette-surface);
+    color: var(--mud-palette-text-primary);
+    font-size: 12px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+}
+
+.em-map-legend-title {
+    font-weight: 600;
+}
+
+.em-map-legend-bar {
+    height: 8px;
+    margin: 6px 0 4px;
+    border-radius: 4px;
+}
+
+.em-map-legend-scale {
+    display: flex;
+    justify-content: space-between;
+    color: var(--mud-palette-text-secondary);
+    font-variant-numeric: tabular-nums;
 }
 
 .em-map {

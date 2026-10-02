@@ -29,11 +29,11 @@ await app.Services.GetRequiredService<AuthSettingsService>().ReloadAsync();
 
 app.UseForwardedHeaders();
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseStaticFiles();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
+app.MapStaticAssets().AllowAnonymous();
 app.MapControllers();
 app.MapHealthChecks(HealthEndpoint.Path).AllowAnonymous();
 app.MapRazorComponents<App>()

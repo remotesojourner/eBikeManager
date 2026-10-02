@@ -16,8 +16,11 @@ public sealed partial class MapViewService
         _logger = logger;
     }
 
-    public Task ShowRideAsync(string viewId, ElementReference? map, ElementReference? charts, ElementReference? readout, RideTrackDto track, MapSource source, ChartUnits units) =>
-        InvokeAsync("ebikeManagerMaps.showRide", viewId, map, charts, readout, track, source, MapTexts.Current, units);
+    public Task ShowRideAsync(string viewId, ElementReference? map, ElementReference? charts, ElementReference? readout, RideTrackDto track, MapSource source, ChartUnits units, string? colourBy) =>
+        InvokeAsync("ebikeManagerMaps.showRide", viewId, map, charts, readout, track, source, MapTexts.Current, units, colourBy);
+
+    public Task SetRouteColourAsync(string viewId, string? colourBy) =>
+        InvokeAsync("ebikeManagerMaps.setColour", viewId, colourBy);
 
     public Task ShowMapAsync(string viewId, ElementReference map, IReadOnlyList<double[]> route, MapSource source) =>
         InvokeAsync("ebikeManagerMaps.showMap", viewId, map, route, source, MapTexts.Current);
