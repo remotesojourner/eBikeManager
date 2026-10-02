@@ -23,6 +23,7 @@ public sealed record RideDetailDto(
     double? RiderEnergySharePercent,
     double? Co2Grams,
     double? Co2CarGrams,
+    int? AbsInterventions,
     IReadOnlyList<AssistModeShareDto> AssistModes,
     bool HasFit,
     bool HasGpx,

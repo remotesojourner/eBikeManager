@@ -218,11 +218,18 @@
 
 .em-mileage {
     display: grid;
-    grid-template-columns: minmax(0, 1fr) auto auto auto;
+    grid-template-columns: minmax(0, 1fr) auto auto auto auto;
     align-items: center;
-    column-gap: 16px;
+    column-gap: 14px;
     row-gap: 6px;
     font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 599.98px) {
+    .em-mileage {
+        grid-template-columns: minmax(0, 1fr) auto auto auto;
+        column-gap: 10px;
+    }
 }
 
 .em-documents {
@@ -494,6 +501,7 @@
 
 .em-mode-dot {
     display: inline-block;
+    flex-shrink: 0;
     width: 10px;
     height: 10px;
     border-radius: 50%;

@@ -35,6 +35,7 @@ public static class RideDetailParser
             ride.RiderEnergySharePercent ?? summary.Number("riderEnergyShare"),
             summary.Number("co2EmissionsGrams"),
             summary.Number("co2EmissionsCarEquivalentGrams"),
+            summary.Property("brakeEvents").Whole("amountOfAbsInterventionEvents"),
             AssistModes(summary),
             ride.FitPath != null,
             ride.GpxPath != null,

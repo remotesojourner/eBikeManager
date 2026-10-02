@@ -29,6 +29,9 @@ public static class DisplayFormat
     public static string ShortDistance(double? meters, UnitSystem units) =>
         WithUnit(meters is { } value ? Number(UnitConversion.ShortDistance(value, units), "#,0") : Missing, UnitConversion.ShortDistanceUnit(units));
 
+    public static string EnergyPerDistance(double? wattHoursPerKilometre, UnitSystem units) =>
+        WithUnit(wattHoursPerKilometre is { } value ? Number(UnitConversion.PerDistance(value, units), "0.0") : Missing, $"Wh/{UnitConversion.DistanceUnit(units)}");
+
     public static string Duration(double? seconds)
     {
         if (seconds is not { } value) return Missing;
@@ -53,6 +56,26 @@ public static class DisplayFormat
 
     public static string Percent(double? value) =>
         value is { } number ? WebStrings.Format(WebStrings.UnitPercent, number.ToString("0", CultureInfo.CurrentCulture)) : Missing;
+
+    public static string ToRelativeTime(DateTime momentUtc, DateTime nowUtc)
+    {
+        var span = nowUtc - momentUtc;
+        if (span.TotalSeconds < 60) return WebStrings.JustNow;
+        if (span.TotalMinutes < 60)
+        {
+            var minutes = (int)span.TotalMinutes;
+            return minutes == 1 ? WebStrings.OneMinuteAgo : WebStrings.Format(WebStrings.MinutesAgo, minutes);
+        }
+
+        if (span.TotalHours < 24)
+        {
+            var hours = (int)span.TotalHours;
+            return hours == 1 ? WebStrings.OneHourAgo : WebStrings.Format(WebStrings.HoursAgo, hours);
+        }
+
+        var days = (int)span.TotalDays;
+        return days == 1 ? WebStrings.OneDayAgo : WebStrings.Format(WebStrings.DaysAgo, days);
+    }
 
     public static string DateTime(DateTime value) => value.ToString("d MMM yyyy, HH:mm", CultureInfo.CurrentCulture);
 

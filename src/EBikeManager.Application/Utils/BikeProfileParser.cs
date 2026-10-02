@@ -53,6 +53,8 @@ public static class BikeProfileParser
             driveUnit.Property("walkAssist").Flag("isEnabled"),
             driveUnit.Property("lock").Flag("isEnabled"),
             profile.Property("connectedModule").Flag("isAlarmFeatureEnabled"),
+            driveUnit.Property("tuningDetection").Flag("isDetected"),
+            driveUnit.Property("tuningDetection").Whole("counter"),
             ServiceDue(profile.Property("remoteControl").Property("serviceDue")),
             [.. profile.Items("batteries").Select(Battery)],
             [.. _components.Select(component => Component(profile.Property(component.Property), component.Kind)).OfType<BikeComponentDto>()],
@@ -160,7 +162,8 @@ public static class BikeProfileParser
             charge.Number("remainingEnergyForRider"),
             ranges.Count > 0 ? ranges.Min() : null,
             ranges.Count > 0 ? ranges.Max() : null,
-            charge.Timestamp("lastUpdate") ?? charge.Timestamp("timestamp") ?? charge.Timestamp("updatedAt"));
+            charge.Number("remainingChargingTime"),
+            charge.Timestamp("stateOfChargeLatestUpdate"));
     }
 
     private static BikeLocationDto? Location(JsonElement location) =>

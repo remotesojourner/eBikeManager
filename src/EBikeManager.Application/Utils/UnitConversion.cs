@@ -17,6 +17,9 @@ public static class UnitConversion
     public static double ShortDistance(double metres, UnitSystem units) =>
         units == UnitSystem.Imperial ? metres / MetresPerFoot : metres;
 
+    public static double PerDistance(double perKilometre, UnitSystem units) =>
+        units == UnitSystem.Imperial ? perKilometre * MetresPerMile / MetresPerKilometre : perKilometre;
+
     public static double SplitMetres(UnitSystem units) => units == UnitSystem.Imperial ? MetresPerMile : MetresPerKilometre;
 
     public static string DistanceUnit(UnitSystem units) => units == UnitSystem.Imperial ? "mi" : "km";

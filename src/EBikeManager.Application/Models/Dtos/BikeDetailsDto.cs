@@ -16,6 +16,8 @@ public sealed record BikeDetailsDto(
     bool? WalkAssistEnabled,
     bool? LockEnabled,
     bool? AlarmEnabled,
+    bool? TuningDetected,
+    int? TuningDetections,
     ServiceDueDto? ServiceDue,
     IReadOnlyList<BikeBatteryDto> Batteries,
     IReadOnlyList<BikeComponentDto> Components,

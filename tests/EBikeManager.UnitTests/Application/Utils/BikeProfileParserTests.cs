@@ -71,6 +71,27 @@ public class BikeProfileParserTests
     }
 
     [Fact]
+    public void EachModesEfficiencyIsItsEnergyPerKilometreOnceItHasAKilometre()
+    {
+        var details = BikeProfileParser.Parse(NewBike(BoschSamples.Profile("bike-1")));
+
+        Assert.Equal([null, 8.28, 7.63, 8.12], details.ModeMileage.Select(mode => mode.WattHoursPerKilometre is { } value ? Math.Round(value, 2) : (double?)null));
+    }
+
+    [Fact]
+    public void TuningDetectionIsRead()
+    {
+        var clean = BikeProfileParser.Parse(NewBike(BoschSamples.Profile("bike-1")));
+        var tuned = BikeProfileParser.Parse(NewBike(BoschSamples.Profile("bike-1").Replace(
+            @"""tuningDetection"": { ""counter"": 0, ""isDetected"": false }",
+            @"""tuningDetection"": { ""counter"": 3, ""isDetected"": true }",
+            StringComparison.Ordinal)));
+
+        Assert.Equal((false, 0), (clean.TuningDetected, clean.TuningDetections));
+        Assert.Equal((true, 3), (tuned.TuningDetected, tuned.TuningDetections));
+    }
+
+    [Fact]
     public void RidingWithTheMotorOffCountsAsItsOwnModeOnceItHasDistance()
     {
         var profile = BoschSamples.Profile("bike-1").Replace(
@@ -106,8 +127,22 @@ public class BikeProfileParserTests
         Assert.Equal(76, details.LiveState!.ChargePercent);
         Assert.Equal((22, 61), (details.LiveState.MinRangeKm, details.LiveState.MaxRangeKm));
         Assert.Equal(402, details.LiveState.RemainingWh);
+        Assert.Null(details.LiveState.MinutesToFull);
+        Assert.Equal(new DateTime(2026, 9, 29, 18, 20, 0, DateTimeKind.Utc), details.LiveState.UpdatedAt);
         Assert.Equal(51.507351, details.LastLocation!.Latitude);
         Assert.Equal(new DateTime(2026, 9, 29, 18, 21, 0, DateTimeKind.Utc), details.LastLocation.DetectedAt);
+    }
+
+    [Fact]
+    public void AChargingBikeSaysHowLongUntilItIsFull()
+    {
+        var bike = NewBike(BoschSamples.Profile("bike-1"));
+        bike.StateOfChargeJson = """{ "stateOfCharge": 40, "chargingActive": true, "chargerConnected": true, "remainingChargingTime": 85 }""";
+
+        var live = BikeProfileParser.Parse(bike).LiveState!;
+
+        Assert.Equal((true, 85.0), (live.Charging, live.MinutesToFull));
+        Assert.Null(live.UpdatedAt);
     }
 
     [Fact]

@@ -81,6 +81,10 @@
                         {
                             <DataRow Label="@WebStrings.RideCo2" Value="@WebStrings.Format(WebStrings.RideCo2Value, DisplayFormat.Number(co2, "#,0.#"), DisplayFormat.Number(ride.Co2CarGrams, "#,0"))" />
                         }
+                        @if (ride.AbsInterventions is { } absInterventions)
+                        {
+                            <DataRow Label="@WebStrings.RideAbsInterventions" Value="@DisplayFormat.Number(absInterventions)" />
+                        }
 
                         @foreach (var export in ride.Exports ?? [])
                         {

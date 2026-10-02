@@ -28,6 +28,7 @@ internal static class BoschSamples
             "powerOnTime": { "total": 9, "withMotorSupport": 8 },
             "lock": { "isEnabled": true, "isLocked": null },
             "walkAssist": { "isEnabled": true },
+            "tuningDetection": { "counter": 0, "isDetected": false },
             "driveUnitAssistModes": [
               { "id": "0", "reachableRange": 0.0, "statistics": { "consumedEnergy": 0.0, "distance": 0.0 } },
               { "id": "A100M40040", "reachableRange": 33.0, "statistics": { "consumedEnergy": 0.0, "distance": 0.0 } },
@@ -69,7 +70,7 @@ internal static class BoschSamples
         """;
 
     public const string StateOfCharge = """
-        { "stateOfCharge": 76, "chargingActive": false, "chargerConnected": false, "remainingEnergyForRider": 402, "reachableRange": [61, 44, 30, 22], "odometer": 36500 }
+        { "stateOfCharge": 76, "stateOfChargeLatestUpdate": "2026-09-29T18:20:00Z", "chargingActive": false, "chargerConnected": false, "remainingChargingTime": null, "remainingEnergyForRider": 402, "reachableRange": [61, 44, 30, 22], "odometer": 36500 }
         """;
 
     public const string Location = """

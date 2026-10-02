@@ -7,4 +7,5 @@ public sealed record BikeLiveStateDto(
     double? RemainingWh,
     double? MinRangeKm,
     double? MaxRangeKm,
+    double? MinutesToFull,
     DateTime? UpdatedAt);

@@ -29,7 +29,8 @@ public class RideDetailParserTests
                   "maximumSpeed": 32.9, "averageCadence": 76.0, "maximumCadence": 106.0,
                   "averageRiderPower": 189.0, "maximumRiderPower": 412.0, "averageHeartRate": null,
                   "elevationGain": 12, "elevationLoss": 13, "riderEnergyShare": 35,
-                  "co2EmissionsGrams": 9.2, "co2EmissionsCarEquivalentGrams": 509.0
+                  "co2EmissionsGrams": 9.2, "co2EmissionsCarEquivalentGrams": 509.0,
+                  "brakeEvents": { "amountOfAbsInterventionEvents": 2, "amountOfNormalBrakeEvents": 31 }
                 }
                 """
         };
@@ -44,6 +45,7 @@ public class RideDetailParserTests
         Assert.Null(detail.AverageHeartRate);
         Assert.Equal((12.0, 13.0, 35.0), (detail.ElevationGainMeters, detail.ElevationLossMeters, detail.RiderEnergySharePercent));
         Assert.Equal((9.2, 509.0), (detail.Co2Grams, detail.Co2CarGrams));
+        Assert.Equal(2, detail.AbsInterventions);
         Assert.Equal(43, detail.CaloriesKcal);
         Assert.True(detail.HasFit);
         Assert.Equal("No track", detail.TrackProblem);
@@ -59,6 +61,14 @@ public class RideDetailParserTests
         Assert.Equal(["TURBO", "ECO"], modes.Select(mode => mode.Name));
         Assert.Equal(("#E20015", 1_656.0, 93.2), (modes[0].Color, modes[0].Meters, modes[0].Percent));
         Assert.Equal(("#78BE20", 6.8), (modes[1].Color, modes[1].Percent));
+    }
+
+    [Fact]
+    public void RidesOnBikesWithoutAbsHaveNoAbsInterventions()
+    {
+        var ride = new Ride { Id = "ride-1", StartTime = _start, SummaryJson = BoschSamples.RideSummary("Ride") };
+
+        Assert.Null(RideDetailParser.Parse(ride, null, null).AbsInterventions);
     }
 
     [Fact]

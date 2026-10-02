@@ -37,6 +37,16 @@ else
                     {
                         <DataRow Label="@WebStrings.BikeAlarm" Value="@BikeText.OnOff(Bike.AlarmEnabled)" />
                     }
+                    @if (Bike.TuningDetected == true)
+                    {
+                        <DataRow Label="@WebStrings.BikeTuning">
+                            <MudText Typo="Typo.body2" Color="Color.Error" Class="text-right font-weight-bold">@TuningText(Bike)</MudText>
+                        </DataRow>
+                    }
+                    else if (Bike.TuningDetected == false)
+                    {
+                        <DataRow Label="@WebStrings.BikeTuning" Value="@BikeText.YesNo(false)" />
+                    }
                     <DataRow Label="@WebStrings.BikeFlowPlus" Value="@BikeText.YesNo(Bike.HasFlowPlus)" />
                     @if (Bike.ServiceDue is { } service)
                     {
@@ -84,8 +94,9 @@ else
                                         <MudText Typo="Typo.body2">@mode.Name</MudText>
                                     </div>
                                     <MudText Typo="Typo.body2" Class="text-right font-weight-bold">@DisplayFormat.Distance(mode.DistanceMeters, Units)</MudText>
-                                    <MudText Typo="Typo.body2" Class="text-right em-muted">@DisplayFormat.Percent(mode.Percent)</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-right em-muted em-wide-only">@DisplayFormat.Percent(mode.Percent)</MudText>
                                     <MudText Typo="Typo.body2" Class="text-right em-muted">@DisplayFormat.WattHours(mode.EnergyWh)</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-right em-muted">@DisplayFormat.EnergyPerDistance(mode.WattHoursPerKilometre, Units)</MudText>
                                 }
                             </div>
                         }
@@ -163,12 +174,16 @@ else
                 <SurfaceCard Icon="@Icons.Material.Rounded.Bolt" Title="@WebStrings.BikeLiveTitle" Description="@WebStrings.BikeLiveDescription">
                     <DataRow Label="@WebStrings.BikeChargeLevel" Value="@DisplayFormat.Percent(live.ChargePercent)" />
                     <DataRow Label="@WebStrings.BikeCharging" Value="@BikeText.YesNo(live.Charging)" />
+                    @if (live.Charging == true && live.MinutesToFull is > 0 and { } minutesToFull)
+                    {
+                        <DataRow Label="@WebStrings.BikeFullIn" Value="@DisplayFormat.Duration(minutesToFull * 60)" />
+                    }
                     <DataRow Label="@WebStrings.BikeChargerConnected" Value="@BikeText.YesNo(live.ChargerConnected)" />
                     <DataRow Label="@WebStrings.BikeRemainingEnergy" Value="@DisplayFormat.WattHours(live.RemainingWh)" />
                     <DataRow Label="@WebStrings.BikeLiveRange" Value="@RangeText(live)" />
                     @if (live.UpdatedAt is { } liveUpdated)
                     {
-                        <DataRow Label="@WebStrings.BikeLiveUpdated" Value="@DisplayFormat.DateTime(Preferences.ToLocal(liveUpdated))" />
+                        <DataRow Label="@WebStrings.BikeLiveUpdated" Value="@DisplayFormat.ToRelativeTime(liveUpdated, DateTime.UtcNow)" />
                     }
                 </SurfaceCard>
             </MudItem>
@@ -278,6 +293,9 @@ else
 
     private static ComponentRow Row(BikeComponentDto component) =>
         new(BikeText.ComponentName(component.Kind), component.ProductName, component.SoftwareVersion, component.SerialNumber);
+
+    private static string TuningText(BikeDetailsDto bike) =>
+        bike.TuningDetections is > 1 and { } times ? WebStrings.Format(WebStrings.BikeTuningDetectedTimes, times) : BikeText.YesNo(true);
 
     private static string MotorHoursText(BikeDetailsDto bike) =>
         WebStrings.Format(WebStrings.BikeMotorHoursLabel, DisplayFormat.Number(bike.MotorHoursAssisted, "#,0"));

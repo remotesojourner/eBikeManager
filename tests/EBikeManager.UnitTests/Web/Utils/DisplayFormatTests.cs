@@ -67,4 +67,37 @@ public class DisplayFormatTests
             CultureInfo.CurrentCulture = culture;
         }
     }
+
+    [Fact]
+    public void EfficiencyIsPerKilometreOrPerMile()
+    {
+        var culture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo("en-GB");
+
+            Assert.Equal("8.3 Wh/km", DisplayFormat.EnergyPerDistance(8.28, UnitSystem.Metric));
+            Assert.Equal("13.3 Wh/mi", DisplayFormat.EnergyPerDistance(8.28, UnitSystem.Imperial));
+            Assert.Equal(DisplayFormat.Missing, DisplayFormat.EnergyPerDistance(null, UnitSystem.Metric));
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = culture;
+        }
+    }
+
+    [Theory]
+    [InlineData(30, "Just now")]
+    [InlineData(90, "1 minute ago")]
+    [InlineData(600, "10 minutes ago")]
+    [InlineData(3_700, "1 hour ago")]
+    [InlineData(3 * 3_600, "3 hours ago")]
+    [InlineData(25 * 3_600, "1 day ago")]
+    [InlineData(5 * 86_400, "5 days ago")]
+    public void TimesAgoAreRoundedDown(int secondsAgo, string expected)
+    {
+        var now = new DateTime(2026, 10, 2, 12, 0, 0, DateTimeKind.Utc);
+
+        Assert.Equal(expected, DisplayFormat.ToRelativeTime(now.AddSeconds(-secondsAgo), now));
+    }
 }

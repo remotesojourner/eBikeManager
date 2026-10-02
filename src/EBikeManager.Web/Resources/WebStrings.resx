@@ -86,6 +86,27 @@
   <data name="UnitPercent" xml:space="preserve">
     <value>{0}%</value>
   </data>
+  <data name="JustNow" xml:space="preserve">
+    <value>Just now</value>
+  </data>
+  <data name="OneMinuteAgo" xml:space="preserve">
+    <value>1 minute ago</value>
+  </data>
+  <data name="MinutesAgo" xml:space="preserve">
+    <value>{0} minutes ago</value>
+  </data>
+  <data name="OneHourAgo" xml:space="preserve">
+    <value>1 hour ago</value>
+  </data>
+  <data name="HoursAgo" xml:space="preserve">
+    <value>{0} hours ago</value>
+  </data>
+  <data name="OneDayAgo" xml:space="preserve">
+    <value>1 day ago</value>
+  </data>
+  <data name="DaysAgo" xml:space="preserve">
+    <value>{0} days ago</value>
+  </data>
   <data name="StateViewNothingToShow" xml:space="preserve">
     <value>There's nothing to show yet.</value>
   </data>
@@ -620,6 +641,12 @@
   <data name="BikeAlarm" xml:space="preserve">
     <value>eBike Alarm</value>
   </data>
+  <data name="BikeTuning" xml:space="preserve">
+    <value>Tuning detected</value>
+  </data>
+  <data name="BikeTuningDetectedTimes" xml:space="preserve">
+    <value>Yes, {0} times</value>
+  </data>
   <data name="BikeFlowPlus" xml:space="preserve">
     <value>Flow+ subscription</value>
   </data>
@@ -709,6 +736,9 @@
   </data>
   <data name="BikeCharging" xml:space="preserve">
     <value>Charging</value>
+  </data>
+  <data name="BikeFullIn" xml:space="preserve">
+    <value>Full in</value>
   </data>
   <data name="BikeChargerConnected" xml:space="preserve">
     <value>Charger connected</value>
@@ -838,6 +868,9 @@
   </data>
   <data name="RideCo2" xml:space="preserve">
     <value>CO₂</value>
+  </data>
+  <data name="RideAbsInterventions" xml:space="preserve">
+    <value>ABS interventions</value>
   </data>
   <data name="RideCo2Value" xml:space="preserve">
     <value>{0} g, {1} g by car</value>

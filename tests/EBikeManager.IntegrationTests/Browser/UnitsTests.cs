@@ -54,6 +54,7 @@ public sealed class UnitsTests : BrowserTest, IClassFixture<BrowserAppWithRides>
         await page.GotoAsync("/bikes");
         await Expect(page.GetByText("Distance per assistance mode")).ToBeVisibleAsync();
         await Expect(page.GetByText("17 mph", new() { Exact = true })).ToBeVisibleAsync();
+        await Expect(page.Locator(".em-mileage")).ToContainTextAsync("12.3 Wh/mi");
         await page.ScreenshotAsync(new() { Path = Path.Combine(ScreenshotFolder, "bike-imperial.png"), FullPage = true });
 
         await page.GotoAsync("/settings/display");
