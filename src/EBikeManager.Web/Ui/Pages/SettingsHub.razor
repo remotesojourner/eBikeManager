@@ -20,6 +20,9 @@
         <MudTabPanel Text="@GoogleHealthIntegration.Name" Icon="@Icons.Material.Rounded.MonitorHeart">
             <SettingsGoogleHealth />
         </MudTabPanel>
+        <MudTabPanel Text="@WebStrings.SettingsTabNotifications" Icon="@Icons.Material.Rounded.Notifications">
+            <SettingsNotifications />
+        </MudTabPanel>
         <MudTabPanel Text="@WebStrings.SettingsTabSchedule" Icon="@Icons.Material.Rounded.Schedule">
             <SettingsSchedule />
         </MudTabPanel>
@@ -36,7 +39,7 @@
 </MudBreakpointProvider>
 
 @code {
-    private static readonly string[] _sections = ["bosch", "bridge", "google-health", "schedule", "display", "security", "about"];
+    private static readonly string[] _sections = ["bosch", "bridge", "google-health", "notifications", "schedule", "display", "security", "about"];
 
     [Parameter] public string? Section { get; set; }
 

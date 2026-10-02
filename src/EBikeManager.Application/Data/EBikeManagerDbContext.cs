@@ -17,6 +17,7 @@ internal class EBikeManagerDbContext : DbContext
     public DbSet<BikeDocument> BikeDocuments => Set<BikeDocument>();
     public DbSet<Ride> Rides => Set<Ride>();
     public DbSet<RideExport> RideExports => Set<RideExport>();
+    public DbSet<NotificationChannel> NotificationChannels => Set<NotificationChannel>();
 
     protected override void ConfigureConventions(ModelConfigurationBuilder configurationBuilder)
     {
@@ -143,6 +144,18 @@ internal class EBikeManagerDbContext : DbContext
             entity.Property(e => e.LastAttemptAt).HasColumnName("lastAttemptAt");
             entity.Property(e => e.ExportedAt).HasColumnName("exportedAt");
             entity.HasOne<Ride>().WithMany().HasForeignKey(e => e.RideId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<NotificationChannel>(entity =>
+        {
+            entity.ToTable("notificationChannels");
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Id).HasColumnName("id");
+            entity.Property(e => e.Type).HasColumnName("type").IsRequired();
+            entity.Property(e => e.DisplayName).HasColumnName("displayName").IsRequired();
+            entity.Property(e => e.Data).HasColumnName("data").IsRequired();
+            entity.Property(e => e.LastActivity).HasColumnName("lastActivity");
+            entity.Property(e => e.ActivityFailed).HasColumnName("activityFailed");
         });
     }
 }

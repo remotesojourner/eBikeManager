@@ -408,7 +408,7 @@
     <value>Settings</value>
   </data>
   <data name="SettingsSubtitle" xml:space="preserve">
-    <value>Your Bosch connection, eBike bridge, Google Health, sync schedule, units, map and sign-in</value>
+    <value>Your Bosch connection, eBike bridge, Google Health, notifications, sync schedule, units, map and sign-in</value>
   </data>
   <data name="SettingsTabBosch" xml:space="preserve">
     <value>Bosch</value>
@@ -1417,5 +1417,233 @@
   </data>
   <data name="RidesDataFiles" xml:space="preserve">
     <value>Data files</value>
+  </data>
+  <data name="SettingsTabNotifications" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="NotificationsTitle" xml:space="preserve">
+    <value>Notifications</value>
+  </data>
+  <data name="NotificationsDescription" xml:space="preserve">
+    <value>Hear about new rides, and about anything that needs your attention, on the services you already use. Messages go out at the end of each sync.</value>
+  </data>
+  <data name="NotificationsEmpty" xml:space="preserve">
+    <value>No notifications yet. Add one to hear about new rides and problems on Discord, Telegram, ntfy and more.</value>
+  </data>
+  <data name="NotificationsLoadFailed" xml:space="preserve">
+    <value>Couldn't load your notifications.</value>
+  </data>
+  <data name="NotificationsName" xml:space="preserve">
+    <value>Name</value>
+  </data>
+  <data name="NotificationsSending" xml:space="preserve">
+    <value>Sending...</value>
+  </data>
+  <data name="NotificationsSendTest" xml:space="preserve">
+    <value>Send test</value>
+  </data>
+  <data name="NotificationsAdd" xml:space="preserve">
+    <value>Add notification</value>
+  </data>
+  <data name="NotificationsRequired" xml:space="preserve">
+    <value>Required</value>
+  </data>
+  <data name="NotificationsTooLong" xml:space="preserve">
+    <value>At most {0} characters</value>
+  </data>
+  <data name="NotificationsInvalidFormat" xml:space="preserve">
+    <value>Invalid format</value>
+  </data>
+  <data name="NotificationsSave" xml:space="preserve">
+    <value>Save</value>
+  </data>
+  <data name="NotificationsDelete" xml:space="preserve">
+    <value>Delete</value>
+  </data>
+  <data name="NotificationsSaved" xml:space="preserve">
+    <value>{0} saved</value>
+  </data>
+  <data name="NotificationsSaveFailed" xml:space="preserve">
+    <value>Could not save the notification. Check the highlighted fields.</value>
+  </data>
+  <data name="NotificationsTestSucceeded" xml:space="preserve">
+    <value>{0} test sent</value>
+  </data>
+  <data name="NotificationsTestFailed" xml:space="preserve">
+    <value>{0} test failed. {1}</value>
+  </data>
+  <data name="NotificationsSendTestFailed" xml:space="preserve">
+    <value>Could not send the test</value>
+  </data>
+  <data name="NotificationsDeleteTitle" xml:space="preserve">
+    <value>Delete notification</value>
+  </data>
+  <data name="NotificationsDeleteMessage" xml:space="preserve">
+    <value>Delete "{0}"? It will stop sending messages.</value>
+  </data>
+  <data name="NotificationsDeleteFailed" xml:space="preserve">
+    <value>Could not delete the notification</value>
+  </data>
+  <data name="NotificationsRemoved" xml:space="preserve">
+    <value>Notification removed</value>
+  </data>
+  <data name="NotificationsNotSaved" xml:space="preserve">
+    <value>Not saved yet</value>
+  </data>
+  <data name="NotificationsLastRunFailed" xml:space="preserve">
+    <value>Last message failed</value>
+  </data>
+  <data name="NotificationsLastRun" xml:space="preserve">
+    <value>Last message {0}</value>
+  </data>
+  <data name="NotificationsNeverRun" xml:space="preserve">
+    <value>Nothing sent yet</value>
+  </data>
+  <data name="NotificationsPlaceholders" xml:space="preserve">
+    <value>Messages can use %title%, %bike%, %date%, %distance%, %moving_time%, %average_speed%, %elevation%, %calories%, %rider_share%, %service% and %error%. Leave a message empty to use the default one.</value>
+  </data>
+  <data name="NotificationFieldUrl" xml:space="preserve">
+    <value>Server URL</value>
+  </data>
+  <data name="NotificationFieldToken" xml:space="preserve">
+    <value>Token</value>
+  </data>
+  <data name="NotificationFieldDisplayName" xml:space="preserve">
+    <value>Display name</value>
+  </data>
+  <data name="NotificationFieldSendRideSynced" xml:space="preserve">
+    <value>Send new rides</value>
+  </data>
+  <data name="NotificationFieldRideSyncedMessage" xml:space="preserve">
+    <value>New ride message</value>
+  </data>
+  <data name="NotificationFieldSendUploadFailed" xml:space="preserve">
+    <value>Send rides that fail to upload</value>
+  </data>
+  <data name="NotificationFieldUploadFailedMessage" xml:space="preserve">
+    <value>Failed upload message</value>
+  </data>
+  <data name="NotificationFieldSendSignInRequired" xml:space="preserve">
+    <value>Send when a sign-in is needed</value>
+  </data>
+  <data name="NotificationFieldSignInRequiredMessage" xml:space="preserve">
+    <value>Sign-in needed message</value>
+  </data>
+  <data name="NotificationFieldSendSyncFailed" xml:space="preserve">
+    <value>Send when syncing fails</value>
+  </data>
+  <data name="NotificationFieldSyncFailedMessage" xml:space="preserve">
+    <value>Sync failed message</value>
+  </data>
+  <data name="NotificationFieldSendSyncRestored" xml:space="preserve">
+    <value>Send when syncing works again</value>
+  </data>
+  <data name="NotificationFieldSyncRestoredMessage" xml:space="preserve">
+    <value>Sync working again message</value>
+  </data>
+  <data name="NotificationFieldPriority" xml:space="preserve">
+    <value>Priority</value>
+  </data>
+  <data name="NotificationFieldTags" xml:space="preserve">
+    <value>Tags</value>
+  </data>
+  <data name="NotificationFieldTitle" xml:space="preserve">
+    <value>Notification title</value>
+  </data>
+  <data name="NotificationFieldInterval" xml:space="preserve">
+    <value>Interval (minutes)</value>
+  </data>
+  <data name="NotificationFieldWebhookUrl" xml:space="preserve">
+    <value>Webhook URL</value>
+  </data>
+  <data name="NotificationFieldAppToken" xml:space="preserve">
+    <value>App token</value>
+  </data>
+  <data name="NotificationTelegramToken" xml:space="preserve">
+    <value>Bot token</value>
+  </data>
+  <data name="NotificationTelegramChatId" xml:space="preserve">
+    <value>Chat ID</value>
+  </data>
+  <data name="NotificationPushoverUserKey" xml:space="preserve">
+    <value>User key</value>
+  </data>
+  <data name="NotificationAppriseUrl" xml:space="preserve">
+    <value>Apprise API URL</value>
+  </data>
+  <data name="NotificationAppriseUrls" xml:space="preserve">
+    <value>Apprise URLs</value>
+  </data>
+  <data name="NotificationAppriseKey" xml:space="preserve">
+    <value>Config key (instead of URLs)</value>
+  </data>
+  <data name="NotificationNtfyTopic" xml:space="preserve">
+    <value>Topic</value>
+  </data>
+  <data name="NotificationNtfyToken" xml:space="preserve">
+    <value>Access token</value>
+  </data>
+  <data name="NotificationNtfyPriority" xml:space="preserve">
+    <value>Default priority (1-5)</value>
+  </data>
+  <data name="NotificationNtfyErrorPriority" xml:space="preserve">
+    <value>Problem priority (1-5)</value>
+  </data>
+  <data name="NotificationWebhookSendRideSynced" xml:space="preserve">
+    <value>Send new rides</value>
+  </data>
+  <data name="NotificationWebhookSendUploadFailed" xml:space="preserve">
+    <value>Send failed uploads</value>
+  </data>
+  <data name="NotificationWebhookSendSignInRequired" xml:space="preserve">
+    <value>Send sign-ins needed</value>
+  </data>
+  <data name="NotificationWebhookSendSyncFailed" xml:space="preserve">
+    <value>Send failed syncs</value>
+  </data>
+  <data name="NotificationWebhookSendSyncRestored" xml:space="preserve">
+    <value>Send syncs working again</value>
+  </data>
+  <data name="NotificationWebhookSendAlive" xml:space="preserve">
+    <value>Send keep-alive messages</value>
+  </data>
+  <data name="NotificationWebhookInterval" xml:space="preserve">
+    <value>Keep-alive interval (minutes)</value>
+  </data>
+  <data name="NotificationExampleRideSyncedMessage" xml:space="preserve">
+    <value>%title%: %distance% in %moving_time%, %calories%</value>
+  </data>
+  <data name="NotificationExampleUploadFailedMessage" xml:space="preserve">
+    <value>%title% didn't upload to %service%: %error%</value>
+  </data>
+  <data name="NotificationExampleSignInRequiredMessage" xml:space="preserve">
+    <value>Sign in to %service% again</value>
+  </data>
+  <data name="NotificationExampleSyncFailedMessage" xml:space="preserve">
+    <value>[%year%-%month%-%day% %hour%:%minute%] Sync failed: %error%</value>
+  </data>
+  <data name="NotificationExampleSyncRestoredMessage" xml:space="preserve">
+    <value>Syncing works again</value>
+  </data>
+  <data name="NotificationExampleAppriseTags" xml:space="preserve">
+    <value>Optional, e.g. admin, devops or all</value>
+  </data>
+  <data name="NotificationExampleNtfyToken" xml:space="preserve">
+    <value>Optional, for protected servers</value>
+  </data>
+  <data name="NotificationExampleAppToken" xml:space="preserve">
+    <value>App Token</value>
+  </data>
+  <data name="NotificationExampleApiToken" xml:space="preserve">
+    <value>API Token</value>
+  </data>
+  <data name="NotificationExampleUserKey" xml:space="preserve">
+    <value>User Key</value>
+  </data>
+  <data name="NotificationExampleBotToken" xml:space="preserve">
+    <value>Bot Token</value>
+  </data>
+  <data name="NotificationExampleChatId" xml:space="preserve">
+    <value>Chat ID</value>
   </data>
 </root>

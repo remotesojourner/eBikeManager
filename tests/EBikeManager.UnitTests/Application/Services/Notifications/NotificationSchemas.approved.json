@@ -1,0 +1,763 @@
+{
+  "discord": {
+    "name": "discord",
+    "title": "Discord",
+    "description": "Send new rides and alerts to a Discord channel through a webhook",
+    "fields": [
+      {
+        "name": "url",
+        "type": "text",
+        "regex": "https://.*discord\\.com/api/webhooks/\\d\u002B/.\u002B",
+        "required": true,
+        "placeholder": "Webhook URL",
+        "default": null
+      },
+      {
+        "name": "display_name",
+        "type": "text",
+        "regex": null,
+        "required": false,
+        "placeholder": "eBike Manager",
+        "default": null
+      },
+      {
+        "name": "send_ride_synced",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "ride_synced_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_upload_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "upload_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sign_in_required",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sign_in_required_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_restored",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_restored_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      }
+    ]
+  },
+  "telegram": {
+    "name": "telegram",
+    "title": "Telegram",
+    "description": "Send new rides and alerts through a Telegram bot",
+    "fields": [
+      {
+        "name": "token",
+        "type": "text",
+        "regex": "(\\d\u002B):[a-zA-Z0-9_-]\u002B",
+        "required": true,
+        "placeholder": "Bot Token",
+        "default": null
+      },
+      {
+        "name": "chat_id",
+        "type": "text",
+        "regex": "-?\\d\u002B",
+        "required": true,
+        "placeholder": "Chat ID",
+        "default": null
+      },
+      {
+        "name": "send_ride_synced",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "ride_synced_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_upload_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "upload_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sign_in_required",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sign_in_required_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_restored",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_restored_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      }
+    ]
+  },
+  "gotify": {
+    "name": "gotify",
+    "title": "Gotify",
+    "description": "Send new rides and alerts to a Gotify server",
+    "fields": [
+      {
+        "name": "url",
+        "type": "text",
+        "regex": "https?://.\u002B",
+        "required": true,
+        "placeholder": "https://gotify.example.com",
+        "default": null
+      },
+      {
+        "name": "key",
+        "type": "text",
+        "regex": "^.{15}$",
+        "required": true,
+        "placeholder": "App Token",
+        "default": null
+      },
+      {
+        "name": "priority",
+        "type": "text",
+        "regex": "^[0-9]$",
+        "required": true,
+        "placeholder": null,
+        "default": "5"
+      },
+      {
+        "name": "send_ride_synced",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "ride_synced_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_upload_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "upload_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sign_in_required",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sign_in_required_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_restored",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_restored_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      }
+    ]
+  },
+  "ntfy": {
+    "name": "ntfy",
+    "title": "ntfy",
+    "description": "Send push notifications through ntfy.sh or your own ntfy server",
+    "fields": [
+      {
+        "name": "url",
+        "type": "text",
+        "regex": "^https?://.\u002B",
+        "required": true,
+        "placeholder": null,
+        "default": "https://ntfy.sh"
+      },
+      {
+        "name": "topic",
+        "type": "text",
+        "regex": "^[A-Za-z0-9_\\-]{1,64}$",
+        "required": true,
+        "placeholder": "ebike-manager",
+        "default": null
+      },
+      {
+        "name": "token",
+        "type": "text",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "title",
+        "type": "text",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": "eBike Manager"
+      },
+      {
+        "name": "tags",
+        "type": "text",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "priority",
+        "type": "text",
+        "regex": "^[1-5]$",
+        "required": false,
+        "placeholder": null,
+        "default": "3"
+      },
+      {
+        "name": "error_priority",
+        "type": "text",
+        "regex": "^[1-5]$",
+        "required": false,
+        "placeholder": null,
+        "default": "5"
+      },
+      {
+        "name": "send_ride_synced",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "ride_synced_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_upload_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "upload_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sign_in_required",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sign_in_required_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_restored",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_restored_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      }
+    ]
+  },
+  "pushover": {
+    "name": "pushover",
+    "title": "Pushover",
+    "description": "Send push notifications through the Pushover API",
+    "fields": [
+      {
+        "name": "token",
+        "type": "text",
+        "regex": "^[a-z0-9]{30}$",
+        "required": true,
+        "placeholder": "API Token",
+        "default": null
+      },
+      {
+        "name": "user_key",
+        "type": "text",
+        "regex": "^[a-z0-9]{30}$",
+        "required": true,
+        "placeholder": "User Key",
+        "default": null
+      },
+      {
+        "name": "send_ride_synced",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "ride_synced_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_upload_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "upload_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sign_in_required",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sign_in_required_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_restored",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_restored_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      }
+    ]
+  },
+  "apprise": {
+    "name": "apprise",
+    "title": "Apprise",
+    "description": "Send alerts to any service Apprise supports, through an Apprise API server",
+    "fields": [
+      {
+        "name": "url",
+        "type": "text",
+        "regex": "^https?://.\u002B",
+        "required": true,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "urls",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "key",
+        "type": "text",
+        "regex": "^[\\w-]{1,128}$",
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "tags",
+        "type": "text",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "title",
+        "type": "text",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_ride_synced",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "ride_synced_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_upload_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "upload_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sign_in_required",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sign_in_required_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_failed_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      },
+      {
+        "name": "send_sync_restored",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "sync_restored_message",
+        "type": "textarea",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": null
+      }
+    ]
+  },
+  "webhook": {
+    "name": "webhook",
+    "title": "Webhook",
+    "description": "Post every event as JSON, for Home Assistant, Node-RED, n8n or your own scripts",
+    "fields": [
+      {
+        "name": "url",
+        "type": "text",
+        "regex": "https?://.\u002B",
+        "required": true,
+        "placeholder": "https://example.com/webhook",
+        "default": null
+      },
+      {
+        "name": "send_ride_synced",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "send_upload_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "send_sign_in_required",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "send_sync_failed",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "send_sync_restored",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": true
+      },
+      {
+        "name": "send_alive",
+        "type": "boolean",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": false
+      },
+      {
+        "name": "interval",
+        "type": "number",
+        "regex": null,
+        "required": false,
+        "placeholder": null,
+        "default": 1
+      }
+    ]
+  }
+}

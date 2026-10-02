@@ -25,6 +25,7 @@ public static class ApplicationInstaller
         services.AddSingleton<BoschConnectionService>();
         services.AddSingleton<GoogleHealthConnectionService>();
         services.AddSingleton<FitArchiveService>();
+        services.AddSingleton<NotificationStateService>();
 
         services.AddScoped<SettingsService>();
         services.AddScoped<SignInService>();
@@ -41,6 +42,8 @@ public static class ApplicationInstaller
         services.AddScoped<IntegrationSyncService>();
         services.AddScoped<IRideIntegration, GoogleHealthIntegration>();
         services.AddScoped<VersionService>();
+        services.AddScoped<NotificationService>();
+        services.AddNotifications();
 
         services.AddDbContext<EBikeManagerDbContext>((provider, options) =>
         {
@@ -55,6 +58,7 @@ public static class ApplicationInstaller
         services.AddScoped<IBikeDocumentRepository, BikeDocumentRepository>();
         services.AddScoped<IRideRepository, RideRepository>();
         services.AddScoped<IRideExportRepository, RideExportRepository>();
+        services.AddScoped<INotificationChannelRepository, NotificationChannelRepository>();
 
         services.TryAddSingleton(TimeProvider.System);
 
@@ -105,6 +109,7 @@ public static class ApplicationInstaller
 
         services.AddHostedService<SyncSchedulerService>();
         services.AddHostedService<BridgeListenerService>();
+        services.AddHostedService<NotificationTickerService>();
         return services;
     }
 

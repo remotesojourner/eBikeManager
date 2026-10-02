@@ -13,7 +13,11 @@ internal sealed class RecordingHandler(Func<RecordedRequest, HttpResponseMessage
     protected override async Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
         var body = request.Content == null ? "" : await request.Content.ReadAsStringAsync(cancellationToken);
-        var recorded = new RecordedRequest(request.Method, request.RequestUri, body);
+        var headers = request.Headers.Concat(request.Content?.Headers.AsEnumerable() ?? [])
+            .Select(header => $"{header.Key}: {string.Join(", ", header.Value)}")
+            .Order(StringComparer.Ordinal)
+            .ToList();
+        var recorded = new RecordedRequest(request.Method, request.RequestUri, body) { Headers = headers };
         Requests.Add(recorded);
         return respond(recorded);
     }

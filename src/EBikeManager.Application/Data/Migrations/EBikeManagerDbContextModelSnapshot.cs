@@ -170,6 +170,40 @@ namespace EBikeManager.Application.Data.Migrations
                     b.ToTable("config", (string)null);
                 });
 
+            modelBuilder.Entity("EBikeManager.Application.Models.Entities.NotificationChannel", b =>
+                {
+                    b.Property<string>("Id")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("id");
+
+                    b.Property<bool>("ActivityFailed")
+                        .HasColumnType("INTEGER")
+                        .HasColumnName("activityFailed");
+
+                    b.Property<string>("Data")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("data");
+
+                    b.Property<string>("DisplayName")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("displayName");
+
+                    b.Property<DateTime?>("LastActivity")
+                        .HasColumnType("TEXT")
+                        .HasColumnName("lastActivity");
+
+                    b.Property<string>("Type")
+                        .IsRequired()
+                        .HasColumnType("TEXT")
+                        .HasColumnName("type");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("notificationChannels", (string)null);
+                });
+
             modelBuilder.Entity("EBikeManager.Application.Models.Entities.Ride", b =>
                 {
                     b.Property<string>("Id")

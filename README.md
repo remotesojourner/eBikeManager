@@ -27,9 +27,10 @@ A self-hosted Blazor Server app for Bosch eBike Flow riders. It keeps a copy of 
 - **Miles or kilometres** — distances, speeds and heights in kilometres, km/h and metres, or in miles, mph and feet
 - **Bikes** — each bike's picture, frame number and where to find it, mileage with the distance, energy and Wh per km in each assistance mode, motor hours, whether Bosch detected tuning, battery (capacity, charge cycles, energy delivered), range in each assistance mode, every component with its software version and serial number, and the photos and invoices from your eBike Pass. With a ConnectModule it adds the live battery state, how long until it's full while charging, and the last known location
 - **Google Health integration** — uploads each ride as an electric bike workout with Bosch's calories, which count only your own effort, not the motor's. It lists every upload with its result. A ride your watch also recorded isn't uploaded, because Google Health only shows the watch's version (see the [FAQ](#what-happens-when-my-watch-recorded-the-same-ride)). Any ride can also be uploaded on its own from the Rides list or its ride page, even one from before your start date
-- **Local by design** — every page is built from what's stored on your server. eBike Manager contacts Bosch only while syncing, and serves its own copy of your bike's picture, eBike Pass documents, fonts and map code. The one exception is the map itself, which your browser loads from the map server you choose; with your own map server, nothing leaves your network
+- **Local by design** — every page is built from what's stored on your server. eBike Manager contacts Bosch only while syncing, and serves its own copy of your bike's picture, eBike Pass documents, fonts and map code. The one exception is the map itself, which your browser loads from the map server you choose; with your own map server, nothing leaves your network. Notifications go only to the services you add
 - **Sign-in** — optional sign-in with your own OpenID Connect provider, such as Authentik, Authelia, Keycloak or Pocket ID. When it's on, nothing is shown until you've signed in
 - **eBike bridge** — reads the live battery level and bike values from [Xunil99's Bosch eBike LDI bridge](https://xunil99.github.io/ha-bosch-ebike/), an ESP32 board you flash from that page, over ESPHome's own API, encrypted or not, with no Home Assistant needed. It keeps the battery level and the odometer, and shows speed, cadence, power, charging, lock and light while the bike is connected. A dual bridge feeds two bikes
+- **Notifications** — a message on Discord, Telegram, Gotify, ntfy, Pushover, any service Apprise supports, or your own webhook when a new ride syncs, a ride fails to upload, Bosch or Google Health needs you to sign in again, or syncing fails and works again. Every message can be turned off or reworded
 - **Statistics API** — `GET /api/statistics` returns your number of bikes, rides, total distance, moving time, elevation gain and calories as JSON, for Home Assistant or your own scripts. With sign-in on, it takes an API token from the Security tab
 - **Docker-ready** — one container, one data folder, and a `/healthz` endpoint for Docker's health check
 
@@ -199,6 +200,35 @@ eBike Manager keeps only the battery level and the odometer, each with the time 
 | **Sign in again / Disconnect** | Renew the Google sign-in, or disconnect. Disconnecting tells Google to forget eBike Manager's access; rides already uploaded stay in Google Health |
 
 Each ride becomes an **Electric bike** workout with its start and end, moving time, distance, climb, average speed and Bosch's calories. Failed uploads are tried again on the next sync.
+
+### Tab: Notifications
+
+**Add notification** offers Discord, Telegram, Gotify, ntfy, Pushover, Apprise and a webhook. Each has its own fields (a webhook URL, a bot token, a topic and so on), a switch for every kind of message, and a text for each message that you can rewrite with placeholders such as `%title%`, `%distance%`, `%moving_time%`, `%calories%`, `%service%` and `%error%`. Distances and speeds follow your units. **Send test** sends a new-ride message for your latest ride, without saving anything.
+
+| Message | When it's sent |
+|---|---|
+| **New ride** | A sync finds a ride that has finished since the last one. The first sync, which backs up your whole history, sends none |
+| **Ride failed to upload** | A ride fails to upload to Google Health for the first time. It's tried again on the next sync without another message |
+| **Sign-in needed** | Bosch or Google Health has ended eBike Manager's sign-in. Sent once, until you sign in again |
+| **Sync failed / works again** | Syncing stops working, and when it works again. An outage that lasts several syncs sends one message each way |
+
+Messages go out at the end of each sync. The **webhook** posts JSON such as `{"event": "RIDE_SYNCED", "data": {"title": "…", "distanceMeters": 20000, …}}` (always metric), and can also send a keep-alive every few minutes. To get a phone notification through Home Assistant, add an automation with a **Webhook** trigger and use its URL here:
+
+```yaml
+triggers:
+  - trigger: webhook
+    webhook_id: ebike-manager
+    allowed_methods: [POST]
+    local_only: true
+conditions:
+  - condition: template
+    value_template: "{{ trigger.json.event == 'RIDE_SYNCED' }}"
+actions:
+  - action: notify.mobile_app_your_phone
+    data:
+      title: "New ride: {{ trigger.json.data.title }}"
+      message: "{{ (trigger.json.data.distanceMeters / 1000) | round(1) }} km, {{ trigger.json.data.caloriesKcal | int }} kcal"
+```
 
 ### Tab: Schedule
 

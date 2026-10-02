@@ -18,6 +18,7 @@ public sealed partial class BoschAccountService
     private readonly IBoschApiService _bosch;
     private readonly SettingsService _settings;
     private readonly ICurrentAccessService _access;
+    private readonly NotificationStateService _notifications;
     private readonly ILogger<BoschAccountService> _logger;
 
     public BoschAccountService(
@@ -27,6 +28,7 @@ public sealed partial class BoschAccountService
         IBoschApiService bosch,
         SettingsService settings,
         ICurrentAccessService access,
+        NotificationStateService notifications,
         ILogger<BoschAccountService> logger)
     {
         _logins = logins;
@@ -35,6 +37,7 @@ public sealed partial class BoschAccountService
         _bosch = bosch;
         _settings = settings;
         _access = access;
+        _notifications = notifications;
         _logger = logger;
     }
 
@@ -70,6 +73,7 @@ public sealed partial class BoschAccountService
         }
 
         await _connection.SaveLoginAsync(tokens, cancellationToken);
+        _notifications.SignedIn(SyncRunService.BoschService);
         await _settings.SaveAsync(new Dictionary<string, string> { [SettingDefinitions.BoschAccount] = tokens.AccountName ?? SettingDefinitions.Unset }, cancellationToken);
         LogConnected(tokens.AccountName ?? "(unknown)");
         return OperationResult.Ok();

@@ -15,6 +15,7 @@ public sealed class PageLayoutTests : BrowserTest, IClassFixture<BrowserAppWithR
         ("/settings/bosch", "bosch", "Bosch eBike Flow account"),
         ("/settings/bridge", "bridge", "eBike bridge"),
         ("/settings/google-health", "google-health", "Create your own Google sign-in"),
+        ("/settings/notifications", "notifications", "Add notification"),
         ("/settings/schedule", "schedule", "Sync schedule"),
         ("/settings/display", "display", "Miles, mph and feet"),
         ("/settings/security", "security", "Require sign-in"),

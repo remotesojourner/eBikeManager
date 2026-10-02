@@ -120,7 +120,9 @@ public sealed class IntegrationSyncServiceTests
 
         var result = await RunAsync(app, cancellationToken);
 
-        Assert.Equal(IntegrationRunResult.Nothing, result with { Problems = [] });
+        Assert.Equal(0, result.Uploaded);
+        Assert.Empty(result.FailedUploads ?? []);
+        Assert.Empty(result.SignInsRequired ?? []);
         Assert.Empty(app.Google.Uploads);
     }
 

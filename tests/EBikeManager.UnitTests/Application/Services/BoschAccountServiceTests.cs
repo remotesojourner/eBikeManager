@@ -32,6 +32,7 @@ public sealed class BoschAccountServiceTests : IDisposable
             .AddSingleton<PkceLoginService>()
             .AddSingleton<IBoschAuthService, FakeBoschAuth>()
             .AddSingleton<BoschConnectionService>()
+            .AddSingleton<NotificationStateService>()
             .AddSingleton<IBoschApiService>(new FakeBoschApi())
             .AddSingleton<ISecretProtectionService, PlainSecretProtection>()
             .AddSingleton<ICurrentAccessService>(FixedAccess.Full)
@@ -99,6 +100,7 @@ public sealed class BoschAccountServiceTests : IDisposable
             new FakeBoschApi(),
             _services.CreateScope().ServiceProvider.GetRequiredService<SettingsService>(),
             FixedAccess.None,
+            new NotificationStateService(),
             NullLogger<BoschAccountService>.Instance);
 
         Assert.Equal(OperationOutcome.Denied, service.StartLogin().Outcome);

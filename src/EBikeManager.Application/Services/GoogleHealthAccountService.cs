@@ -22,6 +22,7 @@ public sealed partial class GoogleHealthAccountService
     private readonly IRideExportRepository _exports;
     private readonly IntegrationSyncService _integrations;
     private readonly ICurrentAccessService _access;
+    private readonly NotificationStateService _notifications;
     private readonly ILogger<GoogleHealthAccountService> _logger;
 
     public GoogleHealthAccountService(
@@ -32,6 +33,7 @@ public sealed partial class GoogleHealthAccountService
         IRideExportRepository exports,
         IntegrationSyncService integrations,
         ICurrentAccessService access,
+        NotificationStateService notifications,
         ILogger<GoogleHealthAccountService> logger)
     {
         _logins = logins;
@@ -41,6 +43,7 @@ public sealed partial class GoogleHealthAccountService
         _exports = exports;
         _integrations = integrations;
         _access = access;
+        _notifications = notifications;
         _logger = logger;
     }
 
@@ -153,6 +156,7 @@ public sealed partial class GoogleHealthAccountService
         }
 
         await _connection.SaveLoginAsync(tokens, cancellationToken);
+        _notifications.SignedIn(GoogleHealthIntegration.Name);
         LogConnected(tokens.AccountName ?? "(unknown)");
         return await _settings.SaveAsync(new Dictionary<string, string>
         {

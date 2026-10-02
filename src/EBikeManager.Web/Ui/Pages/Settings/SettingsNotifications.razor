@@ -1,0 +1,352 @@
+@using System.Data.Common
+@using System.Globalization
+@using System.Text.Json
+@inject NotificationService Notifications
+@inject IDialogService DialogService
+@inject ISnackbar Snackbar
+
+<SurfaceCard Icon="@Icons.Material.Rounded.Notifications" Title="@WebStrings.NotificationsTitle" FullHeight="false"
+             Description="@WebStrings.NotificationsDescription">
+    <StateView Loading="_loading" Compact="true" Empty="@(_channels.Count == 0)" EmptyMessage="@WebStrings.NotificationsEmpty"
+               ErrorMessage="@(_loadFailed ? WebStrings.NotificationsLoadFailed : null)" OnRetry="LoadAsync">
+        <MudExpansionPanels Elevation="0" MultiExpansion="true" Class="em-card rounded-lg">
+            @foreach (var channel in _channels)
+            {
+                <MudExpansionPanel @key="channel.Key" Expanded="channel.Expanded" ExpandedChanged="@(expanded => channel.Expanded = expanded)">
+                    <TitleContent>
+                        <div class="d-flex align-center gap-3">
+                            <img src="@NotificationIcons.For(channel.Type)" alt="" class="em-notification-icon" />
+                            <div>
+                                <MudText Typo="Typo.body2" Class="font-weight-bold">@DisplayTitle(channel)</MudText>
+                                <MudText Typo="Typo.caption" Class="@(channel.ActivityFailed ? "mud-error-text" : "em-muted")">
+                                    @channel.Schema.Title ·
+                                    @if (HasRun(channel))
+                                    {
+                                        <MudIcon Icon="@StatusIcon(channel)" Color="@StatusColor(channel)" Class="em-notification-status" />
+                                    }
+                                    @StatusText(channel)
+                                </MudText>
+                            </div>
+                        </div>
+                    </TitleContent>
+                    <ChildContent>
+                        <MudGrid Spacing="3" Class="mb-3">
+                            <MudItem xs="12" sm="6">
+                                <MudTextField T="string" Value="@channel.DisplayName" ValueChanged="@(value => channel.DisplayName = value ?? "")"
+                                              Label="@WebStrings.NotificationsName" Placeholder="@channel.Schema.Title"
+                                              Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true" />
+                            </MudItem>
+                            @foreach (var field in channel.Schema.Fields)
+                            {
+                                <MudItem xs="12" sm="@(field.Type == "textarea" ? 12 : 6)">
+                                    @switch (field.Type)
+                                    {
+                                        case "boolean":
+                                            <MudSwitch T="bool" Value="@channel.GetBool(field.Name)" ValueChanged="@(value => channel.Values[field.Name] = value)"
+                                                       Label="@NotificationText.Label(channel.Type, field.Name)" Color="Color.Primary" />
+                                            break;
+                                        case "number":
+                                            <MudNumericField T="int?" Value="@channel.GetInt(field.Name)" ValueChanged="@(value => channel.Values[field.Name] = value)"
+                                                             Label="@NotificationText.Label(channel.Type, field.Name)"
+                                                             Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                                                             Validation="@(new Func<int?, string?>(value => ValidateNumber(field, value)))" />
+                                            break;
+                                        default:
+                                            <MudTextField T="string" Value="@channel.GetString(field.Name)" ValueChanged="@(value => channel.Values[field.Name] = value ?? "")"
+                                                          Label="@NotificationText.Label(channel.Type, field.Name)"
+                                                          Placeholder="@NotificationText.Placeholder(channel.Type, field.Name, field.Placeholder)"
+                                                          Lines="@(field.Type == "textarea" ? 3 : 1)" Required="field.Required"
+                                                          Variant="Variant.Outlined" Margin="Margin.Dense" Immediate="true"
+                                                          Validation="@(new Func<string, string?>(value => ValidateText(field, value)))" />
+                                            break;
+                                    }
+                                </MudItem>
+                            }
+                        </MudGrid>
+                        @if (channel.Schema.Fields.Any(field => field.Type == "textarea"))
+                        {
+                            <MudText Typo="Typo.caption" Class="em-muted d-block mb-3">@WebStrings.NotificationsPlaceholders</MudText>
+                        }
+                        <div class="d-flex flex-wrap gap-2">
+                            <MudButton Variant="Variant.Filled" Color="Color.Primary" Size="Size.Small" Disabled="@(!CanSave(channel))"
+                                       OnClick="@(() => SaveAsync(channel))">
+                                @(channel.Saving ? WebStrings.Saving : WebStrings.NotificationsSave)
+                            </MudButton>
+                            <MudButton Variant="Variant.Outlined" Color="Color.Primary" Size="Size.Small" StartIcon="@Icons.Material.Rounded.Send"
+                                       Disabled="@(!CanSendTest(channel))" OnClick="@(() => SendTestAsync(channel))">
+                                @(channel.Testing ? WebStrings.NotificationsSending : WebStrings.NotificationsSendTest)
+                            </MudButton>
+                            <MudButton Variant="Variant.Text" Color="Color.Error" Size="Size.Small" StartIcon="@Icons.Material.Rounded.Delete"
+                                       OnClick="@(() => DeleteAsync(channel))">
+                                @WebStrings.NotificationsDelete
+                            </MudButton>
+                        </div>
+                    </ChildContent>
+                </MudExpansionPanel>
+            }
+        </MudExpansionPanels>
+    </StateView>
+
+    <MudMenu Label="@WebStrings.NotificationsAdd" StartIcon="@Icons.Material.Rounded.Add" Variant="Variant.Outlined" Color="Color.Primary"
+             Class="mt-4" Disabled="@(_loading || _loadFailed)">
+        @foreach (var schema in _schemas)
+        {
+            <MudMenuItem OnClick="@(() => Add(schema.Key, schema.Value))">
+                <div class="d-flex align-center gap-3">
+                    <img src="@NotificationIcons.For(schema.Key)" alt="" class="em-notification-icon em-notification-icon-small" />
+                    @schema.Value.Title
+                </div>
+            </MudMenuItem>
+        }
+    </MudMenu>
+</SurfaceCard>
+
+@code {
+    private sealed class ChannelForm
+    {
+        public required string Key { get; init; }
+        public required string Type { get; init; }
+        public required NotificationTypeSchemaDto Schema { get; init; }
+        public string Id { get; set; } = "";
+        public string DisplayName { get; set; } = "";
+        public Dictionary<string, object?> Values { get; } = new();
+        public DateTime? LastActivity { get; init; }
+        public bool ActivityFailed { get; init; }
+        public bool Expanded { get; set; }
+        public bool Saving { get; set; }
+        public bool Testing { get; set; }
+        public string SavedSnapshot { get; set; } = "";
+
+        public string Snapshot => JsonSerializer.Serialize(new { DisplayName, Values });
+        public bool Dirty => Snapshot != SavedSnapshot;
+
+        public bool GetBool(string name) => Values.TryGetValue(name, out var value) && value is true;
+        public int? GetInt(string name) => Values.TryGetValue(name, out var value) && value is int number ? number : null;
+        public string GetString(string name) => Values.TryGetValue(name, out var value) ? value as string ?? "" : "";
+    }
+
+    private bool _loading = true;
+    private bool _loadFailed;
+    private Dictionary<string, NotificationTypeSchemaDto> _schemas = [];
+    private List<ChannelForm> _channels = [];
+
+    protected override Task OnInitializedAsync() => LoadAsync();
+
+    private async Task LoadAsync()
+    {
+        _loading = true;
+        _schemas = Notifications.Schemas.ToDictionary(pair => pair.Key, pair => pair.Value);
+        IReadOnlyList<NotificationChannelDto> saved = [];
+        try
+        {
+            saved = await Notifications.GetChannelsAsync();
+            _loadFailed = false;
+        }
+        catch (Exception ex) when (ex is DbException or InvalidOperationException)
+        {
+            _loadFailed = true;
+        }
+
+        _channels = [.. saved
+            .Where(channel => _schemas.ContainsKey(channel.Type))
+            .Select(channel => CreateForm(channel.Type, _schemas[channel.Type], channel.Id, channel.DisplayName, channel.Data, channel.LastActivity, channel.ActivityFailed, isNew: false))];
+        _loading = false;
+    }
+
+    private void Add(string type, NotificationTypeSchemaDto schema) =>
+        _channels.Add(CreateForm(type, schema, "", schema.Title, new Dictionary<string, object?>(), null, false, isNew: true));
+
+    private static ChannelForm CreateForm(string type, NotificationTypeSchemaDto schema, string id, string displayName,
+        IReadOnlyDictionary<string, object?> data, DateTime? lastActivity, bool activityFailed, bool isNew)
+    {
+        var form = new ChannelForm
+        {
+            Key = Guid.NewGuid().ToString("N"),
+            Type = type,
+            Schema = schema,
+            Id = id,
+            DisplayName = displayName,
+            LastActivity = lastActivity,
+            ActivityFailed = activityFailed,
+            Expanded = isNew
+        };
+
+        foreach (var field in schema.Fields)
+        {
+            form.Values[field.Name] = Normalize(field.Type, data.TryGetValue(field.Name, out var stored) ? stored : field.Default);
+        }
+
+        form.SavedSnapshot = isNew ? "" : form.Snapshot;
+        return form;
+    }
+
+    private static object? Normalize(string type, object? raw)
+    {
+        if (raw is JsonElement element)
+        {
+            raw = element.ValueKind switch
+            {
+                JsonValueKind.True => true,
+                JsonValueKind.False => false,
+                JsonValueKind.Number => element.TryGetInt32(out var whole) ? whole : element.GetDouble(),
+                JsonValueKind.String => element.GetString(),
+                _ => null
+            };
+        }
+
+        return type switch
+        {
+            "boolean" => raw switch
+            {
+                bool flag => flag,
+                string text => string.Equals(text, "true", StringComparison.OrdinalIgnoreCase),
+                _ => false
+            },
+            "number" => raw switch
+            {
+                int whole => whole,
+                long wide => (int)wide,
+                double fraction => (int)fraction,
+                string text when int.TryParse(text, NumberStyles.Integer, CultureInfo.InvariantCulture, out var parsed) => parsed,
+                _ => null
+            },
+            _ => raw switch
+            {
+                null => "",
+                string text => text,
+                _ => Convert.ToString(raw, CultureInfo.InvariantCulture) ?? ""
+            }
+        };
+    }
+
+    private static string? ValidationError(NotificationFieldSchemaDto field, ChannelForm channel) => field.Type switch
+    {
+        "boolean" => null,
+        "number" => ValidateNumber(field, channel.GetInt(field.Name)),
+        _ => ValidateText(field, channel.GetString(field.Name))
+    };
+
+    private static string? ValidateNumber(NotificationFieldSchemaDto field, int? value) =>
+        field.Required && value == null ? WebStrings.NotificationsRequired : null;
+
+    private static string? ValidateText(NotificationFieldSchemaDto field, string? value)
+    {
+        if (string.IsNullOrEmpty(value)) return field.Required ? WebStrings.NotificationsRequired : null;
+
+        var maxLength = field.Type == "textarea" ? NotificationSettingsRules.MaxTextareaLength : NotificationSettingsRules.MaxTextLength;
+        if (value.Length > maxLength) return WebStrings.Format(WebStrings.NotificationsTooLong, maxLength);
+
+        return NotificationSettingsRules.MatchesPattern(field.Regex, value) ? null : WebStrings.NotificationsInvalidFormat;
+    }
+
+    private static bool IsValid(ChannelForm channel) => channel.Schema.Fields.All(field => ValidationError(field, channel) == null);
+
+    private static bool CanSave(ChannelForm channel) => !channel.Saving && channel.Dirty && IsValid(channel);
+
+    private static bool CanSendTest(ChannelForm channel) => !channel.Testing && IsValid(channel);
+
+    private static Dictionary<string, JsonElement> SettingsJson(ChannelForm channel)
+    {
+        var settings = new Dictionary<string, JsonElement>();
+        foreach (var field in channel.Schema.Fields)
+        {
+            var value = channel.Values.GetValueOrDefault(field.Name);
+            if (field.Type == "number" && value == null) continue;
+            settings[field.Name] = JsonSerializer.SerializeToElement(value);
+        }
+
+        return settings;
+    }
+
+    private async Task SaveAsync(ChannelForm channel)
+    {
+        channel.Saving = true;
+
+        var settings = SettingsJson(channel);
+        (bool Succeeded, string? Message) outcome;
+        if (string.IsNullOrEmpty(channel.Id))
+        {
+            var created = await Notifications.CreateAsync(channel.Type, DisplayTitle(channel), settings);
+            if (created.Value is { } id) channel.Id = id;
+            outcome = (created.Succeeded, created.Message);
+        }
+        else
+        {
+            var updated = await Notifications.UpdateAsync(channel.Id, DisplayTitle(channel), settings);
+            outcome = (updated.Succeeded, updated.Message);
+        }
+
+        channel.Saving = false;
+        if (outcome.Succeeded)
+        {
+            channel.SavedSnapshot = channel.Snapshot;
+            Snackbar.Add(WebStrings.Format(WebStrings.NotificationsSaved, DisplayTitle(channel)), Severity.Success);
+        }
+        else
+        {
+            Snackbar.Add(outcome.Message ?? WebStrings.NotificationsSaveFailed, Severity.Error);
+        }
+    }
+
+    private async Task SendTestAsync(ChannelForm channel)
+    {
+        channel.Testing = true;
+
+        var result = await Notifications.SendTestAsync(channel.Type, SettingsJson(channel), string.IsNullOrEmpty(channel.Id) ? null : channel.Id);
+
+        channel.Testing = false;
+        if (result.Value is { Success: true })
+        {
+            Snackbar.Add(WebStrings.Format(WebStrings.NotificationsTestSucceeded, DisplayTitle(channel)), Severity.Success);
+        }
+        else if (result.Value is { } failed)
+        {
+            Snackbar.Add(WebStrings.Format(WebStrings.NotificationsTestFailed, DisplayTitle(channel), failed.Message), Severity.Error, options => options.RequireInteraction = true);
+        }
+        else
+        {
+            Snackbar.Add(result.Message ?? WebStrings.NotificationsSendTestFailed, Severity.Error);
+        }
+    }
+
+    private async Task DeleteAsync(ChannelForm channel)
+    {
+        if (!string.IsNullOrEmpty(channel.Id))
+        {
+            var confirmed = await DialogService.ShowMessageBoxAsync(
+                WebStrings.NotificationsDeleteTitle,
+                WebStrings.Format(WebStrings.NotificationsDeleteMessage, DisplayTitle(channel)),
+                yesText: WebStrings.NotificationsDelete, cancelText: WebStrings.Cancel);
+            if (confirmed != true) return;
+
+            if (!(await Notifications.DeleteAsync(channel.Id)).Succeeded)
+            {
+                Snackbar.Add(WebStrings.NotificationsDeleteFailed, Severity.Error);
+                return;
+            }
+        }
+
+        _channels.Remove(channel);
+        Snackbar.Add(WebStrings.NotificationsRemoved, Severity.Success);
+    }
+
+    private static string DisplayTitle(ChannelForm channel) =>
+        string.IsNullOrWhiteSpace(channel.DisplayName) ? channel.Schema.Title : channel.DisplayName.Trim();
+
+    private static string StatusText(ChannelForm channel)
+    {
+        if (string.IsNullOrEmpty(channel.Id)) return WebStrings.NotificationsNotSaved;
+        if (channel.ActivityFailed) return WebStrings.NotificationsLastRunFailed;
+        return channel.LastActivity is { } last
+            ? WebStrings.Format(WebStrings.NotificationsLastRun, DisplayFormat.ToRelativeTime(last, DateTime.UtcNow))
+            : WebStrings.NotificationsNeverRun;
+    }
+
+    private static bool HasRun(ChannelForm channel) =>
+        !string.IsNullOrEmpty(channel.Id) && (channel.ActivityFailed || channel.LastActivity.HasValue);
+
+    private static string StatusIcon(ChannelForm channel) =>
+        channel.ActivityFailed ? Icons.Material.Rounded.Error : Icons.Material.Rounded.CheckCircle;
+
+    private static Color StatusColor(ChannelForm channel) => channel.ActivityFailed ? Color.Error : Color.Success;
+}

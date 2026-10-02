@@ -1,7 +1,9 @@
 using EBikeManager.Application.Enums;
 using EBikeManager.Application.Exceptions;
 using EBikeManager.Application.Models;
+using EBikeManager.Application.Models.Dtos;
 using EBikeManager.Application.Models.Entities;
+using EBikeManager.Application.Models.Events;
 using EBikeManager.Application.Repositories.Interfaces;
 using EBikeManager.Application.Resources;
 using EBikeManager.Application.Services.Interfaces;
@@ -42,23 +44,26 @@ public sealed partial class IntegrationSyncService
     {
         var uploaded = 0;
         var problems = new List<string>();
+        var failedUploads = new List<UploadFailed>();
+        var signInsRequired = new List<string>();
         foreach (var integration in _integrations)
         {
             try
             {
-                uploaded += await ExportAsync(integration, problems, cancellationToken);
+                uploaded += await ExportAsync(integration, problems, failedUploads, cancellationToken);
             }
             catch (IntegrationSignInRequiredException ex)
             {
                 LogSignInRequired(integration.Key, ex.Message);
                 problems.Add(ApplicationStrings.Format(ApplicationStrings.IntegrationProblem, integration.DisplayName, ex.Message));
+                signInsRequired.Add(integration.DisplayName);
             }
         }
 
-        return new IntegrationRunResult(uploaded, problems);
+        return new IntegrationRunResult(uploaded, problems, failedUploads, signInsRequired);
     }
 
-    private async Task<int> ExportAsync(IRideIntegration integration, List<string> problems, CancellationToken cancellationToken)
+    private async Task<int> ExportAsync(IRideIntegration integration, List<string> problems, List<UploadFailed> failedUploads, CancellationToken cancellationToken)
     {
         if (await integration.GetExportWindowAsync(cancellationToken) is not { } window) return 0;
 
@@ -72,7 +77,8 @@ public sealed partial class IntegrationSyncService
         foreach (var (ride, index) in rides.Select((ride, index) => (ride, index)))
         {
             _state.ReportProgress(ApplicationStrings.Format(ApplicationStrings.SyncProgressUploading, integration.DisplayName, index + 1, rides.Count));
-            switch ((await ExportRideAsync(integration, ride, cancellationToken)).Status)
+            var export = await ExportRideAsync(integration, ride, cancellationToken);
+            switch (export.Status)
             {
                 case RideExportStatus.Uploaded:
                     uploaded++;
@@ -85,6 +91,7 @@ public sealed partial class IntegrationSyncService
                 default:
                     failed++;
                     failuresInARow++;
+                    if (export.Attempts == 1) failedUploads.Add(new UploadFailed(RideDto.From(ride), integration.DisplayName, export.Problem ?? ApplicationStrings.IntegrationUploadFailed));
                     break;
             }
 

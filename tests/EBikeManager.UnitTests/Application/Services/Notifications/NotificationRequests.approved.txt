@@ -1,0 +1,874 @@
+## discord · ride synced
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 506
+Content-Type: application/json; charset=utf-8
+{"username":"Rides","embeds":[{"description":":bike: **New ride: Westminster to Blackfriars and back**\n \u003E :calendar: \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n \u003E :straight_ruler: \u0060Distance\u0060: 4.1 km in 10 min\n \u003E :dash: \u0060Average speed\u0060: 24.0 km/h\n \u003E :mountain: \u0060Climbed\u0060: 18 m\n \u003E :fire: \u0060Calories\u0060: 104 kcal (you did 64% of the work)","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord · untitled ride synced
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 471
+Content-Type: application/json; charset=utf-8
+{"username":"Rides","embeds":[{"description":":bike: **New ride: Untitled ride**\n \u003E :calendar: \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n \u003E :straight_ruler: \u0060Distance\u0060: - in 10 min\n \u003E :dash: \u0060Average speed\u0060: -\n \u003E :mountain: \u0060Climbed\u0060: 18 m\n \u003E :fire: \u0060Calories\u0060: 104 kcal (you did 64% of the work)","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord · upload failed
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 387
+Content-Type: application/json; charset=utf-8
+{"username":"Rides","embeds":[{"description":":warning: **A ride didn\u0027t upload to Google Health**\n \u003E \u0060Ride\u0060: Westminster to Blackfriars and back (2026-09-27 08:14)\n \u003E \u0060Reason\u0060: Google Health answered 503\n \u003E It\u0027s tried again on the next sync.","color":12993861,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord · sign-in required
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 285
+Content-Type: application/json; charset=utf-8
+{"username":"Rides","embeds":[{"description":":key: **Sign in to Bosch eBike Flow again**\n \u003E eBike Manager can\u0027t reach Bosch eBike Flow until you sign in again in its settings.","color":16098851,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord · sync failed
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 245
+Content-Type: application/json; charset=utf-8
+{"username":"Rides","embeds":[{"description":":x: **Syncing with Bosch failed**\n \u003E \u0060Reason\u0060: Bosch answered 503 Service Unavailable","color":12993861,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord · sync restored
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 196
+Content-Type: application/json; charset=utf-8
+{"username":"Rides","embeds":[{"description":":white_check_mark: **Syncing with Bosch works again**","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord · heartbeat
+activity: unchanged
+
+## discord · send test
+result: sent, activity: unchanged
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 506
+Content-Type: application/json; charset=utf-8
+{"username":"Rides","embeds":[{"description":":bike: **New ride: Westminster to Blackfriars and back**\n \u003E :calendar: \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n \u003E :straight_ruler: \u0060Distance\u0060: 4.1 km in 10 min\n \u003E :dash: \u0060Average speed\u0060: 24.0 km/h\n \u003E :mountain: \u0060Climbed\u0060: 18 m\n \u003E :fire: \u0060Calories\u0060: 104 kcal (you did 64% of the work)","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord with every template variable · ride synced
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 289
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":"Westminster to Blackfriars and back|Commuter|2026-09-27 08:14|4.1 km|10 min|24.0 km/h|18 m|104 kcal|64%|%service%|%error%|2026-09-27 18:30","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord with every template variable · untitled ride synced
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 254
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":"Untitled ride|Commuter|2026-09-27 08:14|-|10 min|-|18 m|104 kcal|64%|%service%|%error%|2026-09-27 18:30","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord with every template variable · upload failed
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 313
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":"Westminster to Blackfriars and back|Commuter|2026-09-27 08:14|4.1 km|10 min|24.0 km/h|18 m|104 kcal|64%|Google Health|Google Health answered 503|2026-09-27 18:30","color":12993861,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord with every template variable · sign-in required
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 293
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":"%title%|%bike%|%date%|%distance%|%moving_time%|%average_speed%|%elevation%|%calories%|%rider_share%|Bosch eBike Flow|%error%|2026-09-27 18:30","color":16098851,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord with every template variable · sync failed
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 317
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":"%title%|%bike%|%date%|%distance%|%moving_time%|%average_speed%|%elevation%|%calories%|%rider_share%|%service%|Bosch answered 503 Service Unavailable|2026-09-27 18:30","color":12993861,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord with every template variable · sync restored
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 285
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":"%title%|%bike%|%date%|%distance%|%moving_time%|%average_speed%|%elevation%|%calories%|%rider_share%|%service%|%error%|2026-09-27 18:30","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord with every template variable · heartbeat
+activity: unchanged
+
+## discord with every template variable · send test
+result: sent, activity: unchanged
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 289
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":"Westminster to Blackfriars and back|Commuter|2026-09-27 08:14|4.1 km|10 min|24.0 km/h|18 m|104 kcal|64%|%service%|%error%|2026-09-27 18:30","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord without a url · ride synced
+activity: failed
+
+## discord without a url · untitled ride synced
+activity: failed
+
+## discord without a url · upload failed
+activity: failed
+
+## discord without a url · sign-in required
+activity: failed
+
+## discord without a url · sync failed
+activity: failed
+
+## discord without a url · sync restored
+activity: failed
+
+## discord without a url · heartbeat
+activity: unchanged
+
+## discord without a url · send test
+result: failed (The webhook URL is missing), activity: unchanged
+
+## discord saved from the settings form · ride synced
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 514
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":":bike: **New ride: Westminster to Blackfriars and back**\n \u003E :calendar: \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n \u003E :straight_ruler: \u0060Distance\u0060: 4.1 km in 10 min\n \u003E :dash: \u0060Average speed\u0060: 24.0 km/h\n \u003E :mountain: \u0060Climbed\u0060: 18 m\n \u003E :fire: \u0060Calories\u0060: 104 kcal (you did 64% of the work)","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord saved from the settings form · untitled ride synced
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 479
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":":bike: **New ride: Untitled ride**\n \u003E :calendar: \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n \u003E :straight_ruler: \u0060Distance\u0060: - in 10 min\n \u003E :dash: \u0060Average speed\u0060: -\n \u003E :mountain: \u0060Climbed\u0060: 18 m\n \u003E :fire: \u0060Calories\u0060: 104 kcal (you did 64% of the work)","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord saved from the settings form · upload failed
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 395
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":":warning: **A ride didn\u0027t upload to Google Health**\n \u003E \u0060Ride\u0060: Westminster to Blackfriars and back (2026-09-27 08:14)\n \u003E \u0060Reason\u0060: Google Health answered 503\n \u003E It\u0027s tried again on the next sync.","color":12993861,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord saved from the settings form · sign-in required
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 293
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":":key: **Sign in to Bosch eBike Flow again**\n \u003E eBike Manager can\u0027t reach Bosch eBike Flow until you sign in again in its settings.","color":16098851,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord saved from the settings form · sync failed
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 253
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":":x: **Syncing with Bosch failed**\n \u003E \u0060Reason\u0060: Bosch answered 503 Service Unavailable","color":12993861,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord saved from the settings form · sync restored
+activity: sent
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 204
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":":white_check_mark: **Syncing with Bosch works again**","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## discord saved from the settings form · heartbeat
+activity: unchanged
+
+## discord saved from the settings form · send test
+result: sent, activity: unchanged
+POST https://localhost/discord.com/api/webhooks/1/x
+Content-Length: 514
+Content-Type: application/json; charset=utf-8
+{"username":"eBike Manager","embeds":[{"description":":bike: **New ride: Westminster to Blackfriars and back**\n \u003E :calendar: \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n \u003E :straight_ruler: \u0060Distance\u0060: 4.1 km in 10 min\n \u003E :dash: \u0060Average speed\u0060: 24.0 km/h\n \u003E :mountain: \u0060Climbed\u0060: 18 m\n \u003E :fire: \u0060Calories\u0060: 104 kcal (you did 64% of the work)","color":4572762,"footer":{"text":"eBike Manager"},"timestamp":"<send time>"}]}
+
+## telegram · ride synced
+activity: sent
+POST https://api.telegram.org/bot1:abc/sendMessage
+Content-Length: 390
+Content-Type: application/json; charset=utf-8
+{"chat_id":"-42","text":"\uD83D\uDEB2 *New ride: Westminster to Blackfriars and back*\n\uD83D\uDCC5 \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n\uD83D\uDCCF \u0060Distance\u0060: 4.1 km in 10 min\n\uD83D\uDCA8 \u0060Average speed\u0060: 24.0 km/h\n\u26F0\uFE0F \u0060Climbed\u0060: 18 m\n\uD83D\uDD25 \u0060Calories\u0060: 104 kcal (you did 64% of the work)","parse_mode":"markdown"}
+
+## telegram · untitled ride synced
+activity: sent
+POST https://api.telegram.org/bot1:abc/sendMessage
+Content-Length: 355
+Content-Type: application/json; charset=utf-8
+{"chat_id":"-42","text":"\uD83D\uDEB2 *New ride: Untitled ride*\n\uD83D\uDCC5 \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n\uD83D\uDCCF \u0060Distance\u0060: - in 10 min\n\uD83D\uDCA8 \u0060Average speed\u0060: -\n\u26F0\uFE0F \u0060Climbed\u0060: 18 m\n\uD83D\uDD25 \u0060Calories\u0060: 104 kcal (you did 64% of the work)","parse_mode":"markdown"}
+
+## telegram · upload failed
+activity: sent
+POST https://api.telegram.org/bot1:abc/sendMessage
+Content-Length: 271
+Content-Type: application/json; charset=utf-8
+{"chat_id":"-42","text":"\u26A0\uFE0F *A ride didn\u0027t upload to Google Health*\n\u0060Ride\u0060: Westminster to Blackfriars and back (2026-09-27 08:14)\n\u0060Reason\u0060: Google Health answered 503\nIt\u0027s tried again on the next sync.","parse_mode":"markdown"}
+
+## telegram · sign-in required
+activity: sent
+POST https://api.telegram.org/bot1:abc/sendMessage
+Content-Length: 189
+Content-Type: application/json; charset=utf-8
+{"chat_id":"-42","text":"\uD83D\uDD11 *Sign in to Bosch eBike Flow again*\neBike Manager can\u0027t reach Bosch eBike Flow until you sign in again in its settings.","parse_mode":"markdown"}
+
+## telegram · sync failed
+activity: sent
+POST https://api.telegram.org/bot1:abc/sendMessage
+Content-Length: 145
+Content-Type: application/json; charset=utf-8
+{"chat_id":"-42","text":"\u274C *Syncing with Bosch failed*\n\u0060Reason\u0060: Bosch answered 503 Service Unavailable","parse_mode":"markdown"}
+
+## telegram · sync restored
+activity: sent
+POST https://api.telegram.org/bot1:abc/sendMessage
+Content-Length: 90
+Content-Type: application/json; charset=utf-8
+{"chat_id":"-42","text":"\u2705 *Syncing with Bosch works again*","parse_mode":"markdown"}
+
+## telegram · heartbeat
+activity: unchanged
+
+## telegram · send test
+result: sent, activity: unchanged
+POST https://api.telegram.org/bot1:abc/sendMessage
+Content-Length: 390
+Content-Type: application/json; charset=utf-8
+{"chat_id":"-42","text":"\uD83D\uDEB2 *New ride: Westminster to Blackfriars and back*\n\uD83D\uDCC5 \u0060Started\u0060: 2026-09-27 08:14 on Commuter\n\uD83D\uDCCF \u0060Distance\u0060: 4.1 km in 10 min\n\uD83D\uDCA8 \u0060Average speed\u0060: 24.0 km/h\n\u26F0\uFE0F \u0060Climbed\u0060: 18 m\n\uD83D\uDD25 \u0060Calories\u0060: 104 kcal (you did 64% of the work)","parse_mode":"markdown"}
+
+## gotify · ride synced
+activity: sent
+POST https://localhost/gotify/message
+Authorization: Bearer AAAAAAAAAAAAAAA
+Content-Length: 225
+Content-Type: application/json; charset=utf-8
+{"message":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","priority":4}
+
+## gotify · untitled ride synced
+activity: sent
+POST https://localhost/gotify/message
+Authorization: Bearer AAAAAAAAAAAAAAA
+Content-Length: 190
+Content-Type: application/json; charset=utf-8
+{"message":"New ride: Untitled ride\nStarted 2026-09-27 08:14 on Commuter\nDistance: - in 10 min\nAverage speed: -\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","priority":4}
+
+## gotify · upload failed
+activity: sent
+POST https://localhost/gotify/message
+Authorization: Bearer AAAAAAAAAAAAAAA
+Content-Length: 202
+Content-Type: application/json; charset=utf-8
+{"message":"A ride didn\u0027t upload to Google Health: Westminster to Blackfriars and back (2026-09-27 08:14). Reason: Google Health answered 503. It\u0027s tried again on the next sync.","priority":8}
+
+## gotify · sign-in required
+activity: sent
+POST https://localhost/gotify/message
+Authorization: Bearer AAAAAAAAAAAAAAA
+Content-Length: 150
+Content-Type: application/json; charset=utf-8
+{"message":"Sign in to Bosch eBike Flow again. eBike Manager can\u0027t reach Bosch eBike Flow until you sign in again in its settings.","priority":7}
+
+## gotify · sync failed
+activity: sent
+POST https://localhost/gotify/message
+Authorization: Bearer AAAAAAAAAAAAAAA
+Content-Length: 100
+Content-Type: application/json; charset=utf-8
+{"message":"Syncing with Bosch failed. Reason: Bosch answered 503 Service Unavailable","priority":8}
+
+## gotify · sync restored
+activity: sent
+POST https://localhost/gotify/message
+Authorization: Bearer AAAAAAAAAAAAAAA
+Content-Length: 58
+Content-Type: application/json; charset=utf-8
+{"message":"Syncing with Bosch works again.","priority":4}
+
+## gotify · heartbeat
+activity: unchanged
+
+## gotify · send test
+result: sent, activity: unchanged
+POST https://localhost/gotify/message
+Authorization: Bearer AAAAAAAAAAAAAAA
+Content-Length: 225
+Content-Type: application/json; charset=utf-8
+{"message":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","priority":4}
+
+## gotify with every message turned off · ride synced
+activity: unchanged
+
+## gotify with every message turned off · untitled ride synced
+activity: unchanged
+
+## gotify with every message turned off · upload failed
+activity: unchanged
+
+## gotify with every message turned off · sign-in required
+activity: unchanged
+
+## gotify with every message turned off · sync failed
+activity: unchanged
+
+## gotify with every message turned off · sync restored
+activity: unchanged
+
+## gotify with every message turned off · heartbeat
+activity: unchanged
+
+## gotify with every message turned off · send test
+result: sent, activity: unchanged
+POST https://localhost/gotify/message
+Authorization: Bearer AAAAAAAAAAAAAAA
+Content-Length: 225
+Content-Type: application/json; charset=utf-8
+{"message":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","priority":5}
+
+## ntfy · ride synced
+activity: sent
+POST https://localhost/ntfy/rides
+Authorization: Bearer tk_1
+Content-Length: 193
+Content-Type: text/plain; charset=utf-8
+Priority: 2
+Tags: bike
+Title: eBike
+New ride: Westminster to Blackfriars and back
+Started 2026-09-27 08:14 on Commuter
+Distance: 4.1 km in 10 min
+Average speed: 24.0 km/h
+Climbed: 18 m
+Calories: 104 kcal (you did 64% of the work)
+
+## ntfy · untitled ride synced
+activity: sent
+POST https://localhost/ntfy/rides
+Authorization: Bearer tk_1
+Content-Length: 158
+Content-Type: text/plain; charset=utf-8
+Priority: 2
+Tags: bike
+Title: eBike
+New ride: Untitled ride
+Started 2026-09-27 08:14 on Commuter
+Distance: - in 10 min
+Average speed: -
+Climbed: 18 m
+Calories: 104 kcal (you did 64% of the work)
+
+## ntfy · upload failed
+activity: sent
+POST https://localhost/ntfy/rides
+Authorization: Bearer tk_1
+Content-Length: 165
+Content-Type: text/plain; charset=utf-8
+Priority: 4
+Tags: bike
+Title: eBike
+A ride didn't upload to Google Health: Westminster to Blackfriars and back (2026-09-27 08:14). Reason: Google Health answered 503. It's tried again on the next sync.
+
+## ntfy · sign-in required
+activity: sent
+POST https://localhost/ntfy/rides
+Authorization: Bearer tk_1
+Content-Length: 118
+Content-Type: text/plain; charset=utf-8
+Priority: 4
+Tags: bike
+Title: eBike
+Sign in to Bosch eBike Flow again. eBike Manager can't reach Bosch eBike Flow until you sign in again in its settings.
+
+## ntfy · sync failed
+activity: sent
+POST https://localhost/ntfy/rides
+Authorization: Bearer tk_1
+Content-Length: 73
+Content-Type: text/plain; charset=utf-8
+Priority: 4
+Tags: bike
+Title: eBike
+Syncing with Bosch failed. Reason: Bosch answered 503 Service Unavailable
+
+## ntfy · sync restored
+activity: sent
+POST https://localhost/ntfy/rides
+Authorization: Bearer tk_1
+Content-Length: 31
+Content-Type: text/plain; charset=utf-8
+Priority: 2
+Tags: bike
+Title: eBike
+Syncing with Bosch works again.
+
+## ntfy · heartbeat
+activity: unchanged
+
+## ntfy · send test
+result: sent, activity: unchanged
+POST https://localhost/ntfy/rides
+Authorization: Bearer tk_1
+Content-Length: 193
+Content-Type: text/plain; charset=utf-8
+Priority: 2
+Tags: bike
+Title: eBike
+New ride: Westminster to Blackfriars and back
+Started 2026-09-27 08:14 on Commuter
+Distance: 4.1 km in 10 min
+Average speed: 24.0 km/h
+Climbed: 18 m
+Calories: 104 kcal (you did 64% of the work)
+
+## ntfy in imperial units · ride synced
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 193
+Content-Type: text/plain; charset=utf-8
+Priority: 3
+New ride: Westminster to Blackfriars and back
+Started 2026-09-27 08:14 on Commuter
+Distance: 2.5 mi in 10 min
+Average speed: 14.9 mph
+Climbed: 59 ft
+Calories: 104 kcal (you did 64% of the work)
+
+## ntfy in imperial units · untitled ride synced
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 159
+Content-Type: text/plain; charset=utf-8
+Priority: 3
+New ride: Untitled ride
+Started 2026-09-27 08:14 on Commuter
+Distance: - in 10 min
+Average speed: -
+Climbed: 59 ft
+Calories: 104 kcal (you did 64% of the work)
+
+## ntfy in imperial units · upload failed
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 165
+Content-Type: text/plain; charset=utf-8
+Priority: 5
+A ride didn't upload to Google Health: Westminster to Blackfriars and back (2026-09-27 08:14). Reason: Google Health answered 503. It's tried again on the next sync.
+
+## ntfy in imperial units · sign-in required
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 118
+Content-Type: text/plain; charset=utf-8
+Priority: 5
+Sign in to Bosch eBike Flow again. eBike Manager can't reach Bosch eBike Flow until you sign in again in its settings.
+
+## ntfy in imperial units · sync failed
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 73
+Content-Type: text/plain; charset=utf-8
+Priority: 5
+Syncing with Bosch failed. Reason: Bosch answered 503 Service Unavailable
+
+## ntfy in imperial units · sync restored
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 31
+Content-Type: text/plain; charset=utf-8
+Priority: 3
+Syncing with Bosch works again.
+
+## ntfy in imperial units · heartbeat
+activity: unchanged
+
+## ntfy in imperial units · send test
+result: sent, activity: unchanged
+POST https://localhost/ntfy/rides
+Content-Length: 193
+Content-Type: text/plain; charset=utf-8
+Priority: 3
+New ride: Westminster to Blackfriars and back
+Started 2026-09-27 08:14 on Commuter
+Distance: 2.5 mi in 10 min
+Average speed: 14.9 mph
+Climbed: 59 ft
+Calories: 104 kcal (you did 64% of the work)
+
+## ntfy saved from the settings form · ride synced
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 193
+Content-Type: text/plain; charset=utf-8
+Priority: 3
+New ride: Westminster to Blackfriars and back
+Started 2026-09-27 08:14 on Commuter
+Distance: 4.1 km in 10 min
+Average speed: 24.0 km/h
+Climbed: 18 m
+Calories: 104 kcal (you did 64% of the work)
+
+## ntfy saved from the settings form · untitled ride synced
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 158
+Content-Type: text/plain; charset=utf-8
+Priority: 3
+New ride: Untitled ride
+Started 2026-09-27 08:14 on Commuter
+Distance: - in 10 min
+Average speed: -
+Climbed: 18 m
+Calories: 104 kcal (you did 64% of the work)
+
+## ntfy saved from the settings form · upload failed
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 165
+Content-Type: text/plain; charset=utf-8
+Priority: 5
+A ride didn't upload to Google Health: Westminster to Blackfriars and back (2026-09-27 08:14). Reason: Google Health answered 503. It's tried again on the next sync.
+
+## ntfy saved from the settings form · sign-in required
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 118
+Content-Type: text/plain; charset=utf-8
+Priority: 5
+Sign in to Bosch eBike Flow again. eBike Manager can't reach Bosch eBike Flow until you sign in again in its settings.
+
+## ntfy saved from the settings form · sync failed
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 73
+Content-Type: text/plain; charset=utf-8
+Priority: 5
+Syncing with Bosch failed. Reason: Bosch answered 503 Service Unavailable
+
+## ntfy saved from the settings form · sync restored
+activity: sent
+POST https://localhost/ntfy/rides
+Content-Length: 31
+Content-Type: text/plain; charset=utf-8
+Priority: 3
+Syncing with Bosch works again.
+
+## ntfy saved from the settings form · heartbeat
+activity: unchanged
+
+## ntfy saved from the settings form · send test
+result: sent, activity: unchanged
+POST https://localhost/ntfy/rides
+Content-Length: 193
+Content-Type: text/plain; charset=utf-8
+Priority: 3
+New ride: Westminster to Blackfriars and back
+Started 2026-09-27 08:14 on Commuter
+Distance: 4.1 km in 10 min
+Average speed: 24.0 km/h
+Climbed: 18 m
+Calories: 104 kcal (you did 64% of the work)
+
+## pushover · ride synced
+activity: sent
+POST https://api.pushover.net/1/messages.json
+Content-Length: 293
+Content-Type: application/json; charset=utf-8
+{"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","user":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)"}
+
+## pushover · untitled ride synced
+activity: sent
+POST https://api.pushover.net/1/messages.json
+Content-Length: 258
+Content-Type: application/json; charset=utf-8
+{"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","user":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"New ride: Untitled ride\nStarted 2026-09-27 08:14 on Commuter\nDistance: - in 10 min\nAverage speed: -\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)"}
+
+## pushover · upload failed
+activity: sent
+POST https://api.pushover.net/1/messages.json
+Content-Length: 270
+Content-Type: application/json; charset=utf-8
+{"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","user":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"A ride didn\u0027t upload to Google Health: Westminster to Blackfriars and back (2026-09-27 08:14). Reason: Google Health answered 503. It\u0027s tried again on the next sync."}
+
+## pushover · sign-in required
+activity: sent
+POST https://api.pushover.net/1/messages.json
+Content-Length: 218
+Content-Type: application/json; charset=utf-8
+{"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","user":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"Sign in to Bosch eBike Flow again. eBike Manager can\u0027t reach Bosch eBike Flow until you sign in again in its settings."}
+
+## pushover · sync failed
+activity: sent
+POST https://api.pushover.net/1/messages.json
+Content-Length: 168
+Content-Type: application/json; charset=utf-8
+{"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","user":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"Syncing with Bosch failed. Reason: Bosch answered 503 Service Unavailable"}
+
+## pushover · sync restored
+activity: sent
+POST https://api.pushover.net/1/messages.json
+Content-Length: 126
+Content-Type: application/json; charset=utf-8
+{"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","user":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"Syncing with Bosch works again."}
+
+## pushover · heartbeat
+activity: unchanged
+
+## pushover · send test
+result: sent, activity: unchanged
+POST https://api.pushover.net/1/messages.json
+Content-Length: 293
+Content-Type: application/json; charset=utf-8
+{"token":"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa","user":"bbbbbbbbbbbbbbbbbbbbbbbbbbbbbb","message":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)"}
+
+## apprise with urls · ride synced
+activity: sent
+POST https://localhost/apprise/notify/
+Accept: application/json
+Content-Length: 314
+Content-Type: application/json; charset=utf-8
+{"urls":"json://localhost/hook, mailto://me@example.com","title":"eBike","body":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","type":"success","format":"text"}
+
+## apprise with urls · untitled ride synced
+activity: sent
+POST https://localhost/apprise/notify/
+Accept: application/json
+Content-Length: 279
+Content-Type: application/json; charset=utf-8
+{"urls":"json://localhost/hook, mailto://me@example.com","title":"eBike","body":"New ride: Untitled ride\nStarted 2026-09-27 08:14 on Commuter\nDistance: - in 10 min\nAverage speed: -\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","type":"success","format":"text"}
+
+## apprise with urls · upload failed
+activity: sent
+POST https://localhost/apprise/notify/
+Accept: application/json
+Content-Length: 291
+Content-Type: application/json; charset=utf-8
+{"urls":"json://localhost/hook, mailto://me@example.com","title":"eBike","body":"A ride didn\u0027t upload to Google Health: Westminster to Blackfriars and back (2026-09-27 08:14). Reason: Google Health answered 503. It\u0027s tried again on the next sync.","type":"failure","format":"text"}
+
+## apprise with urls · sign-in required
+activity: sent
+POST https://localhost/apprise/notify/
+Accept: application/json
+Content-Length: 239
+Content-Type: application/json; charset=utf-8
+{"urls":"json://localhost/hook, mailto://me@example.com","title":"eBike","body":"Sign in to Bosch eBike Flow again. eBike Manager can\u0027t reach Bosch eBike Flow until you sign in again in its settings.","type":"warning","format":"text"}
+
+## apprise with urls · sync failed
+activity: sent
+POST https://localhost/apprise/notify/
+Accept: application/json
+Content-Length: 189
+Content-Type: application/json; charset=utf-8
+{"urls":"json://localhost/hook, mailto://me@example.com","title":"eBike","body":"Syncing with Bosch failed. Reason: Bosch answered 503 Service Unavailable","type":"failure","format":"text"}
+
+## apprise with urls · sync restored
+activity: sent
+POST https://localhost/apprise/notify/
+Accept: application/json
+Content-Length: 147
+Content-Type: application/json; charset=utf-8
+{"urls":"json://localhost/hook, mailto://me@example.com","title":"eBike","body":"Syncing with Bosch works again.","type":"success","format":"text"}
+
+## apprise with urls · heartbeat
+activity: unchanged
+
+## apprise with urls · send test
+result: sent, activity: unchanged
+POST https://localhost/apprise/notify/
+Accept: application/json
+Content-Length: 314
+Content-Type: application/json; charset=utf-8
+{"urls":"json://localhost/hook, mailto://me@example.com","title":"eBike","body":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","type":"success","format":"text"}
+
+## apprise with a config key and tags · ride synced
+activity: sent
+POST https://localhost/apprise/notify/home
+Accept: application/json
+Content-Length: 263
+Content-Type: application/json; charset=utf-8
+{"tag":"admin, bikes","body":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","type":"success","format":"text"}
+
+## apprise with a config key and tags · untitled ride synced
+activity: sent
+POST https://localhost/apprise/notify/home
+Accept: application/json
+Content-Length: 228
+Content-Type: application/json; charset=utf-8
+{"tag":"admin, bikes","body":"New ride: Untitled ride\nStarted 2026-09-27 08:14 on Commuter\nDistance: - in 10 min\nAverage speed: -\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","type":"success","format":"text"}
+
+## apprise with a config key and tags · upload failed
+activity: sent
+POST https://localhost/apprise/notify/home
+Accept: application/json
+Content-Length: 240
+Content-Type: application/json; charset=utf-8
+{"tag":"admin, bikes","body":"A ride didn\u0027t upload to Google Health: Westminster to Blackfriars and back (2026-09-27 08:14). Reason: Google Health answered 503. It\u0027s tried again on the next sync.","type":"failure","format":"text"}
+
+## apprise with a config key and tags · sign-in required
+activity: sent
+POST https://localhost/apprise/notify/home
+Accept: application/json
+Content-Length: 188
+Content-Type: application/json; charset=utf-8
+{"tag":"admin, bikes","body":"Sign in to Bosch eBike Flow again. eBike Manager can\u0027t reach Bosch eBike Flow until you sign in again in its settings.","type":"warning","format":"text"}
+
+## apprise with a config key and tags · sync failed
+activity: sent
+POST https://localhost/apprise/notify/home
+Accept: application/json
+Content-Length: 138
+Content-Type: application/json; charset=utf-8
+{"tag":"admin, bikes","body":"Syncing with Bosch failed. Reason: Bosch answered 503 Service Unavailable","type":"failure","format":"text"}
+
+## apprise with a config key and tags · sync restored
+activity: sent
+POST https://localhost/apprise/notify/home
+Accept: application/json
+Content-Length: 96
+Content-Type: application/json; charset=utf-8
+{"tag":"admin, bikes","body":"Syncing with Bosch works again.","type":"success","format":"text"}
+
+## apprise with a config key and tags · heartbeat
+activity: unchanged
+
+## apprise with a config key and tags · send test
+result: sent, activity: unchanged
+POST https://localhost/apprise/notify/home
+Accept: application/json
+Content-Length: 263
+Content-Type: application/json; charset=utf-8
+{"tag":"admin, bikes","body":"New ride: Westminster to Blackfriars and back\nStarted 2026-09-27 08:14 on Commuter\nDistance: 4.1 km in 10 min\nAverage speed: 24.0 km/h\nClimbed: 18 m\nCalories: 104 kcal (you did 64% of the work)","type":"success","format":"text"}
+
+## apprise with urls and a config key · ride synced
+activity: failed
+
+## apprise with urls and a config key · untitled ride synced
+activity: failed
+
+## apprise with urls and a config key · upload failed
+activity: failed
+
+## apprise with urls and a config key · sign-in required
+activity: failed
+
+## apprise with urls and a config key · sync failed
+activity: failed
+
+## apprise with urls and a config key · sync restored
+activity: failed
+
+## apprise with urls and a config key · heartbeat
+activity: unchanged
+
+## apprise with urls and a config key · send test
+result: failed (Use either Apprise URLs or a config key, not both), activity: unchanged
+
+## webhook · ride synced
+activity: sent
+POST https://localhost/hook
+Content-Length: 384
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"RIDE_SYNCED","data":{"id":"ride-42","title":"Westminster to Blackfriars and back","bikeId":"bike-1","bikeName":"Commuter","bikeModel":"TENWAYS (Performance Line)","startTime":"2026-09-27T07:14:00Z","localStartTime":"2026-09-27T08:14:00","distanceMeters":4080,"movingSeconds":612,"averageSpeedKmh":24,"elevationGainMeters":18,"caloriesKcal":104,"riderEnergySharePercent":64}}
+
+## webhook · untitled ride synced
+activity: sent
+POST https://localhost/hook
+Content-Length: 353
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"RIDE_SYNCED","data":{"id":"ride-42","title":null,"bikeId":"bike-1","bikeName":"Commuter","bikeModel":"TENWAYS (Performance Line)","startTime":"2026-09-27T07:14:00Z","localStartTime":"2026-09-27T08:14:00","distanceMeters":null,"movingSeconds":612,"averageSpeedKmh":null,"elevationGainMeters":18,"caloriesKcal":104,"riderEnergySharePercent":64}}
+
+## webhook · upload failed
+activity: sent
+POST https://localhost/hook
+Content-Length: 458
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"UPLOAD_FAILED","data":{"service":"Google Health","error":"Google Health answered 503","ride":{"id":"ride-42","title":"Westminster to Blackfriars and back","bikeId":"bike-1","bikeName":"Commuter","bikeModel":"TENWAYS (Performance Line)","startTime":"2026-09-27T07:14:00Z","localStartTime":"2026-09-27T08:14:00","distanceMeters":4080,"movingSeconds":612,"averageSpeedKmh":24,"elevationGainMeters":18,"caloriesKcal":104,"riderEnergySharePercent":64}}}
+
+## webhook · sign-in required
+activity: sent
+POST https://localhost/hook
+Content-Length: 66
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"SIGN_IN_REQUIRED","data":{"service":"Bosch eBike Flow"}}
+
+## webhook · sync failed
+activity: sent
+POST https://localhost/hook
+Content-Length: 81
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"SYNC_FAILED","data":{"error":"Bosch answered 503 Service Unavailable"}}
+
+## webhook · sync restored
+activity: sent
+POST https://localhost/hook
+Content-Length: 37
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"SYNC_RESTORED","data":null}
+
+## webhook · heartbeat
+activity: sent
+POST https://localhost/hook
+Content-Length: 34
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"KEEP_ALIVE","data":null}
+
+## webhook · send test
+result: sent, activity: unchanged
+POST https://localhost/hook
+Content-Length: 377
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"TEST","data":{"id":"ride-42","title":"Westminster to Blackfriars and back","bikeId":"bike-1","bikeName":"Commuter","bikeModel":"TENWAYS (Performance Line)","startTime":"2026-09-27T07:14:00Z","localStartTime":"2026-09-27T08:14:00","distanceMeters":4080,"movingSeconds":612,"averageSpeedKmh":24,"elevationGainMeters":18,"caloriesKcal":104,"riderEnergySharePercent":64}}
+
+## webhook with every event turned off · ride synced
+activity: unchanged
+
+## webhook with every event turned off · untitled ride synced
+activity: unchanged
+
+## webhook with every event turned off · upload failed
+activity: unchanged
+
+## webhook with every event turned off · sign-in required
+activity: unchanged
+
+## webhook with every event turned off · sync failed
+activity: unchanged
+
+## webhook with every event turned off · sync restored
+activity: unchanged
+
+## webhook with every event turned off · heartbeat
+activity: unchanged
+
+## webhook with every event turned off · send test
+result: sent, activity: unchanged
+POST https://localhost/hook
+Content-Length: 377
+Content-Type: application/json; charset=utf-8
+User-Agent: eBikeManager/Webhook
+{"event":"TEST","data":{"id":"ride-42","title":"Westminster to Blackfriars and back","bikeId":"bike-1","bikeName":"Commuter","bikeModel":"TENWAYS (Performance Line)","startTime":"2026-09-27T07:14:00Z","localStartTime":"2026-09-27T08:14:00","distanceMeters":4080,"movingSeconds":612,"averageSpeedKmh":24,"elevationGainMeters":18,"caloriesKcal":104,"riderEnergySharePercent":64}}
+
+## unknown type · ride synced
+activity: failed
+
+## unknown type · untitled ride synced
+activity: failed
+
+## unknown type · upload failed
+activity: failed
+
+## unknown type · sign-in required
+activity: failed
+
+## unknown type · sync failed
+activity: failed
+
+## unknown type · sync restored
+activity: failed
+
+## unknown type · heartbeat
+activity: failed
+
+## unknown type · send test
+result: failed (carrierPigeon isn't a known notification type), activity: unchanged
+

@@ -1,6 +1,7 @@
 using System.Net;
 using System.Reflection;
 using EBikeManager.Application.Installers;
+using EBikeManager.Application.Services.Notifications;
 using EBikeManager.Application.Services.Interfaces;
 using EBikeManager.TestSupport;
 using EBikeManager.Web.Configuration;
@@ -25,6 +26,8 @@ public abstract class TestApp : WebApplicationFactory<Program>, IAsyncLifetime
     internal FakeGoogleHealthApi Google { get; } = new();
 
     internal FakeGoogleHealthAuth GoogleAuth { get; } = new();
+
+    internal RecordingHandler Notifications { get; } = new(_ => new HttpResponseMessage(HttpStatusCode.OK));
 
     public FakeOidcProvider Oidc { get; } = new();
 
@@ -91,6 +94,7 @@ public abstract class TestApp : WebApplicationFactory<Program>, IAsyncLifetime
             services.AddSingleton<IStartupFilter>(new FakeOidcSignInPage(Oidc));
             services.Configure<OpenIdConnectOptions>(AuthSettingsService.OidcScheme, options => options.BackchannelHttpHandler = Oidc);
             services.ConfigureHttpClientDefaults(client => client.ConfigurePrimaryHttpMessageHandler(() => new NoNetworkHandler()));
+            services.AddHttpClient(HttpNotificationService.HttpClientName).ConfigurePrimaryHttpMessageHandler(() => Notifications);
         });
     }
 

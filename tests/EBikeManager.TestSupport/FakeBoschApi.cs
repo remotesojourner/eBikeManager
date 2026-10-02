@@ -47,6 +47,8 @@ internal sealed class FakeBoschApi : IBoschApiService
 
     public int BikeListReads => Volatile.Read(ref _bikeListReads);
 
+    public Exception? ActivitiesFailure { get; set; }
+
     public Task<IReadOnlyList<BoschBikeInfo>> GetBikesAsync(CancellationToken cancellationToken = default)
     {
         Interlocked.Increment(ref _bikeListReads);
@@ -56,6 +58,7 @@ internal sealed class FakeBoschApi : IBoschApiService
     public Task<BoschActivityPage> GetActivitiesAsync(int page, int pageSize, CancellationToken cancellationToken = default)
     {
         lock (RequestedPages) RequestedPages.Add(page);
+        if (ActivitiesFailure is { } failure) return Task.FromException<BoschActivityPage>(failure);
         var sorted = Activities.OrderByDescending(activity => activity.StartTime).ToList();
         var totalPages = (int)Math.Ceiling(sorted.Count / (double)pageSize);
         return Task.FromResult(new BoschActivityPage(sorted.Skip(page * pageSize).Take(pageSize).ToList(), totalPages));

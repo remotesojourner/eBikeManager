@@ -55,7 +55,7 @@ public sealed partial class RideSyncService
         var rides = await _rides.GetAllForUpdateAsync(cancellationToken);
         var fullScan = rides.Count == 0 || fullScanRequested;
 
-        var (ridesChecked, newRides) = await ReadRideListAsync(rides, bikes, fullScan, cancellationToken);
+        var (ridesChecked, newRides, finishedRides) = await ReadRideListAsync(rides, bikes, fullScan, cancellationToken);
         await _rides.SaveChangesAsync(cancellationToken);
         if (fullScanRequested) await _settings.SaveAsync(new Dictionary<string, string> { [SettingDefinitions.BoschFullScan] = "false" }, cancellationToken);
 
@@ -105,15 +105,16 @@ public sealed partial class RideSyncService
         }
 
         LogFinished(ridesChecked, newRides, saved, gpxSaved, problems.Count);
-        return new SyncRunResult(ridesChecked, newRides, saved, problems);
+        return new SyncRunResult(ridesChecked, newRides, saved, problems, FinishedRideIds: finishedRides);
     }
 
-    private async Task<(int Checked, int New)> ReadRideListAsync(Dictionary<string, Ride> rides, Dictionary<string, Bike> bikes, bool fullScan, CancellationToken cancellationToken)
+    private async Task<(int Checked, int New, List<string> Finished)> ReadRideListAsync(Dictionary<string, Ride> rides, Dictionary<string, Bike> bikes, bool fullScan, CancellationToken cancellationToken)
     {
         var now = _time.GetUtcNow().UtcDateTime;
         var recheckFrom = now - RecheckWindow;
         var ridesChecked = 0;
         var newRides = 0;
+        var finished = new List<string>();
 
         for (var page = 0; ; page++)
         {
@@ -137,10 +138,12 @@ public sealed partial class RideSyncService
                     nothingNew = false;
                 }
 
+                var wasFinished = ride.EndTime != null;
                 Apply(ride, activity, bikes[activity.BikeId!]);
+                if (!fullScan && !wasFinished && ride.EndTime != null) finished.Add(ride.Id);
             }
 
-            if (result.Activities.Count == 0 || page + 1 >= result.TotalPages || (!fullScan && nothingNew)) return (ridesChecked, newRides);
+            if (result.Activities.Count == 0 || page + 1 >= result.TotalPages || (!fullScan && nothingNew)) return (ridesChecked, newRides, finished);
         }
     }
 
