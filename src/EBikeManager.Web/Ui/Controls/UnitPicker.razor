@@ -1,0 +1,13 @@
+<div class="em-option-list">
+    <OptionCard Title="@WebStrings.UnitsMetric" Description="@WebStrings.UnitsMetricDescription" Icon="@Icons.Material.Rounded.Straighten"
+                Active="@(Units == UnitSystem.Metric)" OnClick="@(() => ChooseAsync(UnitSystem.Metric))" />
+    <OptionCard Title="@WebStrings.UnitsImperial" Description="@WebStrings.UnitsImperialDescription" Icon="@Icons.Material.Rounded.SquareFoot"
+                Active="@(Units == UnitSystem.Imperial)" OnClick="@(() => ChooseAsync(UnitSystem.Imperial))" />
+</div>
+
+@code {
+    [Parameter] public UnitSystem Units { get; set; }
+    [Parameter] public EventCallback<UnitSystem> UnitsChanged { get; set; }
+
+    private Task ChooseAsync(UnitSystem units) => units == Units ? Task.CompletedTask : UnitsChanged.InvokeAsync(units);
+}

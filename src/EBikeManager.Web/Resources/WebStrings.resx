@@ -71,8 +71,8 @@
   <data name="ElevationGain" xml:space="preserve">
     <value>Elevation gain</value>
   </data>
-  <data name="UnitKilometres" xml:space="preserve">
-    <value>{0} km</value>
+  <data name="UnitValue" xml:space="preserve">
+    <value>{0} {1}</value>
   </data>
   <data name="UnitMinutes" xml:space="preserve">
     <value>{0} min</value>
@@ -347,6 +347,9 @@
   <data name="WelcomeTitle" xml:space="preserve">
     <value>Welcome to {0}!</value>
   </data>
+  <data name="WelcomeUnits" xml:space="preserve">
+    <value>Which units do you ride in?</value>
+  </data>
   <data name="WelcomeIntro" xml:space="preserve">
     <value>{0} keeps a copy of every ride from Bosch eBike Flow, with its FIT file, and shows your bike and rides in one place. Let's connect your Bosch account.</value>
   </data>
@@ -384,7 +387,7 @@
     <value>Settings</value>
   </data>
   <data name="SettingsSubtitle" xml:space="preserve">
-    <value>Your Bosch connection, eBike bridge, Google Health, sync schedule, map and sign-in</value>
+    <value>Your Bosch connection, eBike bridge, Google Health, sync schedule, units, map and sign-in</value>
   </data>
   <data name="SettingsTabBosch" xml:space="preserve">
     <value>Bosch</value>
@@ -569,9 +572,6 @@
   <data name="UnitKilowattHours" xml:space="preserve">
     <value>{0} kWh</value>
   </data>
-  <data name="UnitKilometresPerHour" xml:space="preserve">
-    <value>{0} km/h</value>
-  </data>
   <data name="BikesTitle" xml:space="preserve">
     <value>Bikes</value>
   </data>
@@ -627,10 +627,10 @@
     <value>Service due</value>
   </data>
   <data name="BikeServiceDueBoth" xml:space="preserve">
-    <value>{0} or at {1} km</value>
+    <value>{0} or at {1}</value>
   </data>
   <data name="BikeServiceDueDistance" xml:space="preserve">
-    <value>At {0} km</value>
+    <value>At {0}</value>
   </data>
   <data name="BikeMotorHours" xml:space="preserve">
     <value>Motor hours</value>
@@ -720,7 +720,7 @@
     <value>Range</value>
   </data>
   <data name="BikeRangeBetween" xml:space="preserve">
-    <value>{0} to {1} km</value>
+    <value>{0} to {1} {2}</value>
   </data>
   <data name="BikeLiveUpdated" xml:space="preserve">
     <value>Reported</value>
@@ -875,8 +875,14 @@
   <data name="RideSplitsDescription" xml:space="preserve">
     <value>Every kilometre of the ride, timed while moving.</value>
   </data>
+  <data name="RideSplitsDescriptionMiles" xml:space="preserve">
+    <value>Every mile of the ride, timed while moving.</value>
+  </data>
   <data name="RideSplitNumber" xml:space="preserve">
     <value>Km</value>
+  </data>
+  <data name="RideSplitNumberMiles" xml:space="preserve">
+    <value>Mile</value>
   </data>
   <data name="RideSplitTime" xml:space="preserve">
     <value>Time</value>
@@ -890,8 +896,29 @@
   <data name="MapAttributionOpenStreetMap" xml:space="preserve">
     <value>© OpenStreetMap contributors</value>
   </data>
-  <data name="SettingsTabMap" xml:space="preserve">
-    <value>Map</value>
+  <data name="SettingsTabDisplay" xml:space="preserve">
+    <value>Display</value>
+  </data>
+  <data name="UnitsTitle" xml:space="preserve">
+    <value>Units</value>
+  </data>
+  <data name="UnitsDescription" xml:space="preserve">
+    <value>How distances, speeds and heights are shown. Bosch, Google Health and the statistics API always use metric.</value>
+  </data>
+  <data name="UnitsMetric" xml:space="preserve">
+    <value>Metric</value>
+  </data>
+  <data name="UnitsMetricDescription" xml:space="preserve">
+    <value>Kilometres, km/h and metres</value>
+  </data>
+  <data name="UnitsImperial" xml:space="preserve">
+    <value>Imperial</value>
+  </data>
+  <data name="UnitsImperialDescription" xml:space="preserve">
+    <value>Miles, mph and feet</value>
+  </data>
+  <data name="UnitsSaved" xml:space="preserve">
+    <value>Units saved.</value>
   </data>
   <data name="MapTitle" xml:space="preserve">
     <value>Map</value>

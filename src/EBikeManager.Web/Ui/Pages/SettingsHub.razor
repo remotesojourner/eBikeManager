@@ -23,8 +23,8 @@
         <MudTabPanel Text="@WebStrings.SettingsTabSchedule" Icon="@Icons.Material.Rounded.Schedule">
             <SettingsSchedule />
         </MudTabPanel>
-        <MudTabPanel Text="@WebStrings.SettingsTabMap" Icon="@Icons.Material.Rounded.Map">
-            <SettingsMap />
+        <MudTabPanel Text="@WebStrings.SettingsTabDisplay" Icon="@Icons.Material.Rounded.DisplaySettings">
+            <SettingsDisplay />
         </MudTabPanel>
         <MudTabPanel Text="@WebStrings.SettingsTabSecurity" Icon="@Icons.Material.Rounded.Security">
             <SettingsSecurity />
@@ -36,7 +36,7 @@
 </MudBreakpointProvider>
 
 @code {
-    private static readonly string[] _sections = ["bosch", "bridge", "google-health", "schedule", "map", "security", "about"];
+    private static readonly string[] _sections = ["bosch", "bridge", "google-health", "schedule", "display", "security", "about"];
 
     [Parameter] public string? Section { get; set; }
 

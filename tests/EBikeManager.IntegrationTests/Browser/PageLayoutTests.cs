@@ -16,7 +16,7 @@ public sealed class PageLayoutTests : BrowserTest, IClassFixture<BrowserAppWithR
         ("/settings/bridge", "bridge", "eBike bridge"),
         ("/settings/google-health", "google-health", "Create your own Google sign-in"),
         ("/settings/schedule", "schedule", "Sync schedule"),
-        ("/settings/map", "map", "Your own map server"),
+        ("/settings/display", "display", "Miles, mph and feet"),
         ("/settings/security", "security", "Require sign-in"),
         ("/settings/about", "about", "Report an issue"),
         ("/welcome", "welcome", "Welcome to eBike Manager!")

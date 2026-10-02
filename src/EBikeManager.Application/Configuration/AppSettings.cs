@@ -1,6 +1,8 @@
+using EBikeManager.Application.Enums;
+
 namespace EBikeManager.Application.Configuration;
 
-public sealed record AppSettings(bool SetupCompleted, ScheduleSettings Schedule, BoschSettings Bosch, SignInSettings SignIn, MapSettings Map, GoogleHealthSettings GoogleHealth, BridgeSettings Bridge)
+public sealed record AppSettings(bool SetupCompleted, ScheduleSettings Schedule, BoschSettings Bosch, SignInSettings SignIn, MapSettings Map, GoogleHealthSettings GoogleHealth, BridgeSettings Bridge, UnitSystem Units)
 {
     public static AppSettings Defaults { get; } = From(SettingDefinitions.All.ToDictionary(definition => definition.Key, definition => definition.Default));
 
@@ -41,6 +43,7 @@ public sealed record AppSettings(bool SetupCompleted, ScheduleSettings Schedule,
             Bridge: new BridgeSettings(
                 Optional(SettingDefinitions.BridgeAddress) is { } address && BridgeSettings.IsValidAddress(address) ? address : null,
                 Optional(SettingDefinitions.BridgeFirstBike),
-                Optional(SettingDefinitions.BridgeSecondBike)));
+                Optional(SettingDefinitions.BridgeSecondBike)),
+            Units: UnitSettings.SystemFor(Text(SettingDefinitions.Units)) ?? UnitSystem.Metric);
     }
 }

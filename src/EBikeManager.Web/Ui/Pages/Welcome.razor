@@ -4,6 +4,7 @@
 @inject BikeService Bikes
 @inject SyncRunService SyncRun
 @inject NavigationManager Navigation
+@inject BrowserInteropService Browser
 @inject ISnackbar Snackbar
 
 <PageTitle>@ProjectInfo.Name - @WebStrings.WelcomePageTitle</PageTitle>
@@ -19,6 +20,8 @@
                 <img src="img/logo.svg" alt="" class="em-welcome-logo mb-4" />
                 <MudText Typo="Typo.h5" HtmlTag="h1" Class="font-weight-bold mb-1">@WebStrings.Format(WebStrings.WelcomeTitle, ProjectInfo.Name)</MudText>
                 <MudText Typo="Typo.body1" Class="em-muted">@WebStrings.Format(WebStrings.WelcomeIntro, ProjectInfo.Name)</MudText>
+                <MudText Typo="Typo.body2" Class="font-weight-bold mt-5 mb-2">@WebStrings.WelcomeUnits</MudText>
+                <UnitPicker Units="_units" UnitsChanged="ChooseUnits" />
                 break;
 
             case WelcomeStep.Bosch:
@@ -58,6 +61,8 @@
     private bool _boschConnected;
     private IReadOnlyList<BoschBikeInfo> _bikes = [];
     private string _cron = ScheduleSettings.Hourly;
+    private UnitSystem _units;
+    private bool _unitsChosen;
     private bool _saving;
 
     private static WelcomeStep[] Steps => _steps;
@@ -79,7 +84,25 @@
     protected override async Task OnInitializedAsync()
     {
         _cron = Settings.Current.Schedule.Cron;
+        _units = Settings.Current.Units;
         _boschConnected = await Bosch.GetStatusAsync() == BoschConnectionStatus.Connected;
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+
+        var suggested = UnitSettings.SuggestFor(await Browser.GetLanguageAsync());
+        if (_unitsChosen || suggested == _units) return;
+
+        _units = suggested;
+        StateHasChanged();
+    }
+
+    private void ChooseUnits(UnitSystem units)
+    {
+        _units = units;
+        _unitsChosen = true;
     }
 
     private Task OnBoschConnectedAsync()
@@ -100,7 +123,7 @@
         _saving = true;
         var bikes = await Bikes.SaveSelectionAsync(_bikes);
         var result = bikes.Succeeded
-            ? await Settings.SaveAsync((SettingDefinitions.SyncCron, _cron), (SettingDefinitions.SetupCompleted, "true"))
+            ? await Settings.SaveAsync((SettingDefinitions.SyncCron, _cron), (SettingDefinitions.Units, UnitSettings.KeyFor(_units)), (SettingDefinitions.SetupCompleted, "true"))
             : bikes;
         _saving = false;
 

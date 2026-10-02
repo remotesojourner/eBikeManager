@@ -81,7 +81,9 @@
                     <ErrorBoundary @ref="_pageErrors">
                         <ChildContent>
                             <CascadingValue Value="_isDarkMode" Name="@AppTheme.DarkModeCascade">
-                                @Body
+                                <CascadingValue Value="Settings.Current.Units" Name="@DisplayFormat.UnitsCascade">
+                                    @Body
+                                </CascadingValue>
                             </CascadingValue>
                         </ChildContent>
                         <ErrorContent>

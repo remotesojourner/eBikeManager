@@ -1,4 +1,5 @@
 using EBikeManager.Application.Configuration;
+using EBikeManager.Application.Enums;
 using EBikeManager.TestSupport;
 using Microsoft.Playwright;
 using static Microsoft.Playwright.Assertions;
@@ -26,6 +27,9 @@ public sealed class WelcomeTests : BrowserTest, IClassFixture<BrowserAppNotSetUp
         await page.GotoAsync("/");
         await Expect(page).ToHaveURLAsync(new System.Text.RegularExpressions.Regex("/welcome$"));
         await Expect(page.GetByRole(AriaRole.Heading, new() { Name = "Welcome to eBike Manager!" })).ToBeVisibleAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Imperial" })).ToHaveAttributeAsync("aria-pressed", "true");
+        await page.GetByRole(AriaRole.Button, new() { Name = "Metric" }).ClickAsync();
+        await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Metric" })).ToHaveAttributeAsync("aria-pressed", "true");
         await page.GetByRole(AriaRole.Button, new() { Name = "Continue" }).ClickAsync();
 
         await Expect(page.GetByRole(AriaRole.Button, new() { Name = "Continue" })).ToBeDisabledAsync();
@@ -54,6 +58,7 @@ public sealed class WelcomeTests : BrowserTest, IClassFixture<BrowserAppNotSetUp
         Assert.True(settings.SetupCompleted);
         Assert.Equal(ScheduleSettings.Hourly, settings.Schedule.Cron);
         Assert.Equal(FakeBoschAuth.Account, settings.Bosch.AccountName);
+        Assert.Equal(UnitSystem.Metric, settings.Units);
         AssertNoBrowserErrors();
     }
 }

@@ -8,15 +8,14 @@ public static class RideTrackBuilder
     public const int MaxSamples = 1000;
     public const int MaxRoutePoints = 4000;
 
-    private const double MetresPerSplit = 1000;
-    private const double MinimumSplitMetres = 100;
+    private const double MinimumSplitFraction = 0.1;
     private const double LongestMovingGapSeconds = 30;
     private const double MetresPerSecondToKmh = 3.6;
 
-    public static RideTrackDto Build(IReadOnlyList<TrackRecord> records)
+    public static RideTrackDto Build(IReadOnlyList<TrackRecord> records, double metresPerSplit = UnitConversion.MetresPerKilometre)
     {
         var points = Merge(records);
-        return new RideTrackDto(Route(points), Series(points), Splits(points));
+        return new RideTrackDto(Route(points), Series(points), Splits(points, metresPerSplit));
     }
 
     private static List<TrackRecord> Merge(IReadOnlyList<TrackRecord> records)
@@ -81,14 +80,14 @@ public static class RideTrackBuilder
             [.. buckets.Select(bucket => Rounded(bucket.Last().Longitude, 6))]);
     }
 
-    private static List<RideSplitDto> Splits(List<TrackRecord> points)
+    private static List<RideSplitDto> Splits(List<TrackRecord> points, double metresPerSplit)
     {
         var measured = points.Where(point => point.DistanceMeters != null).ToList();
         var splits = new List<RideSplitDto>();
         if (measured.Count < 2) return splits;
 
         var split = new SplitTotals(measured[0].DistanceMeters!.Value);
-        var nextBoundary = MetresPerSplit;
+        var nextBoundary = metresPerSplit;
         var lastAltitude = measured[0].AltitudeMeters;
 
         for (var index = 1; index < measured.Count; index++)
@@ -109,9 +108,9 @@ public static class RideTrackBuilder
             if (distance < nextBoundary && !isLast) continue;
 
             var length = distance - split.StartMetres;
-            if (length >= MinimumSplitMetres || splits.Count == 0) splits.Add(split.ToDto(splits.Count + 1, length));
+            if (length >= metresPerSplit * MinimumSplitFraction || splits.Count == 0) splits.Add(split.ToDto(splits.Count + 1, length));
             split = new SplitTotals(distance);
-            nextBoundary = (Math.Floor(distance / MetresPerSplit) + 1) * MetresPerSplit;
+            nextBoundary = (Math.Floor(distance / metresPerSplit) + 1) * metresPerSplit;
         }
 
         return splits;

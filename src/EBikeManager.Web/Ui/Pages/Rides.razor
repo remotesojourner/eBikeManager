@@ -61,7 +61,7 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
                     <MudText Typo="Typo.caption" Class="em-muted">@RideText.StartAndBike(context.LocalStartTime, _bikes.Count > 1 ? BikeLabel(context.BikeId) : null)</MudText>
                 </div>
             </MudTd>
-            <MudTd DataLabel="@WebStrings.Distance" Style="text-align:right">@DisplayFormat.Distance(context.DistanceMeters)</MudTd>
+            <MudTd DataLabel="@WebStrings.Distance" Style="text-align:right">@DisplayFormat.Distance(context.DistanceMeters, Units)</MudTd>
             <MudTd DataLabel="@WebStrings.MovingTime" Style="text-align:right">@DisplayFormat.Duration(context.MovingSeconds)</MudTd>
             <MudTd DataLabel="@WebStrings.Calories" Style="text-align:right">@DisplayFormat.Calories(context.CaloriesKcal)</MudTd>
             <MudTd DataLabel="@WebStrings.RidesYourShare" Style="text-align:right">@DisplayFormat.Percent(context.RiderEnergySharePercent)</MudTd>
@@ -103,6 +103,8 @@ else if (SyncStatus.Status.LastResult is { Problems.Count: > 0 } result)
     private IReadOnlyDictionary<string, RideExportDto> _uploads = new Dictionary<string, RideExportDto>();
 
     [SupplyParameterFromQuery(Name = BikeLinks.BikeParameter)] public string? SelectedBike { get; set; }
+
+    [CascadingParameter(Name = DisplayFormat.UnitsCascade)] public UnitSystem Units { get; set; }
 
     private string ChosenBike => _bikes.Any(bike => bike.Id == SelectedBike) ? SelectedBike! : AllBikes;
 

@@ -1,0 +1,20 @@
+@inject SettingsStateService Settings
+@inject ISnackbar Snackbar
+
+<div class="d-flex flex-column gap-4">
+    <SurfaceCard Icon="@Icons.Material.Rounded.Straighten" Title="@WebStrings.UnitsTitle" FullHeight="false" Description="@WebStrings.UnitsDescription">
+        <UnitPicker Units="Units" UnitsChanged="SaveAsync" />
+    </SurfaceCard>
+    <SettingsMap />
+</div>
+
+@code {
+    [CascadingParameter(Name = DisplayFormat.UnitsCascade)] public UnitSystem Units { get; set; }
+
+    private async Task SaveAsync(UnitSystem units)
+    {
+        var result = await Settings.SaveAsync((SettingDefinitions.Units, UnitSettings.KeyFor(units)));
+        if (result.Succeeded) Snackbar.Add(WebStrings.UnitsSaved, Severity.Success);
+        else Snackbar.Add(result.Message ?? SettingsStateService.SaveFailed, Severity.Error);
+    }
+}

@@ -23,7 +23,7 @@ else
                     {
                         <DataRow Label="@WebStrings.BikeFrameNumberPosition" Value="@position" />
                     }
-                    <DataRow Label="@WebStrings.BikeMaxAssistSpeed" Value="@DisplayFormat.Speed(Bike.MaxAssistSpeedKmh)" />
+                    <DataRow Label="@WebStrings.BikeMaxAssistSpeed" Value="@DisplayFormat.Speed(Bike.MaxAssistSpeedKmh, Units)" />
                     @if (Bike.WheelCircumferenceMm is { } wheel)
                     {
                         <DataRow Label="@WebStrings.BikeWheelCircumference" Value="@DisplayFormat.Number(wheel, "#,0 mm")" />
@@ -53,8 +53,8 @@ else
                         <div class="d-flex flex-wrap justify-space-between align-end gap-4">
                             <div>
                                 <div class="em-stat-value">
-                                    <MudText Typo="Typo.h4" Class="em-hero-value font-weight-bold">@DisplayFormat.Number(BikeText.OdometerMeters(Bike, Live) / 1000, "#,0")</MudText>
-                                    <MudText Typo="Typo.body1" Class="em-muted">km</MudText>
+                                    <MudText Typo="Typo.h4" Class="em-hero-value font-weight-bold">@DisplayFormat.DistanceNumber(BikeText.OdometerMeters(Bike, Live), Units, "#,0")</MudText>
+                                    <MudText Typo="Typo.body1" Class="em-muted">@UnitConversion.DistanceUnit(Units)</MudText>
                                 </div>
                                 <MudText Typo="Typo.caption" Class="em-muted d-block">@WebStrings.BikeMileageLabel</MudText>
                             </div>
@@ -83,7 +83,7 @@ else
                                         <span class="em-mode-dot" style="@BikeText.ModeBackground(mode.Color, mode.IsOff)"></span>
                                         <MudText Typo="Typo.body2">@mode.Name</MudText>
                                     </div>
-                                    <MudText Typo="Typo.body2" Class="text-right font-weight-bold">@DisplayFormat.Distance(mode.DistanceMeters)</MudText>
+                                    <MudText Typo="Typo.body2" Class="text-right font-weight-bold">@DisplayFormat.Distance(mode.DistanceMeters, Units)</MudText>
                                     <MudText Typo="Typo.body2" Class="text-right em-muted">@DisplayFormat.Percent(mode.Percent)</MudText>
                                     <MudText Typo="Typo.body2" Class="text-right em-muted">@DisplayFormat.WattHours(mode.EnergyWh)</MudText>
                                 }
@@ -119,7 +119,7 @@ else
                                             <span class="em-mode-dot" style="@BikeText.ModeBackground(mode.Color)"></span>
                                             <MudText Typo="Typo.body2">@mode.Name</MudText>
                                         </div>
-                                        <MudText Typo="Typo.body2" Class="font-weight-bold">@DisplayFormat.Kilometres(mode.ReachableRangeKm)</MudText>
+                                        <MudText Typo="Typo.body2" Class="font-weight-bold">@DisplayFormat.WholeDistance(mode.ReachableRangeKm * UnitConversion.MetresPerKilometre, Units)</MudText>
                                     </div>
                                     <MudProgressLinear Value="@(longest > 0 ? (mode.ReachableRangeKm ?? 0) * 100 / longest : 0)" Color="Color.Primary" Rounded="true" Size="Size.Small" />
                                 </div>
@@ -135,7 +135,7 @@ else
             <MudItem xs="12" md="6">
                 <SurfaceCard Icon="@Icons.Material.Rounded.Bluetooth" Title="@WebStrings.BikeBridgeTitle" Description="@WebStrings.BikeBridgeDescription">
                     <DataRow Label="@WebStrings.BikeChargeLevel" Value="@DisplayFormat.Percent(bridge.BatteryPercent)" />
-                    <DataRow Label="@WebStrings.BikeSpeed" Value="@DisplayFormat.Speed(bridge.SpeedKmh)" />
+                    <DataRow Label="@WebStrings.BikeSpeed" Value="@DisplayFormat.Speed(bridge.SpeedKmh, Units)" />
                     <DataRow Label="@WebStrings.BikeCadence" Value="@DisplayFormat.Number(bridge.CadenceRpm, "0 'rpm'")" />
                     <DataRow Label="@WebStrings.BikeRiderPower" Value="@DisplayFormat.Number(bridge.RiderPowerWatts, "0 'W'")" />
                     <DataRow Label="@WebStrings.BikeMoving" Value="@BikeText.YesNo(bridge.InMotion)" />
@@ -179,7 +179,7 @@ else
             <MudItem xs="12" md="6">
                 <SurfaceCard Icon="@Icons.Material.Rounded.LocationOn" Title="@WebStrings.BikeLocationTitle" Description="@WebStrings.BikeLocationDescription">
                     <DataRow Label="@WebStrings.BikeCoordinates" Value="@BikeText.Coordinates(location.Latitude, location.Longitude)" />
-                    <DataRow Label="@WebStrings.BikeAccuracy" Value="@DisplayFormat.Number(location.AccuracyMeters, "0 m")" />
+                    <DataRow Label="@WebStrings.BikeAccuracy" Value="@DisplayFormat.ShortDistance(location.AccuracyMeters, Units)" />
                     @if (location.DetectedAt is { } seen)
                     {
                         <DataRow Label="@WebStrings.BikeSeenAt" Value="@DisplayFormat.DateTime(Preferences.ToLocal(seen))" />
@@ -254,6 +254,8 @@ else
 
     [Parameter, EditorRequired] public BikeDetailsDto Bike { get; set; } = default!;
 
+    [CascadingParameter(Name = DisplayFormat.UnitsCascade)] public UnitSystem Units { get; set; }
+
     private BridgeReadingsDto? Live => BridgeLive.Snapshot.LiveFor(Bike.Id);
 
     protected override void OnInitialized() => BridgeLive.OnChange += OnBridgeChanged;
@@ -280,8 +282,8 @@ else
     private static string MotorHoursText(BikeDetailsDto bike) =>
         WebStrings.Format(WebStrings.BikeMotorHoursLabel, DisplayFormat.Number(bike.MotorHoursAssisted, "#,0"));
 
-    private static string MileageText(BikeDetailsDto bike) =>
-        string.Join(", ", bike.ModeMileage.Select(mode => $"{mode.Name} {DisplayFormat.Distance(mode.DistanceMeters)}"));
+    private string MileageText(BikeDetailsDto bike) =>
+        string.Join(", ", bike.ModeMileage.Select(mode => $"{mode.Name} {DisplayFormat.Distance(mode.DistanceMeters, Units)}"));
 
     private static string SegmentStyle(AssistModeMileageDto mode) =>
         FormattableString.Invariant($"flex-grow:{mode.Percent};{BikeText.ModeBackground(mode.Color, mode.IsOff)}");
@@ -289,17 +291,19 @@ else
     private string DocumentDate(BikeDocumentDto document) =>
         WebStrings.Format(WebStrings.BikeDocumentAdded, DisplayFormat.Date(Preferences.ToLocal(document.AddedAt ?? document.SavedAt)));
 
-    private static string RangeText(BikeLiveStateDto live) =>
+    private string RangeText(BikeLiveStateDto live) =>
         live.MinRangeKm is { } min && live.MaxRangeKm is { } max && Math.Abs(max - min) >= 1
-            ? WebStrings.Format(WebStrings.BikeRangeBetween, DisplayFormat.Number(min), DisplayFormat.Number(max))
-            : DisplayFormat.Kilometres(live.MaxRangeKm);
+            ? WebStrings.Format(WebStrings.BikeRangeBetween, RangeNumber(min), RangeNumber(max), UnitConversion.DistanceUnit(Units))
+            : DisplayFormat.WholeDistance(live.MaxRangeKm * UnitConversion.MetresPerKilometre, Units);
+
+    private string RangeNumber(double kilometres) => DisplayFormat.DistanceNumber(kilometres * UnitConversion.MetresPerKilometre, Units, "#,0");
 
     private string ServiceDueText(ServiceDueDto service) =>
         (service.Date, service.OdometerMeters) switch
         {
-            ({ } date, { } meters) => WebStrings.Format(WebStrings.BikeServiceDueBoth, DisplayFormat.Date(Preferences.ToLocal(date)), DisplayFormat.Number(meters / 1000, "#,0")),
+            ({ } date, { } meters) => WebStrings.Format(WebStrings.BikeServiceDueBoth, DisplayFormat.Date(Preferences.ToLocal(date)), DisplayFormat.WholeDistance(meters, Units)),
             ({ } date, null) => DisplayFormat.Date(Preferences.ToLocal(date)),
-            (null, { } meters) => WebStrings.Format(WebStrings.BikeServiceDueDistance, DisplayFormat.Number(meters / 1000, "#,0")),
+            (null, { } meters) => WebStrings.Format(WebStrings.BikeServiceDueDistance, DisplayFormat.WholeDistance(meters, Units)),
             _ => DisplayFormat.Missing
         };
 }

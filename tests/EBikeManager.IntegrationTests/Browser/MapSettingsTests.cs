@@ -28,7 +28,7 @@ public sealed class MapSettingsTests : BrowserTest, IClassFixture<BrowserAppWith
         var page = await browser.NewPageAsync();
         var save = page.GetByRole(AriaRole.Button, new() { Name = "Save map" });
 
-        await page.GotoAsync("/settings/map");
+        await page.GotoAsync("/settings/display");
         await Expect(page.Locator(".em-map .maplibregl-canvas")).ToBeVisibleAsync();
         await Expect(save).ToBeDisabledAsync();
 
@@ -60,7 +60,7 @@ public sealed class MapSettingsTests : BrowserTest, IClassFixture<BrowserAppWith
         await using var browser = await OpenBrowserAsync(_appWithoutRides);
         var page = await browser.NewPageAsync();
 
-        await page.GotoAsync("/settings/map");
+        await page.GotoAsync("/settings/display");
         await Expect(page.GetByText("A sample ride along the Victoria Embankment in London")).ToBeVisibleAsync();
         await Expect(page.Locator(".em-map .maplibregl-canvas")).ToBeVisibleAsync();
         AssertNoBrowserErrors();

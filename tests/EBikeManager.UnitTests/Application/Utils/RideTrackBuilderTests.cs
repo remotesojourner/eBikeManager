@@ -85,6 +85,27 @@ public class RideTrackBuilderTests
     }
 
     [Fact]
+    public void MileSplitsEndAtEachMileAndKeepALastPartMile()
+    {
+        var records = Enumerable.Range(0, 81).Select(index => new TrackRecord(_start.AddSeconds(index * 10), DistanceMeters: index * 50)).ToList();
+
+        var splits = RideTrackBuilder.Build(records, UnitConversion.MetresPerMile).Splits;
+
+        Assert.Equal([1.65, 1.6, 0.75], splits.Select(split => split.DistanceKm));
+        Assert.Equal(4.0, splits.Sum(split => split.DistanceKm), 2);
+    }
+
+    [Fact]
+    public void ALastStretchUnderATenthOfAMileIsNotASplitOfItsOwn()
+    {
+        var records = Enumerable.Range(0, 36).Select(index => new TrackRecord(_start.AddSeconds(index * 10), DistanceMeters: Math.Min(index * 50, 1_750))).ToList();
+
+        var splits = RideTrackBuilder.Build(records, UnitConversion.MetresPerMile).Splits;
+
+        Assert.Equal(1.65, Assert.Single(splits).DistanceKm);
+    }
+
+    [Fact]
     public void ARideWithoutDistanceHasNoChartsOrSplits()
     {
         TrackRecord[] records = [new(_start, 51.5, -0.12), new(_start.AddSeconds(5), 51.51, -0.13)];

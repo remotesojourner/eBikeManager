@@ -27,6 +27,7 @@ public static class SettingDefinitions
     public const string BridgeAddress = "bridgeAddress";
     public const string BridgeFirstBike = "bridgeFirstBike";
     public const string BridgeSecondBike = "bridgeSecondBike";
+    public const string Units = "units";
 
     public static IReadOnlyList<SettingDefinition> All { get; } =
     [
@@ -47,7 +48,8 @@ public static class SettingDefinitions
         new(GoogleHealthUploadFrom, Unset, SettingVisibility.Everyone, UploadFrom),
         new(BridgeAddress, Unset, SettingVisibility.Everyone, BridgeAddressValue),
         new(BridgeFirstBike, Unset, SettingVisibility.Everyone),
-        new(BridgeSecondBike, Unset, SettingVisibility.Everyone)
+        new(BridgeSecondBike, Unset, SettingVisibility.Everyone),
+        new(Units, UnitSettings.MetricKey, SettingVisibility.Everyone, UnitSystemKey)
     ];
 
     public static IReadOnlyList<string> ObsoleteKeys { get; } = ["authPasswordHash"];
@@ -64,6 +66,9 @@ public static class SettingDefinitions
 
     private static string? MapProviderKey(string value) =>
         MapSettings.ProviderFor(value) != null ? null : ApplicationStrings.SettingMapProviderInvalid;
+
+    private static string? UnitSystemKey(string value) =>
+        UnitSettings.SystemFor(value) != null ? null : ApplicationStrings.SettingUnitsInvalid;
 
     private static string? StyleUrl(string value) =>
         value == Unset || MapSettings.IsValidStyleUrl(value) ? null : ApplicationStrings.SettingMapStyleUrlInvalid;

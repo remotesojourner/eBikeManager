@@ -43,7 +43,7 @@ public sealed class BikeServiceTests
         Assert.True((await bikes.SaveSelectionAsync([new BoschBikeInfo(SampleData.OtherBikeId, "Cube (Performance Line CX)")], cancellationToken)).Succeeded);
 
         Assert.Equal([SampleData.OtherBikeId], (await bikes.GetBikesAsync(cancellationToken)).Select(bike => bike.Id));
-        var detail = (await rides.GetDetailAsync("ride-00", cancellationToken)).Value!;
+        var detail = (await rides.GetDetailAsync("ride-00", UnitSystem.Metric, cancellationToken)).Value!;
         Assert.Equal(("Commuter", Model), (detail.BikeName, detail.BikeModel));
     }
 

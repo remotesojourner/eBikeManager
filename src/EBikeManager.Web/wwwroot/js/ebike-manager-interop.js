@@ -15,6 +15,10 @@ window.ebikeManagerInterop = {
         return Intl.DateTimeFormat().resolvedOptions().timeZone;
     },
 
+    getLanguage: function () {
+        return navigator.language;
+    },
+
     downloadFileFromStream: async function (filename, streamReference) {
         const buffer = await streamReference.arrayBuffer();
         const url = URL.createObjectURL(new Blob([buffer]));

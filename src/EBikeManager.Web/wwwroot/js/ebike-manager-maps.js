@@ -1,7 +1,6 @@
 window.ebikeManagerMaps = (() => {
     const views = new Map();
     const chartHeight = 180;
-    const units = { distanceKm: 'km', elevation: 'm', speed: 'km/h', cadence: 'rpm', power: 'W', heartRate: 'bpm' };
     const digits = { distanceKm: 2, elevation: 0, speed: 1, cadence: 0, power: 0, heartRate: 0 };
     const emptyPoint = { type: 'FeatureCollection', features: [] };
     let libraries;
@@ -54,6 +53,14 @@ window.ebikeManagerMaps = (() => {
         context.fillRect(0, 0, 1, 1);
         const [red, green, blue] = context.getImageData(0, 0, 1, 1).data;
         return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+    }
+
+    function scaled(series, factors) {
+        const result = { ...series };
+        for (const [key, factor] of Object.entries(factors)) {
+            if (series[key]) result[key] = series[key].map(value => value == null ? null : value * factor);
+        }
+        return result;
     }
 
     function decimalsOf(step) {
@@ -182,13 +189,13 @@ window.ebikeManagerMaps = (() => {
             return;
         }
 
-        const series = view.data.series;
+        const series = view.series;
         for (const key of ['distanceKm', ...view.keys]) {
             const value = series[key][index];
             const item = document.createElement('span');
             item.className = 'em-readout-item';
             const strong = document.createElement('strong');
-            strong.textContent = value == null ? '–' : `${format(value, digits[key])} ${units[key]}`;
+            strong.textContent = value == null ? '–' : `${format(value, digits[key])} ${view.units.labels[key]}`;
             const label = document.createElement('span');
             label.className = 'em-muted';
             label.textContent = view.texts.labels[key];
@@ -199,7 +206,7 @@ window.ebikeManagerMaps = (() => {
 
     function createCharts(view) {
         const colours = palette();
-        const series = view.data.series;
+        const series = view.series;
         const axis = { stroke: colours.text, font: colours.font, grid: { stroke: colours.grid, width: 1 }, ticks: { stroke: colours.grid, width: 1 } };
         view.charts?.forEach(chart => chart.destroy());
         view.keys = [];
@@ -222,7 +229,7 @@ window.ebikeManagerMaps = (() => {
                 },
                 scales: { x: { time: false } },
                 axes: [
-                    { ...axis, values: (chart, splits, axisIndex, space, step) => splits.map(value => `${format(value, decimalsOf(step))} km`) },
+                    { ...axis, values: (chart, splits, axisIndex, space, step) => splits.map(value => `${format(value, decimalsOf(step))} ${view.units.labels.distanceKm}`) },
                     { ...axis, size: 52, space: 24, values: (chart, splits, axisIndex, space, step) => splits.map(value => format(value, decimalsOf(step))) }
                 ],
                 series: [
@@ -264,10 +271,10 @@ window.ebikeManagerMaps = (() => {
     }
 
     return {
-        showRide: async function (id, mapElement, chartsElement, readoutElement, data, source, texts) {
+        showRide: async function (id, mapElement, chartsElement, readoutElement, data, source, texts, units) {
             dispose(id);
             await ensureLibraries();
-            const view = { id, mapElement, chartsElement, readoutElement, data, source, texts, route: data.route ?? [] };
+            const view = { id, mapElement, chartsElement, readoutElement, data, source, texts, units, series: scaled(data.series, units.factors), route: data.route ?? [] };
             views.set(id, view);
             if (mapElement) createMap(view);
             if (chartsElement && readoutElement) {

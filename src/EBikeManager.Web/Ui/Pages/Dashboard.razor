@@ -16,11 +16,11 @@
         @foreach (var period in _periods)
         {
             <MudItem xs="12" sm="6" lg="3">
-                <StatTile Icon="@period.Icon" Title="@period.Title" Value="@DisplayFormat.Number(period.Totals.DistanceMeters / 1000, "0.#")" Unit="km"
+                <StatTile Icon="@period.Icon" Title="@period.Title" Value="@DisplayFormat.DistanceNumber(period.Totals.DistanceMeters, Units, "0.#")" Unit="@UnitConversion.DistanceUnit(Units)"
                           Label="@RidesText(period.Totals.Rides)">
                     <DataRow Label="@WebStrings.MovingTime" Value="@DisplayFormat.Duration(period.Totals.MovingSeconds)" />
                     <DataRow Label="@WebStrings.Calories" Value="@DisplayFormat.Calories(period.Totals.CaloriesKcal)" />
-                    <DataRow Label="@WebStrings.ElevationGain" Value="@DisplayFormat.Number(period.Totals.ElevationGainMeters, "0 m")" />
+                    <DataRow Label="@WebStrings.ElevationGain" Value="@DisplayFormat.ShortDistance(period.Totals.ElevationGainMeters, Units)" />
                 </StatTile>
             </MudItem>
         }
@@ -41,7 +41,7 @@
                                     <MudText Typo="Typo.body2" Class="font-weight-bold">@(ride.Title ?? WebStrings.RideUntitled)</MudText>
                                     <MudText Typo="Typo.caption" Class="em-muted">@RideText.StartAndBike(ride.LocalStartTime, _bikes.Count > 1 ? _recentBikes.GetValueOrDefault(ride.BikeId) : null)</MudText>
                                 </div>
-                                <MudText Typo="Typo.body2">@DisplayFormat.Distance(ride.DistanceMeters)</MudText>
+                                <MudText Typo="Typo.body2">@DisplayFormat.Distance(ride.DistanceMeters, Units)</MudText>
                                 <MudText Typo="Typo.body2" Class="em-muted">@DisplayFormat.Calories(ride.CaloriesKcal)</MudText>
                             </a>
                         }
@@ -81,6 +81,8 @@
     private IReadOnlyList<RideDto> _recent = [];
     private IReadOnlyDictionary<string, string> _recentBikes = new Dictionary<string, string>();
     private IReadOnlyList<BikeDetailsDto> _bikes = [];
+
+    [CascadingParameter(Name = DisplayFormat.UnitsCascade)] public UnitSystem Units { get; set; }
 
     private string SyncStateText => SyncStatus.Status.IsRunning ? SyncStatus.Status.Progress ?? WebStrings.Syncing : WebStrings.DashboardSyncIdle;
 

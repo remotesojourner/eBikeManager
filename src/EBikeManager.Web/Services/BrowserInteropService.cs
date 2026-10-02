@@ -51,6 +51,19 @@ public sealed partial class BrowserInteropService
         }
     }
 
+    public async Task<string?> GetLanguageAsync()
+    {
+        try
+        {
+            return await _js.InvokeAsync<string?>("ebikeManagerInterop.getLanguage");
+        }
+        catch (Exception ex) when (FailureLevel(ex) is { } level)
+        {
+            LogLanguageFailed(level, ex);
+            return null;
+        }
+    }
+
     public async Task<bool> DownloadAsync(string fileName, byte[] content)
     {
         try
@@ -96,6 +109,9 @@ public sealed partial class BrowserInteropService
 
     [LoggerMessage(Message = "Could not read the browser's time zone")]
     private partial void LogTimeZoneFailed(LogLevel level, Exception exception);
+
+    [LoggerMessage(Message = "Could not read the browser's language")]
+    private partial void LogLanguageFailed(LogLevel level, Exception exception);
 
     [LoggerMessage(Message = "Could not copy to the clipboard")]
     private partial void LogCopyFailed(LogLevel level, Exception exception);

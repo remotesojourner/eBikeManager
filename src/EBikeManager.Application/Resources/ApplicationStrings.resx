@@ -215,6 +215,9 @@
   <data name="SettingMapProviderInvalid" xml:space="preserve">
     <value>Choose OpenStreetMap, OpenFreeMap or your own map server.</value>
   </data>
+  <data name="SettingUnitsInvalid" xml:space="preserve">
+    <value>Choose metric or imperial units.</value>
+  </data>
   <data name="SettingMapStyleUrlInvalid" xml:space="preserve">
     <value>Enter the full address of a MapLibre style, starting with https:// or http://.</value>
   </data>

@@ -78,6 +78,8 @@
     private bool _saving;
     private IReadOnlyList<BikeDetailsDto> _bikes = [];
 
+    [CascadingParameter(Name = DisplayFormat.UnitsCascade)] public UnitSystem Units { get; set; }
+
     private BridgeSettings Saved => Settings.Current.Bridge;
 
     private BridgeStatus Status => BridgeLive.Snapshot.Status;
@@ -142,7 +144,7 @@
 
     private string? SlotHelp(int slot) =>
         BridgeLive.Snapshot.Slot(slot)?.OdometerKm is { } kilometres
-            ? WebStrings.Format(WebStrings.BridgeSlotOdometer, DisplayFormat.Distance(kilometres * 1000))
+            ? WebStrings.Format(WebStrings.BridgeSlotOdometer, DisplayFormat.Distance(kilometres * UnitConversion.MetresPerKilometre, Units))
             : null;
 
     private string? Mismatch(int slot, string bikeId)
@@ -151,7 +153,7 @@
         if (_bikes.FirstOrDefault(bike => bike.Id == bikeId) is not { BoschOdometerMeters: { } boschMeters } bike) return null;
         if (bridgeKilometres * 1000 >= boschMeters - 1000) return null;
 
-        return WebStrings.Format(WebStrings.BridgeSwapped, DisplayFormat.Distance(bridgeKilometres * 1000), DisplayFormat.Distance(boschMeters), bike.Name);
+        return WebStrings.Format(WebStrings.BridgeSwapped, DisplayFormat.Distance(bridgeKilometres * UnitConversion.MetresPerKilometre, Units), DisplayFormat.Distance(boschMeters, Units), bike.Name);
     }
 
     private async Task SaveAsync()

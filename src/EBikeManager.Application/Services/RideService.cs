@@ -1,3 +1,4 @@
+using EBikeManager.Application.Enums;
 using EBikeManager.Application.Models;
 using EBikeManager.Application.Models.Dtos;
 using EBikeManager.Application.Models.Entities;
@@ -28,11 +29,11 @@ public sealed class RideService
     public Task<RideTotalsDto> GetTotalsAsync(DateTime? sinceUtc, CancellationToken cancellationToken = default) =>
         _rides.TotalsSinceAsync(sinceUtc, cancellationToken);
 
-    public async Task<OperationResult<RideDetailDto>> GetDetailAsync(string id, CancellationToken cancellationToken = default)
+    public async Task<OperationResult<RideDetailDto>> GetDetailAsync(string id, UnitSystem units, CancellationToken cancellationToken = default)
     {
         if (await _rides.FindAsync(id, cancellationToken) is not { } ride) return OperationResult.NotFound(ApplicationStrings.RideNotFound);
 
-        var (track, problem) = await ReadTrackAsync(ride, cancellationToken);
+        var (track, problem) = await ReadTrackAsync(ride, UnitConversion.SplitMetres(units), cancellationToken);
         var exports = await _exports.GetForRideAsync(ride.Id, cancellationToken);
         return OperationResult.Ok(RideDetailParser.Parse(ride, track, problem) with { Exports = exports });
     }
@@ -45,7 +46,7 @@ public sealed class RideService
         foreach (var ride in await _rides.GetListAsync(RoutePreviewCandidates, cancellationToken))
         {
             if (ride.FitPath == null) continue;
-            if ((await ReadTrackAsync(ride, cancellationToken)).Track is { HasRoute: true } track) return track.Route;
+            if ((await ReadTrackAsync(ride, UnitConversion.MetresPerKilometre, cancellationToken)).Track is { HasRoute: true } track) return track.Route;
         }
 
         return [];
@@ -69,14 +70,14 @@ public sealed class RideService
         return OperationResult.Ok(new ExportFile(Path.GetFileName(ride.FitPath), content));
     }
 
-    private async Task<(RideTrackDto? Track, string? Problem)> ReadTrackAsync(Ride ride, CancellationToken cancellationToken)
+    private async Task<(RideTrackDto? Track, string? Problem)> ReadTrackAsync(Ride ride, double metresPerSplit, CancellationToken cancellationToken)
     {
         if (ride.FitPath == null) return (null, ride.FitUnavailable ? ApplicationStrings.RideTrackNotFromBosch : ApplicationStrings.RideTrackNotYet);
         if (await _archive.ReadAsync(ride.FitPath, cancellationToken) is not { } fit) return (null, ApplicationStrings.RideFileMissing);
 
         try
         {
-            return (RideTrackBuilder.Build(FitDecoder.ReadRecords(fit)), null);
+            return (RideTrackBuilder.Build(FitDecoder.ReadRecords(fit), metresPerSplit), null);
         }
         catch (InvalidDataException ex)
         {

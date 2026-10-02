@@ -36,7 +36,7 @@
         <div class="d-flex flex-column gap-4">
             <MudGrid Spacing="4">
                 <MudItem xs="12" sm="6" lg="3">
-                    <StatTile Icon="@Icons.Material.Rounded.Route" Title="@WebStrings.Distance" Value="@DisplayFormat.Number(ride.DistanceMeters / 1000, "0.0#")" Unit="km"
+                    <StatTile Icon="@Icons.Material.Rounded.Route" Title="@WebStrings.Distance" Value="@DisplayFormat.DistanceNumber(ride.DistanceMeters, Units, "0.0#")" Unit="@UnitConversion.DistanceUnit(Units)"
                               Label="@ClimbText(ride)" />
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="3">
@@ -44,8 +44,8 @@
                               Label="@WebStrings.Format(WebStrings.RideTotalTime, DisplayFormat.Duration(ride.ElapsedSeconds))" />
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="3">
-                    <StatTile Icon="@Icons.Material.Rounded.Speed" Title="@WebStrings.RideAverageSpeed" Value="@DisplayFormat.Number(ride.AverageSpeedKmh, "0.0")" Unit="km/h"
-                              Label="@WebStrings.Format(WebStrings.RideTopSpeed, DisplayFormat.Speed(ride.MaximumSpeedKmh))" />
+                    <StatTile Icon="@Icons.Material.Rounded.Speed" Title="@WebStrings.RideAverageSpeed" Value="@DisplayFormat.SpeedNumber(ride.AverageSpeedKmh, Units, "0.0")" Unit="@UnitConversion.SpeedUnit(Units)"
+                              Label="@WebStrings.Format(WebStrings.RideTopSpeed, DisplayFormat.Speed(ride.MaximumSpeedKmh, Units))" />
                 </MudItem>
                 <MudItem xs="12" sm="6" lg="3">
                     <StatTile Icon="@Icons.Material.Rounded.LocalFireDepartment" Title="@WebStrings.Calories" Value="@DisplayFormat.Number(ride.CaloriesKcal)" Unit="kcal"
@@ -68,8 +68,8 @@
                 </MudItem>
                 <MudItem xs="12" md="4">
                     <SurfaceCard Icon="@Icons.Material.Rounded.Insights" Title="@WebStrings.RideDetails">
-                        <DataRow Label="@WebStrings.RideClimbed" Value="@Metres(ride.ElevationGainMeters)" />
-                        <DataRow Label="@WebStrings.RideDescended" Value="@Metres(ride.ElevationLossMeters)" />
+                        <DataRow Label="@WebStrings.RideClimbed" Value="@DisplayFormat.ShortDistance(ride.ElevationGainMeters, Units)" />
+                        <DataRow Label="@WebStrings.RideDescended" Value="@DisplayFormat.ShortDistance(ride.ElevationLossMeters, Units)" />
                         <DataRow Label="@WebStrings.RideCadence" Value="@AverageAndTop(ride.AverageCadence, ride.MaximumCadence, "rpm")" />
                         <DataRow Label="@WebStrings.RideYourPower" Value="@AverageAndTop(ride.AverageRiderPowerWatts, ride.MaximumRiderPowerWatts, "W")" />
                         @if (ride.AverageHeartRate != null)
@@ -136,10 +136,10 @@
 
             @if (ride.Track is { Splits.Count: > 0 } splitTrack)
             {
-                <SurfaceCard Icon="@Icons.Material.Rounded.TableRows" Title="@WebStrings.RideSplits" Description="@WebStrings.RideSplitsDescription" FullHeight="false">
+                <SurfaceCard Icon="@Icons.Material.Rounded.TableRows" Title="@WebStrings.RideSplits" Description="@SplitsDescription" FullHeight="false">
                     <MudTable Items="splitTrack.Splits" T="RideSplitDto" Dense="true" Hover="true" Elevation="0" Breakpoint="Breakpoint.None" HorizontalScrollbar="true">
                         <HeaderContent>
-                            <MudTh>@WebStrings.RideSplitNumber</MudTh>
+                            <MudTh>@SplitNumberTitle</MudTh>
                             <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.Distance</MudTh>
                             <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.RideSplitTime</MudTh>
                             <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.RideSpeed</MudTh>
@@ -148,11 +148,11 @@
                             <MudTh Style="text-align:right;white-space:nowrap">@WebStrings.RidePower</MudTh>
                         </HeaderContent>
                         <RowTemplate>
-                            <MudTd DataLabel="@WebStrings.RideSplitNumber">@context.Number</MudTd>
-                            <MudTd DataLabel="@WebStrings.Distance" Style="text-align:right;white-space:nowrap">@WebStrings.Format(WebStrings.UnitKilometres, DisplayFormat.Number(context.DistanceKm, "0.00"))</MudTd>
+                            <MudTd DataLabel="@SplitNumberTitle">@context.Number</MudTd>
+                            <MudTd DataLabel="@WebStrings.Distance" Style="text-align:right;white-space:nowrap">@SplitDistance(context)</MudTd>
                             <MudTd DataLabel="@WebStrings.RideSplitTime" Style="text-align:right;white-space:nowrap">@SplitTime(context.MovingSeconds)</MudTd>
-                            <MudTd DataLabel="@WebStrings.RideSpeed" Style="text-align:right;white-space:nowrap">@DisplayFormat.Speed(context.AverageSpeedKmh)</MudTd>
-                            <MudTd DataLabel="@WebStrings.RideClimbed" Style="text-align:right;white-space:nowrap">@Metres(context.ElevationGainMeters)</MudTd>
+                            <MudTd DataLabel="@WebStrings.RideSpeed" Style="text-align:right;white-space:nowrap">@DisplayFormat.Speed(context.AverageSpeedKmh, Units)</MudTd>
+                            <MudTd DataLabel="@WebStrings.RideClimbed" Style="text-align:right;white-space:nowrap">@DisplayFormat.ShortDistance(context.ElevationGainMeters, Units)</MudTd>
                             <MudTd DataLabel="@WebStrings.RideCadence" Style="text-align:right;white-space:nowrap">@WithUnit(context.AverageCadence, "rpm")</MudTd>
                             <MudTd DataLabel="@WebStrings.RidePower" Style="text-align:right;white-space:nowrap">@WithUnit(context.AveragePowerWatts, "W")</MudTd>
                         </RowTemplate>
@@ -175,10 +175,17 @@
     private string? _error;
     private bool _shown;
     private MapSource? _shownSource;
+    private UnitSystem? _loadedUnits;
 
     [Parameter] public string Id { get; set; } = "";
 
     [CascadingParameter(Name = AppTheme.DarkModeCascade)] public bool DarkMode { get; set; }
+
+    [CascadingParameter(Name = DisplayFormat.UnitsCascade)] public UnitSystem Units { get; set; }
+
+    private string SplitsDescription => Units == UnitSystem.Imperial ? WebStrings.RideSplitsDescriptionMiles : WebStrings.RideSplitsDescription;
+
+    private string SplitNumberTitle => Units == UnitSystem.Imperial ? WebStrings.RideSplitNumberMiles : WebStrings.RideSplitNumber;
 
     private RideExportDto? GoogleUpload => _ride?.Exports?.FirstOrDefault(export => export.Integration == GoogleHealthIntegration.IntegrationKey);
 
@@ -190,7 +197,7 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        if (_ride?.Id == Id) return;
+        if (_ride?.Id == Id && _loadedUnits == Units) return;
 
         if (_shown) await MapView.DisposeViewAsync(_viewId);
         await LoadAsync();
@@ -211,7 +218,8 @@
                 track.HasCharts ? _charts : null,
                 track.HasCharts ? _readout : null,
                 track,
-                source);
+                source,
+                ChartUnits.For(Units));
         }
         else if (source != _shownSource)
         {
@@ -225,9 +233,10 @@
         _loading = true;
         _error = null;
         _shown = false;
+        _loadedUnits = Units;
         try
         {
-            var result = await RideService.GetDetailAsync(Id);
+            var result = await RideService.GetDetailAsync(Id, Units);
             _ride = result.Value;
             _googleConnected = await Google.IsConnectedAsync();
             if (!result.Succeeded) _error = result.Message ?? WebStrings.RideLoadFailed;
@@ -262,10 +271,10 @@
         if (!await Browser.DownloadAsync(fit.FileName, fit.Content)) Snackbar.Add(WebStrings.RidesDownloadFailed, Severity.Error);
     }
 
-    private static IEnumerable<(string Key, string Title)> Charts(RideSeriesDto series)
+    private IEnumerable<(string Key, string Title)> Charts(RideSeriesDto series)
     {
-        if (series.HasElevation) yield return ("elevation", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideElevation, "m"));
-        if (series.HasSpeed) yield return ("speed", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideSpeed, "km/h"));
+        if (series.HasElevation) yield return ("elevation", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideElevation, UnitConversion.ShortDistanceUnit(Units)));
+        if (series.HasSpeed) yield return ("speed", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideSpeed, UnitConversion.SpeedUnit(Units)));
         if (series.HasCadence) yield return ("cadence", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideCadence, "rpm"));
         if (series.HasPower) yield return ("power", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RidePower, "W"));
         if (series.HasHeartRate) yield return ("heartRate", WebStrings.Format(WebStrings.RideChartTitle, WebStrings.RideHeartRate, "bpm"));
@@ -277,10 +286,11 @@
         ? WebStrings.Format(WebStrings.UploadStatusUploadedAt, DisplayFormat.DateTime(Preferences.ToLocal(at)))
         : null;
 
-    private static string ClimbText(RideDetailDto ride) =>
-        WebStrings.Format(WebStrings.RideClimbSummary, Metres(ride.ElevationGainMeters), Metres(ride.ElevationLossMeters));
+    private string ClimbText(RideDetailDto ride) =>
+        WebStrings.Format(WebStrings.RideClimbSummary, DisplayFormat.ShortDistance(ride.ElevationGainMeters, Units), DisplayFormat.ShortDistance(ride.ElevationLossMeters, Units));
 
-    private static string Metres(double? metres) => WithUnit(metres, "m");
+    private string SplitDistance(RideSplitDto split) =>
+        WebStrings.Format(WebStrings.UnitValue, DisplayFormat.DistanceNumber(split.DistanceKm * UnitConversion.MetresPerKilometre, Units, "0.00"), UnitConversion.DistanceUnit(Units));
 
     private static string WithUnit(double? value, string unit) =>
         value is { } number ? $"{DisplayFormat.Number(number, "#,0")} {unit}" : DisplayFormat.Missing;
@@ -290,8 +300,8 @@
 
     private static string SplitTime(int seconds) => TimeSpan.FromSeconds(seconds).ToString(seconds >= 3600 ? @"h\:mm\:ss" : @"m\:ss", System.Globalization.CultureInfo.InvariantCulture);
 
-    private static string ModeShareText(AssistModeShareDto mode) =>
-        WebStrings.Format(WebStrings.RideAssistModeShare, DisplayFormat.Distance(mode.Meters), DisplayFormat.Percent(mode.Percent));
+    private string ModeShareText(AssistModeShareDto mode) =>
+        WebStrings.Format(WebStrings.RideAssistModeShare, DisplayFormat.Distance(mode.Meters, Units), DisplayFormat.Percent(mode.Percent));
 
     private static string AssistModesText(RideDetailDto ride) =>
         string.Join(", ", ride.AssistModes.Select(mode => $"{mode.Name} {DisplayFormat.Percent(mode.Percent)}"));

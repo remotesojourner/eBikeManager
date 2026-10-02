@@ -11,7 +11,7 @@
                 {
                     <img src="@BikeMediaEndpoint.PicturePath(bike.Id, pictureSavedAt)" alt="" class="em-bike-thumbnail mb-3" loading="lazy" onerror="this.style.display='none'" />
                 }
-                <DataRow Label="@WebStrings.BikeMileage" Value="@DisplayFormat.Number(BikeText.OdometerMeters(bike, BridgeLive.Snapshot.LiveFor(bike.Id)) / 1000, "#,0 km")" />
+                <DataRow Label="@WebStrings.BikeMileage" Value="@DisplayFormat.WholeDistance(BikeText.OdometerMeters(bike, BridgeLive.Snapshot.LiveFor(bike.Id)), Units)" />
                 <DataRow Label="@WebStrings.BikeMotorHours" Value="@DisplayFormat.Number(bike.MotorHours, "#,0 h")" />
                 @foreach (var battery in bike.Batteries)
                 {
@@ -45,6 +45,8 @@
 @code {
     [Parameter] public IReadOnlyList<BikeDetailsDto> Bikes { get; set; } = [];
 
+    [CascadingParameter(Name = DisplayFormat.UnitsCascade)] public UnitSystem Units { get; set; }
+
     private int _index;
     private IReadOnlyDictionary<string, string> _labels = new Dictionary<string, string>();
 
@@ -71,6 +73,6 @@
 
     private string ServiceDueText(ServiceDueDto service) =>
         service.Date is { } date ? DisplayFormat.Date(Preferences.ToLocal(date))
-        : service.OdometerMeters is { } meters ? WebStrings.Format(WebStrings.BikeServiceDueDistance, DisplayFormat.Number(meters / 1000, "#,0"))
+        : service.OdometerMeters is { } meters ? WebStrings.Format(WebStrings.BikeServiceDueDistance, DisplayFormat.WholeDistance(meters, Units))
         : DisplayFormat.Missing;
 }

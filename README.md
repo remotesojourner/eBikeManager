@@ -22,8 +22,9 @@ A self-hosted Blazor Server app for Bosch eBike Flow riders. It keeps a copy of 
 - **FIT and GPX backup** — downloads every ride's FIT file, checks it, and keeps it on your own disk next to Bosch's ride summary and the ride's GPX file, filed by date. The first sync backs up your whole history
 - **Dashboard** — distance, rides, moving time, calories and elevation for this week, this month, this year and all time, your latest rides, your bike's mileage and battery, and the state of the sync
 - **Rides** — every ride with its distance, moving time, Bosch's calories, your share of the effort, and download buttons for its FIT and GPX files. Click a ride anywhere to open it
-- **Ride details** — the route on a map, the ride's figures, how far you rode in each assistance mode, charts of elevation, speed, cadence and power along the ride, and a split for every kilometre. Point at a chart to read the values there and see the spot on the map
+- **Ride details** — the route on a map, the ride's figures, how far you rode in each assistance mode, charts of elevation, speed, cadence and power along the ride, and a split for every kilometre or mile. Point at a chart to read the values there and see the spot on the map
 - **Maps your way** — OpenStreetMap by default, OpenFreeMap with a dark version for the dark theme, or a MapLibre style from your own map server
+- **Miles or kilometres** — distances, speeds and heights in kilometres, km/h and metres, or in miles, mph and feet
 - **Bikes** — each bike's picture, frame number and where to find it, mileage with the distance and energy in each assistance mode, motor hours, battery (capacity, charge cycles, energy delivered), range in each assistance mode, every component with its software version and serial number, and the photos and invoices from your eBike Pass. With a ConnectModule it adds the live battery state and the last known location
 - **Google Health integration** — uploads each ride as an electric bike workout with Bosch's calories, which count only your own effort, not the motor's. It lists every upload with its result. A ride your watch also recorded isn't uploaded, because Google Health only shows the watch's version (see the [FAQ](#what-happens-when-my-watch-recorded-the-same-ride)). Any ride can also be uploaded on its own from the Rides list or its ride page, even one from before your start date
 - **Local by design** — every page is built from what's stored on your server. eBike Manager contacts Bosch only while syncing, and serves its own copy of your bike's picture, eBike Pass documents, fonts and map code. The one exception is the map itself, which your browser loads from the map server you choose; with your own map server, nothing leaves your network
@@ -208,10 +209,11 @@ Each ride becomes an **Electric bike** workout with its start and end, moving ti
 
 Each sync reads Bosch's ride list, newest first, and stops at the first page with nothing new. Rides from the last 7 days are always read again, because Bosch sometimes finishes processing a ride after you've stopped. The sync then downloads any missing FIT and GPX files (rides backed up before GPX files were kept get theirs this way), and refreshes your bikes' details. A bike's picture is downloaded only when Bosch's picture changes, and its eBike Pass photos and invoices only when you add or change them in the Flow app.
 
-### Tab: Map
+### Tab: Display
 
 | Field | Description |
 |---|---|
+| **Units** | **Metric** (kilometres, km/h and metres) or **Imperial** (miles, mph and feet), saved as soon as you choose. The welcome wizard asks too, and suggests imperial when your browser is set to US or UK English. Bosch, Google Health and the statistics API always use metric |
 | **OpenStreetMap** | The standard map from openstreetmap.org (default). In the dark theme it's shown darkened |
 | **OpenFreeMap** | Vector maps from [openfreemap.org](https://openfreemap.org), free and without an account, with a dark style for the dark theme |
 | **Your own map server** | The address of a MapLibre `style.json` on a server you host, such as a self-hosted OpenFreeMap or TileServer GL, plus an optional dark style |
