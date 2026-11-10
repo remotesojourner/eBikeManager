@@ -22,4 +22,6 @@ updates:
           - "Microsoft.Extensions.*"
       xunit:
         patterns:
-          - "xunit.v3*"
+          - "xunit*"
+          - "Microsoft.NET.Test.Sdk"
+          - "coverlet.*"
