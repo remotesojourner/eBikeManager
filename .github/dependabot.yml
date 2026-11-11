@@ -9,9 +9,6 @@ updates:
     directory: "/"
     schedule:
       interval: "weekly"
-    ignore:
-      - dependency-name: "mcr.microsoft.com/dotnet/*"
-        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "nuget"
     directory: "/"
@@ -28,6 +25,3 @@ updates:
           - "xunit*"
           - "Microsoft.NET.Test.Sdk"
           - "coverlet.*"
-    ignore:
-      - dependency-name: "Microsoft.*"
-        update-types: ["version-update:semver-major"]

@@ -13,4 +13,10 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
 
+  <Target Name="RemoveDuplicateLoggerGenerator" BeforeTargets="CoreCompile">
+    <ItemGroup>
+      <Analyzer Remove="@(Analyzer)" Condition="'%(FileName)' == 'Microsoft.Extensions.Logging.Generators'" />
+    </ItemGroup>
+  </Target>
+
 </Project>
