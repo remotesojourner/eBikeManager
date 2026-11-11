@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/dotnet/sdk:11.0 AS build
+FROM mcr.microsoft.com/dotnet/sdk:10.0 AS build
 ARG TARGETARCH
 WORKDIR /src
 
@@ -13,7 +13,7 @@ WORKDIR /src/src/EBikeManager.Web
 ARG VERSION
 RUN dotnet publish -c Release -a $TARGETARCH --no-restore -o /app/publish /p:UseAppHost=false ${VERSION:+/p:Version=$VERSION}
 
-FROM mcr.microsoft.com/dotnet/aspnet:11.0 AS runtime
+FROM mcr.microsoft.com/dotnet/aspnet:10.0 AS runtime
 WORKDIR /app
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
