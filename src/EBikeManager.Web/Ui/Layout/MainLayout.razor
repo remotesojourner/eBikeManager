@@ -135,13 +135,12 @@
         await CircuitAccessService.StartAsync();
         LiveUpdatesService.Start(InvokeAsync);
         await LoadAsync();
+        if (!_disposed) StateHasChanged();
     }
 
     private async Task LoadAsync()
     {
         _state = AppState.Loading;
-        StateHasChanged();
-
         _state = await LoadStateAsync();
         if (_state == AppState.SignInRequired)
         {
@@ -153,8 +152,6 @@
         {
             Navigation.NavigateTo("/welcome");
         }
-
-        if (!_disposed) StateHasChanged();
     }
 
     private void SendToSignIn()

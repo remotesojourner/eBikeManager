@@ -27,7 +27,10 @@ public sealed class CircuitAccessService
 
     public async Task StartAsync()
     {
+        // Sign-in and sign-out reload the page and create a new circuit.
+#pragma warning disable BL0013
         _user = (await _authenticationState.GetAuthenticationStateAsync()).User;
+#pragma warning restore BL0013
         Started = true;
     }
 }

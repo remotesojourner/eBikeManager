@@ -301,7 +301,7 @@ curl -H "Authorization: Bearer ebm_…" https://ebike.example.com/api/statistics
 
 ### Requirements
 
-- .NET 10 SDK
+- .NET 11 SDK
 
 ### Run locally
 
@@ -322,7 +322,7 @@ dotnet test
 The browser tests drive the app in Chromium with [Playwright](https://playwright.dev/dotnet/). Install Chromium once after building, or they're skipped:
 
 ```bash
-pwsh tests/EBikeManager.IntegrationTests/bin/Debug/net10.0/playwright.ps1 install chromium
+pwsh tests/EBikeManager.IntegrationTests/bin/Debug/net11.0/playwright.ps1 install chromium
 ```
 
 To leave them out, add `--filter-not-trait "Category=Browser"` to the test command.

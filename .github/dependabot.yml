@@ -1,27 +1,36 @@
 version: 2
+
+multi-ecosystem-groups:
+  dotnet:
+    schedule:
+      interval: "weekly"
+
 updates:
   - package-ecosystem: "github-actions"
     directory: "/"
     schedule:
       interval: "weekly"
+    groups:
+      actions:
+        patterns: ["*"]
 
   - package-ecosystem: "docker"
     directory: "/"
-    schedule:
-      interval: "weekly"
+    patterns: ["*"]
+    multi-ecosystem-group: "dotnet"
+    # Coordinate new .NET majors with TargetFramework and the CI SDK.
+    ignore:
+      - dependency-name: "dotnet/*"
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: "nuget"
     directory: "/"
-    schedule:
-      interval: "weekly"
-    groups:
-      dotnet:
-        patterns:
-          - "Microsoft.AspNetCore.*"
-          - "Microsoft.EntityFrameworkCore.*"
-          - "Microsoft.Extensions.*"
-      xunit:
-        patterns:
-          - "xunit*"
-          - "Microsoft.NET.Test.Sdk"
-          - "coverlet.*"
+    patterns: ["*"]
+    multi-ecosystem-group: "dotnet"
+    ignore:
+      - dependency-name: "Microsoft.AspNetCore.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.EntityFrameworkCore.*"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "Microsoft.Extensions.*"
+        update-types: ["version-update:semver-major"]
